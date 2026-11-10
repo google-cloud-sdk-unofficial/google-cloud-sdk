@@ -212,7 +212,7 @@ DEFINE_string(
     '',
     'Insert flag definitions from the given file into the command line.',
     _helpers.SPECIAL_FLAGS,
-)  # pytype: disable=wrong-arg-types
+)
 
 DEFINE_string(
     'undefok',
@@ -222,7 +222,7 @@ DEFINE_string(
     'with that name.  IMPORTANT: flags in this list that have '
     'arguments MUST use the --flag=value format.',
     _helpers.SPECIAL_FLAGS,
-)  # pytype: disable=wrong-arg-types
+)
 
 #: The global FlagValues instance.
 FLAGS = _flagvalues.FLAGS
@@ -230,8 +230,7 @@ FLAGS = _flagvalues.FLAGS
 # absl:google3-begin(C++ flags)
 # Provide C++ flags support in `FLAGS.set_default`.
 try:
-  # pytype: disable=import-error
-  from absl.flags import _cpp_flags_internal  # pylint: disable=g-import-not-at-top
+  from absl.flags import _cpp_flags_internal  # pylint: disable=g-import-not-at-top  # pyrefly: ignore[missing-module-attribute]
 except ImportError:
   pass
 else:

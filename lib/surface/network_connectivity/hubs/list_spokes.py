@@ -71,6 +71,14 @@ ListSpokes.detailed_help = {
   To list all spokes in the ``us-central1'' region and the global location, run:
 
         $ {command} HUB --spoke-locations=us-central1,global
+
+  To list all spokes in the ``us-central1'' region with a detailed view, run:
+
+        $ {command} HUB --spoke-locations=us-central1 --view=detailed
+
+  To list all spokes in the global location with a detailed view, run:
+
+        $ {command} HUB --spoke-locations=global --view=detailed
   """,
     'API REFERENCE': """ \
   This command uses the networkconnectivity/v1 API. The full documentation

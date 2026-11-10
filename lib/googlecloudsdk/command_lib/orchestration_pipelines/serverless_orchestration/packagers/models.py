@@ -20,7 +20,7 @@ import pathlib
 
 @dataclasses.dataclass(frozen=True)
 class PackagingContext:
-  """Pipeline and environment settings for packaging an action."""
+  """Pipeline and environment settings for packaging a data model."""
 
   pipeline_id: str
   # The deployment environment; also the dbt target name.
@@ -41,7 +41,7 @@ class StagedFile:
 
 @dataclasses.dataclass(frozen=True)
 class PackagedArtifact:
-  """Staged files produced by packaging a pipeline action."""
+  """Staged files produced by packaging a data model."""
 
-  action_name: str
+  model_id: str
   files: tuple[StagedFile, ...]

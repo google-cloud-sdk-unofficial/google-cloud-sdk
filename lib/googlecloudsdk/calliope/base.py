@@ -799,6 +799,18 @@ class _Common(six.with_metaclass(abc.ABCMeta, object)):
 
   @classmethod
   def SetRegionalEndpointHelp(cls):
+    # Copy before writing: detailed_help may be inherited from a base class or
+    # shared with other classes, which must not gain or lose this class's
+    # section.
+    cls.detailed_help = dict(getattr(cls, 'detailed_help', {}))
+    if cls._regional_endpoint_compatibility not in (
+        properties.constants.regional.SUPPORTED,
+        properties.constants.regional.REQUIRED,
+    ):
+      # Global-only commands behave like unannotated ones, so drop any section
+      # inherited from a base class.
+      cls.detailed_help.pop('REGIONAL ENDPOINTS', None)
+      return
     entity = (
         'command group' if getattr(cls, 'IS_COMMAND_GROUP', False)
         else 'command')
@@ -815,7 +827,6 @@ class _Common(six.with_metaclass(abc.ABCMeta, object)):
           ' endpoints by default, run `$ gcloud config set '
           ' regional/endpoint_mode regional-preferred`.'
       )
-    cls.detailed_help = getattr(cls, 'detailed_help', {})
     cls.detailed_help.setdefault('REGIONAL ENDPOINTS', help_text)
 
   @classmethod
@@ -934,7 +945,10 @@ class Command(six.with_metaclass(abc.ABCMeta, _Common)):
   @classmethod
   def _AddCommonEndpointFlags(cls, parser):
     """Adds common flags for this command."""
-    if cls.RegionalEndpointCompatibility() is not None:
+    if cls.RegionalEndpointCompatibility() in (
+        properties.constants.regional.SUPPORTED,
+        properties.constants.regional.REQUIRED,
+    ):
       parser.add_argument(
           '--endpoint-mode',
           metavar='ENDPOINT_MODE',
@@ -1266,8 +1280,8 @@ def _RegionalEndpointCompatibility(compatibility):
     compatibility: Value of properties.VALUES.regional.endpoint_compatibility to
       set.
   Returns:
-    Decorator function that modifies the Filter/Run method to set the given
-    compatibility for the group/command in question.
+    Decorator function that modifies the Filter/Run method to set the
+    compatibility of the group/command being invoked.
   """
 
   def DecorateCommand(cmd_class):
@@ -1284,11 +1298,15 @@ def _RegionalEndpointCompatibility(compatibility):
 
     def RunDecorator(run_func):
       @wraps(run_func)
-      def WrappedRun(*args, **kw):
+      def WrappedRun(self, *args, **kw):
+        # Read the annotation from the invoked class rather than the decorated
+        # one: a subclass that inherits Run also inherits this wrapper, and its
+        # own annotation must win over its base class's.
         properties.VALUES.SetInvocationValue(
-            properties.VALUES.regional.endpoint_compatibility, compatibility,
+            properties.VALUES.regional.endpoint_compatibility,
+            self.RegionalEndpointCompatibility(),
             None)
-        return run_func(*args, **kw)
+        return run_func(self, *args, **kw)
       return WrappedRun
 
     if issubclass(cmd_class, Group):
@@ -1310,6 +1328,25 @@ def RegionalEndpointsSupported(cmd_class):
 def RegionalEndpointsRequired(cmd_class):
   decorator = _RegionalEndpointCompatibility(
       properties.constants.regional.REQUIRED)
+  return decorator(cmd_class)
+
+
+def RegionalEndpointsNotSupported(cmd_class):
+  """Decorator for marking commands and groups that only use global endpoints.
+
+  Use this for commands and groups whose APIs do not offer regional endpoints.
+  Requests always use global endpoints, and setting the regional/endpoint_mode
+  property to `regional` raises an error. Unlike the other regional endpoint
+  annotations, this adds no `--endpoint-mode` flag or help text.
+
+  Args:
+    cmd_class: base._Common, A calliope command or group.
+
+  Returns:
+    A modified version of the provided class.
+  """
+  decorator = _RegionalEndpointCompatibility(
+      properties.constants.regional.NOT_SUPPORTED)
   return decorator(cmd_class)
 
 

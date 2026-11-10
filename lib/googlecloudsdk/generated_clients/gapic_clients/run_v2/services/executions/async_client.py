@@ -80,6 +80,8 @@ class ExecutionsAsyncClient:
     parse_secret_path = staticmethod(ExecutionsClient.parse_secret_path)
     secret_version_path = staticmethod(ExecutionsClient.secret_version_path)
     parse_secret_version_path = staticmethod(ExecutionsClient.parse_secret_version_path)
+    volume_path = staticmethod(ExecutionsClient.volume_path)
+    parse_volume_path = staticmethod(ExecutionsClient.parse_volume_path)
     common_billing_account_path = staticmethod(ExecutionsClient.common_billing_account_path)
     parse_common_billing_account_path = staticmethod(ExecutionsClient.parse_common_billing_account_path)
     common_folder_path = staticmethod(ExecutionsClient.common_folder_path)

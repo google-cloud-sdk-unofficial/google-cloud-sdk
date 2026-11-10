@@ -5,6 +5,313 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 593.0.0 (2026-11-10)
+
+### Breaking Changes
+
+*   **(App Lifecycle Manager)** Updated `--evaluation-spec` flag of
+    `gcloud beta app-lifecycle-manager flags create` and
+    `gcloud beta app-lifecycle-manager flags update` to use `defaultVariant`,
+    `defaultAllocation`, `variantId`, and `allocationId` instead of deprecated
+    `defaultTarget` and `target`.
+
+
+### Google Cloud CLI
+
+* Made bundled Python a required component on Windows (x86 and x86_64). `gcloud components update` and `gcloud components install` now install it if it is missing.
+
+### Agent Identity
+
+* Promoted `gcloud agent-identity auth-providers authorizations get-iam-policy`,
+  `gcloud agent-identity auth-providers authorizations set-iam-policy`,
+  `gcloud agent-identity auth-providers authorizations add-iam-policy-binding`,
+  `gcloud agent-identity auth-providers authorizations
+  remove-iam-policy-binding`, and `gcloud agent-identity auth-providers
+  authorizations test-iam-permissions` to GA.
+* Added `--xaa-auth-provider-id-token-input-jag`,
+  `--xaa-auth-provider-id-token-input-jag-additional-claims`,
+  `--xaa-auth-provider-client-secret-id`, `--xaa-auth-provider-client-secret`,
+  `--xaa-auth-provider-client-assertion-jwt-id`,
+  `--xaa-auth-provider-custom-issuer-token-url`,
+  `--xaa-auth-provider-custom-issuer`,
+  `--xaa-auth-provider-additional-parameters`,
+  `--connector-reference-auth-provider`, and
+  `--connector-reference-auth-provider-authorization-details` flags to
+  `gcloud agent-identity auth-providers create` and
+  `gcloud agent-identity auth-providers update` to configure Cross-App Access
+  and Connector Reference auth providers.
+
+### AlloyDB
+
+*   Added `--[no-]enable-psc-auto-dns` and
+    `--[no-]enable-psc-auto-connection-policy` flags to
+    `gcloud alloydb instances create`,
+    `gcloud alloydb instances create-secondary`, and
+    `gcloud alloydb instances update` to control automatic creation of DNS
+    records and service connection policies for Private Service Connect (PSC)
+    auto connections.
+
+### App Lifecycle Manager
+
+*   Added `--application-template-component`,
+    `--application-template-component-revision`,
+    `--composite-ref-application-template`, and `--composite-ref-revision`
+    flags to `gcloud beta app-lifecycle-manager unit-kinds create` and
+    `update`.
+*   Added `--clear-application-template-component` to
+    `gcloud beta app-lifecycle-manager unit-kinds update`.
+*   Promoted `gcloud app-lifecycle-manager` command group to GA.
+
+### Audit Manager
+
+*   Added `--parameter-overrides` flag to `gcloud audit-manager audit-reports
+    generate`, `gcloud audit-manager audit-scopes generate`, and `gcloud
+    audit-manager audit-schedules create` to override parameters of
+    parameterized cloud controls.
+
+### BigLake
+
+* Added `--snowflake-user-identity-federation-role` flag to
+  `gcloud beta biglake iceberg catalogs create` and
+  `gcloud beta biglake iceberg catalogs update` to support user identity
+  federation for Snowflake federated catalogs.
+
+### BigQuery
+
+*   Added a build status guidance message to `bq query` output when creating or
+    replacing a Python user-defined function (UDF) via DDL.
+*   Fixed an issue where specifying a regional endpoint (`--api`) for BigQuery
+    or BigQuery Reservation commands could fail to load the bundled discovery
+    document or crash on empty server discovery responses.
+*   Added build status columns for Python user-defined functions in
+    `bq show --routine`.
+*   Added `--condition_expression`, `--condition_title`,
+    and `--condition_description` flags in `bq mk --reservation_assignment` and
+    `bq update --reservation_assignment`.
+*   Removed the deprecated `--multi_region_auxiliary` flag from `bq mk
+    --reservation` and `bq mk --capacity_commitment`, and the
+    `multiRegionAuxiliary` column from reservation and capacity commitment
+    output.
+*   Updated the bundled `yaml` (`PyYAML`) dependency to package the Python 3
+    library directly and removed the legacy Python 2 compatibility shim.
+
+### Cloud Backup DR
+
+*   Promoted `gcloud backup-dr restore-templates` command group to GA.
+*   Promoted `gcloud backup-dr restore-template-executions` command group to GA.
+*   Promoted `gcloud backup-dr restore-verification-plans` command group to GA.
+*   Promoted `gcloud backup-dr restore-verification-plan-associations` command group to GA.
+
+### Cloud Bigtable
+
+* Rebuild with go.opentelemetry.io/otel/sdk 1.45.0 to fix CVE-2026-81870.
+
+### Cloud Bigtable Emulator
+
+* Rebuild cbt-emulator with go 1.26.9.
+
+### Cloud IAM
+
+* Added `--actor-token-field-name` and `--actor-token-type` flags and support
+  for combining `--credential-source-file` with `--credential-cert-path` to
+  `gcloud iam workload-identity-pools create-cred-config` to enable
+  certificate-bound OAuth 2.0 token exchanges and actor token delegation.
+
+### Cloud Key Management Service
+
+* Updated `gcloud kms locations list` to include the `HSM_SINGLE_TENANT_AVAILABLE` column in the default table output.
+
+### Cloud Memorystore
+
+* Added `ipVersion` key to `--endpoints` flag of `gcloud beta memorystore instances create` to support IPv6 Private Service Connect auto-created endpoints.
+
+### Cloud Run
+
+*   Added `--[no-]ambient-networking` and `--ambient-scope` flags for Cloud Run
+    services, allowing users to enable ambient networking and choose a
+    `regional` (default) or `global` scope. These flags are available in
+    `gcloud beta run deploy`, `gcloud beta run services update`, and
+    `gcloud beta run multi-region-services update`.
+
+### Cloud Shell
+
+*   Deprecated `gcloud cloud-shell get-mount-command`. It will be removed in a
+    future release.
+
+### Cloud Spanner
+
+* Added `gcloud alpha spanner databases wait-for-reencryption` to wait for background CMEK re-encryption to finish.
+* `gcloud spanner databases update` now provides instructions to wait until background re-encryption finishes when using the `--kms-keys` or `--clear-kms-keys` flags.
+
+### Cloud Storage
+
+*   Fixed an issue with `gcloud storage rsync` on Windows where incorrect file
+    sorting caused unchanged files to be re-copied or deleted.
+
+### Cloud Workstations
+
+* Promoted `--disk-provisioned-iops` and `--disk-provisioned-throughput` flags of `gcloud workstations configs create` and `gcloud workstations configs update` to GA.
+
+### Cluster Director
+
+*   Added `gcloud cluster-director clusters export` and
+    `gcloud cluster-director clusters import` commands to export and import
+    Cluster Director cluster configurations.
+*   Fixed an issue in `gcloud cluster-director clusters update` where
+    `startupScript`, `labels`, and `bootDisk` values specified under
+    `computeInstance` in `--update-slurm-node-sets` were ignored.
+*   Promoted `--managed-instance-groups` flag of
+    `gcloud cluster-director clusters create` and
+    `--add-managed-instance-groups`, `--update-managed-instance-groups`, and
+    `--remove-managed-instance-groups` flags of
+    `gcloud cluster-director clusters update` to beta to support configuring
+    Compute Engine managed instance group orchestration on clusters.
+
+### Compute Engine
+
+*   Promoted `--svsm-config` flag to GA in `gcloud compute instances create`,
+    `gcloud compute instances bulk create`, `gcloud compute instances
+    create-with-container`, and `gcloud compute instance-templates create`.
+*   Added support for regional backend services to `--service-lb-policy` flag of
+    `gcloud compute backend-services create`.
+*   Promoted `--linked-custom-hardware` flag of
+    `gcloud compute routers add-bgp-peer` to beta.
+*   Promoted `--require-specific-reservation` flag in
+    `gcloud compute reservations update` to GA.
+*   Promoted `--content-type`, `--http-status`, `--backend-service`, and
+    `--backend-bucket` flags to GA in
+    `gcloud compute url-maps invalidate-cdn-cache` to support cache invalidation
+    by the new matchers.
+*   Updated `--host` flag in `gcloud compute url-maps invalidate-cdn-cache` to
+    support wildcard hostnames (e.g. `*.example.com`).
+
+### Config Connector
+
+* Updated Google Cloud Config Connector to version 1.160.0.
+  See Config Connector Overview for more details [https://cloud.google.com/config-connector/docs/overview](https://cloud.google.com/config-connector/docs/overview).
+
+### Database Migration
+
+*   Added `--schemas-filter`, `--tables-filter`, `--excluded-schemas-filter`,
+    and `--excluded-tables-filter` flags to `gcloud database-migration
+    migration-jobs create` and `update` commands to support schema- and
+    table-level object filtering and exclusion.
+
+### Device Run
+
+*   Added `--target-app`, `--pre-target-apps`, and `--post-target-apps` flags
+    to `gcloud beta device-run sessions submit instrumentation` to specify the
+    application under test and the applications to install before and after
+    it.
+*   Deprecated `--apps` flag of
+    `gcloud beta device-run sessions submit instrumentation`. Use
+    `--target-app`, `--pre-target-apps`, and `--post-target-apps` instead.
+
+### Eventarc
+
+*   Fixed issue where `gcloud eventarc triggers list` failed when listing
+    triggers without event filters.
+
+### GKE Hub
+
+* Added `--auto-rollout-scope` and `--ignored-clusters-selector` flags to
+  `gcloud container fleet|hub rolloutsequences create` and `update` commands.
+* Added `--clear-ignored-clusters-selector` flag to
+  `gcloud container fleet|hub rolloutsequences update` command.
+* Added `--read-only` flag to `gcloud container fleet|hub memberships
+  register` to register a non-GKE cluster with a `READ_ONLY` membership type,
+  which skips cluster mutations and the Connect agent installation.
+
+### Kubernetes Engine
+
+* Added `--default-compute-class` flag to `gcloud container clusters create` and
+  `gcloud container clusters update`.
+*   Updated `gcloud container clusters create` to reject more flags that only
+    configure the default node pool, such as `--boot-disk-kms-key` and
+    `--workload-metadata`, when used with `--num-nodes=0`.
+*   Fixed `gcloud container clusters describe` suggesting a node upgrade for
+    clusters that have no node pools.
+*   Updated `gcloud container clusters upgrade` to fail with a clear error
+    when the cluster has no node pools and neither `--master` nor
+    `--node-pool` is specified.
+*   Updated `gcloud container clusters update` to fail with a clear error
+    when `--enable-autoscaling` is specified without `--node-pool` for a
+    cluster that has no node pools.
+*   Updated `gcloud container clusters resize` to fail with a clear error for
+    clusters that have no node pools.
+*   Updated `gcloud container clusters list` and
+    `gcloud container clusters create` to show `0` in the `NUM_NODES` column
+    for clusters without nodes, instead of leaving it empty.
+*   Updated default kubectl from 1.35.9 to 1.36.6.
+*   Removed kubectl version 1.31 as extended support has expired.
+*   Additional kubectl versions:
+    -   1.32.13
+    -   1.33.13
+    -   1.34.13
+    -   1.35.10
+    -   1.36.6
+    -   1.37.2
+*   Fixed an issue where `gcloud beta container clusters create` and
+    `gcloud alpha container clusters create` with `--stack-type=ipv6` required
+    `--enable-ip-alias` for `--enable-private-nodes` and rejected
+    `--no-enable-ip-alias`. IP aliases do not apply to IPv6-only clusters, so
+    `--no-enable-ip-alias` is now ignored with a warning.
+
+### Looker
+
+*   Promoted `--workforce-auth-enabled` and `--google-auth-enabled` flags to GA
+    for `gcloud looker instances create` and `gcloud looker instances update`.
+
+### Model Armor
+
+*   Added `--filter-version-selector` and `--filter-version-selector-alias`
+    flags to `gcloud model-armor templates create` and `gcloud model-armor
+    templates update`.
+
+### Network Connectivity
+
+*   Promoted `--export-psc-published-services-and-regional-google-apis` and
+    `--export-psc-global-google-apis` flags of
+    `gcloud network-connectivity hubs create` and
+    `gcloud network-connectivity hubs update` commands to GA.
+
+### Network Management
+
+*   Added `--source-datastream-private-connection` flag to
+    `gcloud network-management connectivity-tests`.
+
+### Network Services
+
+*   Added `gcloud beta network-services express-links` which manages Network
+    Services ExpressLink resources.
+
+### Oracle Database
+
+* Added `gcloud oracle-database cloud-vm-clusters enable-identity-connector`,
+  `gcloud oracle-database cloud-vm-clusters disable-identity-connector`,
+  `gcloud oracle-database exadb-vm-clusters enable-identity-connector` and
+  `gcloud oracle-database exadb-vm-clusters disable-identity-connector`
+  commands to manage the Workload Identity Connector of Exadata and Exascale
+  VM Clusters.
+* Added `--identity-connector-disabled` flag to
+  `gcloud oracle-database cloud-vm-clusters create` and
+  `gcloud oracle-database exadb-vm-clusters create` to opt out of provisioning
+  the Workload Identity Connector.
+
+### Secure Source Manager
+
+*   Added `--enable-vulnerability-scanning` argument to
+    `gcloud source-manager repos create` and
+    `gcloud source-manager repos update` commands.
+
+### Service Health
+
+* Added `gcloud beta service-health impacts` command group to list and describe asset impacts under a project.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 592.0.0 (2026-11-03)
 
 ### Breaking Changes

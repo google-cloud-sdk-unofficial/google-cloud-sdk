@@ -25,4 +25,5 @@ REGIONAL_PREFERRED = 'regional-preferred'
 # LINT.IfChange(regional_endpoint_compatibility)
 SUPPORTED = 'supported'
 REQUIRED = 'required'
+NOT_SUPPORTED = 'not-supported'
 # LINT.ThenChange(../definitions/regional.yaml:regional_endpoint_compatibility)

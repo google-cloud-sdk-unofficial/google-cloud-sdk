@@ -1,4 +1,6 @@
 - release_tracks: [GA, ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: List available accelerator types for Cloud TPU VM nodes.
     description: List available accelerator types for for Cloud TPU VM nodes.

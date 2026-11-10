@@ -11,6 +11,88 @@ from apitools.base.py import extra_types
 package = 'telemetrymanagement'
 
 
+class AttributePath(_messages.Message):
+  r"""Specifies how to access an attribute value: - A single-element list
+  accesses a top-level attribute whose key may contain literal dots (e.g.
+  `["http.request.method"]` looks up the flat key `"http.request.method"`). -
+  A multi-element list traverses nested map (`kvlist_value`) levels in order
+  (e.g. `["http", "request", "method"]` looks up map `"http"`, then nested map
+  `"request"`, then key `"method"`).
+
+  Fields:
+    segments: Required. Path segments for attribute lookup or nested map
+      traversal. At least one segment is required (e.g. `["service.name"]` for
+      a flat attribute key or `["http", "request", "method"]` for a nested map
+      attribute).
+  """
+
+  segments = _messages.StringField(1, repeated=True)
+
+
+class Collector(_messages.Message):
+  r"""Message describing a Collector agent instance.
+
+  Fields:
+    fleetId: Optional. The fleet_id the collector is reporting. For example:
+      `my-fleet` Note: There is no guarantee that this fleet exists as a
+      resource.
+    name: Output only. The name of the Collector. For example: `projects/my-
+      project/locations/us-east1/collectors/${collector}`
+    policySetId: Optional. The PolicySet id the collector is reporting. For
+      example: `my-policy-set` Note: There is no guarantee that this policy
+      set actually exists
+    policySetRevision: Optional. The PolicySet revision the collector is
+      reporting. For example: `1234` Note: There is no guarantee that this
+      policy set revision actually exists
+  """
+
+  fleetId = _messages.StringField(1)
+  name = _messages.StringField(2)
+  policySetId = _messages.StringField(3)
+  policySetRevision = _messages.StringField(4)
+
+
+class ComponentPolicy(_messages.Message):
+  r"""Describes a policy that is applied as part of a staged sequence.
+  LogTransformPolicy instances execute in stage order (`renaming` ->
+  `addition` -> `removal` -> `redaction`), breaking ties within a stage by
+  their definition order in `PolicySet.component_policies`.
+
+  Fields:
+    logTransformPolicy: A Log transformation policy.
+  """
+
+  logTransformPolicy = _messages.MessageField('LogTransformPolicy', 1)
+
+
+class FileLogSourcePolicy(_messages.Message):
+  r"""Enables file tailing (`filelog` receiver) within allowed OS log roots.
+
+  Fields:
+    includedPaths: Required. File path glob patterns to tail. At least one
+      pattern is required.
+  """
+
+  includedPaths = _messages.StringField(1, repeated=True)
+
+
+class Fleet(_messages.Message):
+  r"""A Fleet is a collection of Collectors.
+
+  Fields:
+    createTime: Output only. The time the fleet was created.
+    description: Optional. A human-readable description of this Fleet.
+    name: Identifier. The name of the fleet. For example: `projects/my-
+      project/locations/us-east1/fleets/my-fleet
+    updateTime: Output only. The time the fleet was last updated.
+  """
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  name = _messages.StringField(3)
+  updateTime = _messages.StringField(4)
+
+
 class GoogleProtobufEmpty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -18,6 +100,58 @@ class GoogleProtobufEmpty(_messages.Message):
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
 
+
+
+class HostMetricsSourcePolicy(_messages.Message):
+  r"""Enables host system metric collection (`hostmetrics` receiver).
+
+  Fields:
+    collectionDuration: Optional. Duration between metric scrapes. Must be at
+      least 10 seconds.
+  """
+
+  collectionDuration = _messages.StringField(1)
+
+
+class IisSourcePolicy(_messages.Message):
+  r"""Enables Microsoft IIS metric collection (`iis` receiver).
+
+  Fields:
+    collectionDuration: Optional. Duration between metric scrapes. Must be at
+      least 10 seconds.
+  """
+
+  collectionDuration = _messages.StringField(1)
+
+
+class JournaldSourcePolicy(_messages.Message):
+  r"""Enables Linux systemd journal collection (`journald` receiver)."""
+
+
+class ListCollectorsResponse(_messages.Message):
+  r"""Message for response to listing Collectors.
+
+  Fields:
+    collectors: The list of collectors
+    nextPageToken: A token identifying a page of results the server should
+      return.
+  """
+
+  collectors = _messages.MessageField('Collector', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class ListFleetsResponse(_messages.Message):
+  r"""Message for response to listing Fleets.
+
+  Fields:
+    fleets: The list of fleets
+    nextPageToken: A token identifying a page of results the server should
+      return.
+  """
+
+  fleets = _messages.MessageField('Fleet', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
 
 
 class ListLocationsResponse(_messages.Message):
@@ -62,6 +196,45 @@ class ListPipelinesResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   pipelines = _messages.MessageField('Pipeline', 2, repeated=True)
+
+
+class ListPolicySetRevisionsResponse(_messages.Message):
+  r"""Message for response to listing PolicySetRevisions.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    policySetRevisions: The list of PolicySetRevisions
+  """
+
+  nextPageToken = _messages.StringField(1)
+  policySetRevisions = _messages.MessageField('PolicySetRevision', 2, repeated=True)
+
+
+class ListPolicySetsResponse(_messages.Message):
+  r"""Message for response to listing PolicySets.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    policySets: The list of policy_sets
+  """
+
+  nextPageToken = _messages.StringField(1)
+  policySets = _messages.MessageField('PolicySet', 2, repeated=True)
+
+
+class ListRolloutsResponse(_messages.Message):
+  r"""Message for response to listing Rollouts.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    rollouts: The list of Rollouts.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  rollouts = _messages.MessageField('Rollout', 2, repeated=True)
 
 
 class ListRoutesResponse(_messages.Message):
@@ -155,6 +328,600 @@ class Location(_messages.Message):
   locationId = _messages.StringField(3)
   metadata = _messages.MessageField('MetadataValue', 4)
   name = _messages.StringField(5)
+
+
+class LogAddAction(_messages.Message):
+  r"""Inserts or overwrites one field or attribute on a log record. When
+  `target` is `record_field`, valid targets are: - `LOG_RECORD_FIELD_BODY`:
+  accepts any scalar `Value`; treats an unset body and `""` as absent when
+  `upsert_enabled: false`. - `LOG_RECORD_FIELD_SEVERITY_TEXT`: requires
+  `string_value`. - `LOG_RECORD_FIELD_SEVERITY_NUMBER`: requires `int_value`
+  in `[1, 24]`. `LOG_RECORD_FIELD_SEVERITY_NUMBER` and
+  `LOG_RECORD_FIELD_SEVERITY_TEXT` are independent OTLP fields (mutating one
+  does not automatically derive or overwrite the other).
+  `LOG_RECORD_FIELD_TRACE_ID` and `LOG_RECORD_FIELD_SPAN_ID` are not valid
+  mutation targets.
+
+  Fields:
+    target: Required. Target field or attribute to set.
+    upsertEnabled: Optional. If true, overwrites `target` if it already
+      exists. If false (default), preserves the existing value when `target`
+      is already present. Missing intermediate map segments in a multi-element
+      `AttributePath` (`log_attribute_path` or `body_field_path`) are created
+      automatically. When an intermediate path segment already exists as a
+      non-map value (scalar or array), `upsert_enabled: false` fails open
+      (preserving the existing value) while `upsert_enabled: true` replaces
+      the intermediate non-map value with a map.
+    value: Required. The value to assign to `target`.
+  """
+
+  target = _messages.MessageField('LogTargetSelector', 1)
+  upsertEnabled = _messages.BooleanField(2)
+  value = _messages.MessageField('Value', 3)
+
+
+class LogAttributeSelector(_messages.Message):
+  r"""Designates a removable or renameable log attribute or structured body
+  field for remove and rename actions. First-class LogRecord fields cannot be
+  removed or renamed.
+
+  Fields:
+    bodyFieldPath: Path traversing nested fields inside a structured
+      (`kvlist_value` / map) `LogRecord.body` (e.g. `["event_id"]` or
+      `["event_data", "TargetUserName"]`).
+    logAttributePath: Attribute in the LogRecord's `attributes` map, specified
+      by key or nested path (e.g. `["http.route"]` or `["http", "request",
+      "method"]`). This only targets `LogRecord.attributes`.
+  """
+
+  bodyFieldPath = _messages.MessageField('AttributePath', 1)
+  logAttributePath = _messages.MessageField('AttributePath', 2)
+
+
+class LogFieldSelector(_messages.Message):
+  r"""Designates a first-class OpenTelemetry log field, attribute, or
+  metadata.
+
+  Enums:
+    RecordFieldValueValuesEnum: Standard first-class OpenTelemetry LogRecord
+      field (e.g. `LOG_RECORD_FIELD_BODY`,
+      `LOG_RECORD_FIELD_SEVERITY_NUMBER`). First-class LogRecord fields must
+      be selected using `record_field` (or `body_field_path` for nested fields
+      within a structured body), not `log_attribute_path`.
+    ScopeFieldValueValuesEnum: Standard first-class OpenTelemetry
+      `InstrumentationScope` field (e.g. `SCOPE_FIELD_NAME`,
+      `SCOPE_FIELD_VERSION`, `SCOPE_FIELD_SCHEMA_URL`).
+
+  Fields:
+    bodyFieldPath: Path traversing nested fields inside a structured
+      (`kvlist_value` / map) `LogRecord.body` (e.g. `["event_id"]` or
+      `["event_data", "TargetUserName"]`). Evaluates to false (non-matching)
+      if `LogRecord.body` is not a structured map or if the path does not
+      exist.
+    logAttributePath: Attribute in the LogRecord's `attributes` map, specified
+      by key or nested path (e.g. `["http.route"]` or `["http", "request",
+      "method"]`). This only inspects `LogRecord.attributes`; first-class
+      LogRecord fields (such as `body` or `severity_text`) must be selected
+      via `record_field`.
+    recordField: Standard first-class OpenTelemetry LogRecord field (e.g.
+      `LOG_RECORD_FIELD_BODY`, `LOG_RECORD_FIELD_SEVERITY_NUMBER`). First-
+      class LogRecord fields must be selected using `record_field` (or
+      `body_field_path` for nested fields within a structured body), not
+      `log_attribute_path`.
+    resourceAttributePath: Attribute in the OpenTelemetry `Resource`
+      associated with the log record (describing the entity producing
+      telemetry), specified by key or nested path (e.g. `["service.name"]`,
+      `["k8s.pod.name"]`, or `["host", "id"]`).
+    scopeAttributePath: Attribute in the OpenTelemetry `InstrumentationScope`
+      associated with the log record (describing the instrumentation library
+      that emitted the log), specified by key or nested path (e.g.
+      `["otel.scope.attr"]` or `["library", "tier"]`). First-class scope
+      fields (`name`, `version`, `schema_url`) must be selected via
+      `scope_field`.
+    scopeField: Standard first-class OpenTelemetry `InstrumentationScope`
+      field (e.g. `SCOPE_FIELD_NAME`, `SCOPE_FIELD_VERSION`,
+      `SCOPE_FIELD_SCHEMA_URL`).
+  """
+
+  class RecordFieldValueValuesEnum(_messages.Enum):
+    r"""Standard first-class OpenTelemetry LogRecord field (e.g.
+    `LOG_RECORD_FIELD_BODY`, `LOG_RECORD_FIELD_SEVERITY_NUMBER`). First-class
+    LogRecord fields must be selected using `record_field` (or
+    `body_field_path` for nested fields within a structured body), not
+    `log_attribute_path`.
+
+    Values:
+      LOG_RECORD_FIELD_UNSPECIFIED: Unspecified log record field.
+      LOG_RECORD_FIELD_BODY: LogRecord body.
+      LOG_RECORD_FIELD_SEVERITY_TEXT: LogRecord severity text.
+      LOG_RECORD_FIELD_SEVERITY_NUMBER: LogRecord numeric severity number.
+      LOG_RECORD_FIELD_TRACE_ID: LogRecord trace ID.
+      LOG_RECORD_FIELD_SPAN_ID: LogRecord span ID.
+    """
+    LOG_RECORD_FIELD_UNSPECIFIED = 0
+    LOG_RECORD_FIELD_BODY = 1
+    LOG_RECORD_FIELD_SEVERITY_TEXT = 2
+    LOG_RECORD_FIELD_SEVERITY_NUMBER = 3
+    LOG_RECORD_FIELD_TRACE_ID = 4
+    LOG_RECORD_FIELD_SPAN_ID = 5
+
+  class ScopeFieldValueValuesEnum(_messages.Enum):
+    r"""Standard first-class OpenTelemetry `InstrumentationScope` field (e.g.
+    `SCOPE_FIELD_NAME`, `SCOPE_FIELD_VERSION`, `SCOPE_FIELD_SCHEMA_URL`).
+
+    Values:
+      SCOPE_FIELD_UNSPECIFIED: Unspecified scope field.
+      SCOPE_FIELD_NAME: InstrumentationScope name.
+      SCOPE_FIELD_VERSION: InstrumentationScope version.
+      SCOPE_FIELD_SCHEMA_URL: InstrumentationScope schema URL.
+    """
+    SCOPE_FIELD_UNSPECIFIED = 0
+    SCOPE_FIELD_NAME = 1
+    SCOPE_FIELD_VERSION = 2
+    SCOPE_FIELD_SCHEMA_URL = 3
+
+  bodyFieldPath = _messages.MessageField('AttributePath', 1)
+  logAttributePath = _messages.MessageField('AttributePath', 2)
+  recordField = _messages.EnumField('RecordFieldValueValuesEnum', 3)
+  resourceAttributePath = _messages.MessageField('AttributePath', 4)
+  scopeAttributePath = _messages.MessageField('AttributePath', 5)
+  scopeField = _messages.EnumField('ScopeFieldValueValuesEnum', 6)
+
+
+class LogFilterPolicy(_messages.Message):
+  r"""Describes a Log filtering policy. Log records pass through by default
+  when no policy matches. When multiple policies match a log record,
+  `ACTION_KEEP` always takes precedence over `ACTION_DROP`, acting as an
+  explicit exemption retaining matching records.
+
+  Enums:
+    ActionValueValuesEnum: Required. Action to take when all matchers evaluate
+      to true.
+
+  Fields:
+    action: Required. Action to take when all matchers evaluate to true.
+    matchers: Required. Conditions that must all match (logical AND) for the
+      action to apply. At least one matcher is required.
+  """
+
+  class ActionValueValuesEnum(_messages.Enum):
+    r"""Required. Action to take when all matchers evaluate to true.
+
+    Values:
+      ACTION_UNSPECIFIED: Unspecified action.
+      ACTION_KEEP: Keep the matching record and exempt it from any matching
+        `ACTION_DROP` policies.
+      ACTION_DROP: Drop the matching record unless exempted by a matching
+        `ACTION_KEEP` policy.
+    """
+    ACTION_UNSPECIFIED = 0
+    ACTION_KEEP = 1
+    ACTION_DROP = 2
+
+  action = _messages.EnumField('ActionValueValuesEnum', 1)
+  matchers = _messages.MessageField('LogMatcher', 2, repeated=True)
+
+
+class LogMatcher(_messages.Message):
+  r"""Defines a single predicate evaluated against a specific log field or
+  attribute.
+
+  Fields:
+    containment: Matches if the target contains the specified value: - For
+      array/list attributes: matches if any element equals the value. - For
+      string fields or attributes: matches if the string contains
+      `string_value` as a substring. - For bytes fields or attributes: matches
+      if the byte sequence contains `bytes_value` as a subsequence.
+    equality: Matches if the target equals the specified scalar value of the
+      same type.
+    exclusiveMaximum: Matches if the numeric target (`int64` or `double`) is
+      strictly less than the exclusive maximum.
+    exclusiveMinimum: Matches if the numeric target (`int64` or `double`) is
+      strictly greater than the exclusive minimum.
+    existence: Matches if the target field or attribute exists. For attributes
+      and structured log body fields (`body_field_path`), this evaluates to
+      true if the attribute key or nested body path is present. For first-
+      class fields (`record_field`, `scope_field`), this evaluates to true
+      when the field is set to a non-default (non-empty / non-zero) value.
+    glob: Matches if the target string value matches the glob pattern.
+      Supports `*` (matches zero or more characters) and `?` (matches any
+      single character), for example `"http.*"` or `"err_?_code"`. Matching is
+      case-sensitive and anchored to the full string value. Applies strictly
+      to string fields and string attribute values; evaluates to `false` for
+      non-string targets.
+    inclusiveMaximum: Matches if the numeric target (`int64` or `double`) is
+      less than or equal to the inclusive maximum.
+    inclusiveMinimum: Matches if the numeric target (`int64` or `double`) is
+      greater than or equal to the inclusive minimum.
+    negated: Optional. If true, inverts the result of the predicate
+      evaluation.
+    target: Required. Target field or attribute to evaluate.
+  """
+
+  containment = _messages.MessageField('Value', 1)
+  equality = _messages.MessageField('Value', 2)
+  exclusiveMaximum = _messages.MessageField('NumericValue', 3)
+  exclusiveMinimum = _messages.MessageField('NumericValue', 4)
+  existence = _messages.MessageField('GoogleProtobufEmpty', 5)
+  glob = _messages.StringField(6)
+  inclusiveMaximum = _messages.MessageField('NumericValue', 7)
+  inclusiveMinimum = _messages.MessageField('NumericValue', 8)
+  negated = _messages.BooleanField(9)
+  target = _messages.MessageField('LogFieldSelector', 10)
+
+
+class LogRedactAction(_messages.Message):
+  r"""Masks sensitive substrings within a target string. When `target` is
+  `record_field`, valid targets are string-valued fields
+  (`LOG_RECORD_FIELD_BODY` when string-valued, and
+  `LOG_RECORD_FIELD_SEVERITY_TEXT`). `LOG_RECORD_FIELD_SEVERITY_NUMBER`,
+  `LOG_RECORD_FIELD_TRACE_ID`, and `LOG_RECORD_FIELD_SPAN_ID` are not valid
+  mutation targets.
+
+  Fields:
+    regex: Optional. Optional RE2 regular expression matching substrings
+      within the target string to redact. If empty, the entire target value is
+      replaced with `replacement`.
+    replacement: Optional. Replacement string (e.g. `"[REDACTED]"`). Supports
+      RE2 capture group references (`$1`, `${name}`) when `regex` is set. If
+      empty, matched substrings (or the entire target value when `regex` is
+      empty) are replaced with `""`.
+    target: Required. Target string field, attribute, or body field to redact.
+  """
+
+  regex = _messages.StringField(1)
+  replacement = _messages.StringField(2)
+  target = _messages.MessageField('LogTargetSelector', 3)
+
+
+class LogRemoveAction(_messages.Message):
+  r"""Deletes an attribute or structured body field from a log record.
+
+  Fields:
+    target: Required. Target attribute or body field to remove.
+  """
+
+  target = _messages.MessageField('LogAttributeSelector', 1)
+
+
+class LogRenameAction(_messages.Message):
+  r"""Moves an existing attribute or structured body field to a new
+  destination.
+
+  Fields:
+    source: Required. Existing source attribute or body field to rename.
+    target: Required. Destination attribute or body field.
+    upsertEnabled: Optional. If true, overwrites `target` if it already
+      exists. If false (default), the rename is skipped if `target` already
+      exists. Missing intermediate map segments in a multi-element
+      `AttributePath` (`log_attribute_path` or `body_field_path`) are created
+      automatically. When an intermediate path segment already exists as a
+      non-map value (scalar or array), `upsert_enabled: false` fails open
+      (preserving the existing value) while `upsert_enabled: true` replaces
+      the intermediate non-map value with a map.
+  """
+
+  source = _messages.MessageField('LogAttributeSelector', 1)
+  target = _messages.MessageField('LogAttributeSelector', 2)
+  upsertEnabled = _messages.BooleanField(3)
+
+
+class LogTargetSelector(_messages.Message):
+  r"""Designates a writable log field, log attribute, or structured body field
+  for add and redact actions.
+
+  Enums:
+    RecordFieldValueValuesEnum: Standard first-class OpenTelemetry LogRecord
+      field (e.g. `LOG_RECORD_FIELD_BODY`, `LOG_RECORD_FIELD_SEVERITY_TEXT`).
+      `LOG_RECORD_FIELD_TRACE_ID` and `LOG_RECORD_FIELD_SPAN_ID` are valid
+      only for read-only matching in `LogFieldSelector` and are not valid
+      mutation targets in `LogTargetSelector`. - For `LogAddAction`, valid
+      `record_field` targets are `LOG_RECORD_FIELD_BODY` (any scalar `Value`;
+      treats an unset body and `""` as absent when `upsert_enabled: false`),
+      `LOG_RECORD_FIELD_SEVERITY_TEXT` (`string_value`), and
+      `LOG_RECORD_FIELD_SEVERITY_NUMBER` (`int_value` in `[1, 24]`). - For
+      `LogRedactAction`, valid `record_field` targets are string-valued fields
+      (`LOG_RECORD_FIELD_BODY` when string-valued, and
+      `LOG_RECORD_FIELD_SEVERITY_TEXT`). `LOG_RECORD_FIELD_SEVERITY_NUMBER`
+      and `LOG_RECORD_FIELD_SEVERITY_TEXT` are independent OTLP fields
+      (mutating one does not automatically derive or overwrite the other).
+
+  Fields:
+    bodyFieldPath: Path traversing nested fields inside a structured
+      (`kvlist_value` / map) `LogRecord.body` (e.g. `["event_id"]` or
+      `["event_data", "TargetUserName"]`). For `LogAddAction`, if
+      `LogRecord.body` is unset or an empty string (`""`), it is initialized
+      to an empty structured map before setting the path; if `LogRecord.body`
+      holds a non-empty scalar, array, or bytes value, the action fails open
+      (no-op) regardless of `upsert_enabled`.
+    logAttributePath: Attribute in the LogRecord's `attributes` map, specified
+      by key or nested path (e.g. `["http.route"]` or `["http", "request",
+      "method"]`). This only targets `LogRecord.attributes`; first-class
+      LogRecord fields (such as `body` or `severity_text`) must be selected
+      via `record_field`.
+    recordField: Standard first-class OpenTelemetry LogRecord field (e.g.
+      `LOG_RECORD_FIELD_BODY`, `LOG_RECORD_FIELD_SEVERITY_TEXT`).
+      `LOG_RECORD_FIELD_TRACE_ID` and `LOG_RECORD_FIELD_SPAN_ID` are valid
+      only for read-only matching in `LogFieldSelector` and are not valid
+      mutation targets in `LogTargetSelector`. - For `LogAddAction`, valid
+      `record_field` targets are `LOG_RECORD_FIELD_BODY` (any scalar `Value`;
+      treats an unset body and `""` as absent when `upsert_enabled: false`),
+      `LOG_RECORD_FIELD_SEVERITY_TEXT` (`string_value`), and
+      `LOG_RECORD_FIELD_SEVERITY_NUMBER` (`int_value` in `[1, 24]`). - For
+      `LogRedactAction`, valid `record_field` targets are string-valued fields
+      (`LOG_RECORD_FIELD_BODY` when string-valued, and
+      `LOG_RECORD_FIELD_SEVERITY_TEXT`). `LOG_RECORD_FIELD_SEVERITY_NUMBER`
+      and `LOG_RECORD_FIELD_SEVERITY_TEXT` are independent OTLP fields
+      (mutating one does not automatically derive or overwrite the other).
+  """
+
+  class RecordFieldValueValuesEnum(_messages.Enum):
+    r"""Standard first-class OpenTelemetry LogRecord field (e.g.
+    `LOG_RECORD_FIELD_BODY`, `LOG_RECORD_FIELD_SEVERITY_TEXT`).
+    `LOG_RECORD_FIELD_TRACE_ID` and `LOG_RECORD_FIELD_SPAN_ID` are valid only
+    for read-only matching in `LogFieldSelector` and are not valid mutation
+    targets in `LogTargetSelector`. - For `LogAddAction`, valid `record_field`
+    targets are `LOG_RECORD_FIELD_BODY` (any scalar `Value`; treats an unset
+    body and `""` as absent when `upsert_enabled: false`),
+    `LOG_RECORD_FIELD_SEVERITY_TEXT` (`string_value`), and
+    `LOG_RECORD_FIELD_SEVERITY_NUMBER` (`int_value` in `[1, 24]`). - For
+    `LogRedactAction`, valid `record_field` targets are string-valued fields
+    (`LOG_RECORD_FIELD_BODY` when string-valued, and
+    `LOG_RECORD_FIELD_SEVERITY_TEXT`). `LOG_RECORD_FIELD_SEVERITY_NUMBER` and
+    `LOG_RECORD_FIELD_SEVERITY_TEXT` are independent OTLP fields (mutating one
+    does not automatically derive or overwrite the other).
+
+    Values:
+      LOG_RECORD_FIELD_UNSPECIFIED: Unspecified log record field.
+      LOG_RECORD_FIELD_BODY: LogRecord body.
+      LOG_RECORD_FIELD_SEVERITY_TEXT: LogRecord severity text.
+      LOG_RECORD_FIELD_SEVERITY_NUMBER: LogRecord numeric severity number.
+      LOG_RECORD_FIELD_TRACE_ID: LogRecord trace ID.
+      LOG_RECORD_FIELD_SPAN_ID: LogRecord span ID.
+    """
+    LOG_RECORD_FIELD_UNSPECIFIED = 0
+    LOG_RECORD_FIELD_BODY = 1
+    LOG_RECORD_FIELD_SEVERITY_TEXT = 2
+    LOG_RECORD_FIELD_SEVERITY_NUMBER = 3
+    LOG_RECORD_FIELD_TRACE_ID = 4
+    LOG_RECORD_FIELD_SPAN_ID = 5
+
+  bodyFieldPath = _messages.MessageField('AttributePath', 1)
+  logAttributePath = _messages.MessageField('AttributePath', 2)
+  recordField = _messages.EnumField('RecordFieldValueValuesEnum', 3)
+
+
+class LogTransformPolicy(_messages.Message):
+  r"""Describes a Log transformation policy. Evaluation & Ordering Semantics:
+  - Double-Applied Filtering (Pass 1 & Pass 2): `LogFilterPolicy` rules run in
+  Pass 1 (Pre-Transform) before `LogTransformPolicy` stages (`renaming` ->
+  `addition` -> `removal` -> `redaction`), and re-run in Pass 2 (Post-
+  Transform) if any transform policy modified the record. Both `ACTION_KEEP`
+  and `ACTION_DROP` are re-evaluated statelessly in Pass 2 against the post-
+  transform record (guaranteeing multi-hop consistency across SDK and
+  Collector evaluation). Within each pass, `ACTION_KEEP` overrides
+  `ACTION_DROP`; however, if a record survived Pass 1 only because an
+  `ACTION_KEEP` rule matched an attribute that was subsequently overwritten,
+  renamed, removed, or redacted during the transform stage such that
+  `ACTION_KEEP` no longer matches in Pass 2 (while an `ACTION_DROP` rule still
+  matches), the record is dropped in Pass 2. - Operation Stage Order: Active
+  `LogTransformPolicy` instances execute in the order of their operation type:
+  `renaming` -> `addition` -> `removal` -> `redaction`. - Tie-Breaking: Within
+  the same operation stage, policies execute in their definition order in
+  `PolicySet.component_policies`. - Matching: All conditions in `matchers` are
+  ANDed together. If `matchers` is empty, the action applies to all log
+  records. - Fail-Open: If `action` is unset, or if an action cannot be
+  applied to a record (e.g., `renaming` when `source` does not exist, or
+  `addition`/`renaming` with `upsert_enabled: false` when `target` already
+  exists), the record passes through unmodified.
+
+  Fields:
+    addition: Inserts or overwrites a field or attribute.
+    matchers: Optional. Conditions that must all match (logical AND) for this
+      transformation action to apply. If empty, the action applies to all log
+      records.
+    redaction: Masks sensitive substrings within a target string field,
+      attribute, or body field.
+    removal: Deletes an attribute or structured body field.
+    renaming: Moves an existing attribute or structured body field to a new
+      destination.
+  """
+
+  addition = _messages.MessageField('LogAddAction', 1)
+  matchers = _messages.MessageField('LogMatcher', 2, repeated=True)
+  redaction = _messages.MessageField('LogRedactAction', 3)
+  removal = _messages.MessageField('LogRemoveAction', 4)
+  renaming = _messages.MessageField('LogRenameAction', 5)
+
+
+class MetricFieldSelector(_messages.Message):
+  r"""MetricFieldSelector designates a first-class OpenTelemetry metric
+  descriptor field, data point attribute, resource attribute, or
+  instrumentation scope field/attribute.
+
+  Enums:
+    DescriptorFieldValueValuesEnum: Standard first-class OpenTelemetry Metric
+      descriptor field (e.g. `METRIC_DESCRIPTOR_FIELD_NAME`,
+      `METRIC_DESCRIPTOR_FIELD_UNIT`, `METRIC_DESCRIPTOR_FIELD_TYPE`). First-
+      class metric descriptor fields must be selected using
+      `descriptor_field`, not `data_point_attribute_path`.
+    ScopeFieldValueValuesEnum: Standard first-class OpenTelemetry
+      `InstrumentationScope` field (e.g. `SCOPE_FIELD_NAME`,
+      `SCOPE_FIELD_VERSION`, `SCOPE_FIELD_SCHEMA_URL`).
+
+  Fields:
+    dataPointAttributePath: Attribute on an individual metric data point
+      (`NumberDataPoint`, `HistogramDataPoint`,
+      `ExponentialHistogramDataPoint`, or `SummaryDataPoint`), specified by
+      key or nested path (e.g. `["http.status_code"]` or `["http", "response",
+      "status_code"]`). This only inspects data point attributes; metric
+      descriptor fields (such as `name` or `unit`) must be selected via
+      `descriptor_field`.
+    descriptorField: Standard first-class OpenTelemetry Metric descriptor
+      field (e.g. `METRIC_DESCRIPTOR_FIELD_NAME`,
+      `METRIC_DESCRIPTOR_FIELD_UNIT`, `METRIC_DESCRIPTOR_FIELD_TYPE`). First-
+      class metric descriptor fields must be selected using
+      `descriptor_field`, not `data_point_attribute_path`.
+    resourceAttributePath: Attribute in the OpenTelemetry `Resource`
+      associated with the metric (describing the entity producing telemetry),
+      specified by key or nested path (e.g. `["service.name"]`,
+      `["k8s.pod.name"]`, or `["host", "id"]`).
+    scopeAttributePath: Attribute in the OpenTelemetry `InstrumentationScope`
+      associated with the metric (describing the instrumentation library that
+      emitted the metric), specified by key or nested path (e.g.
+      `["otel.scope.attr"]` or `["library", "tier"]`). First-class scope
+      fields (`name`, `version`, `schema_url`) must be selected via
+      `scope_field`.
+    scopeField: Standard first-class OpenTelemetry `InstrumentationScope`
+      field (e.g. `SCOPE_FIELD_NAME`, `SCOPE_FIELD_VERSION`,
+      `SCOPE_FIELD_SCHEMA_URL`).
+  """
+
+  class DescriptorFieldValueValuesEnum(_messages.Enum):
+    r"""Standard first-class OpenTelemetry Metric descriptor field (e.g.
+    `METRIC_DESCRIPTOR_FIELD_NAME`, `METRIC_DESCRIPTOR_FIELD_UNIT`,
+    `METRIC_DESCRIPTOR_FIELD_TYPE`). First-class metric descriptor fields must
+    be selected using `descriptor_field`, not `data_point_attribute_path`.
+
+    Values:
+      METRIC_DESCRIPTOR_FIELD_UNSPECIFIED: Unspecified metric descriptor
+        field.
+      METRIC_DESCRIPTOR_FIELD_NAME: Metric name.
+      METRIC_DESCRIPTOR_FIELD_DESCRIPTION: Metric description.
+      METRIC_DESCRIPTOR_FIELD_UNIT: Metric unit.
+      METRIC_DESCRIPTOR_FIELD_TYPE: Metric data type (matched as uppercase
+        string: `"GAUGE"`, `"SUM"`, `"HISTOGRAM"`, `"EXPONENTIAL_HISTOGRAM"`,
+        `"SUMMARY"`).
+      METRIC_DESCRIPTOR_FIELD_AGGREGATION_TEMPORALITY: Aggregation temporality
+        for Sum, Histogram, and ExponentialHistogram metrics (matched as
+        uppercase string: `"DELTA"`, `"CUMULATIVE"`).
+      METRIC_DESCRIPTOR_FIELD_IS_MONOTONIC: Monotonicity boolean for Sum
+        metrics (`bool_value`).
+    """
+    METRIC_DESCRIPTOR_FIELD_UNSPECIFIED = 0
+    METRIC_DESCRIPTOR_FIELD_NAME = 1
+    METRIC_DESCRIPTOR_FIELD_DESCRIPTION = 2
+    METRIC_DESCRIPTOR_FIELD_UNIT = 3
+    METRIC_DESCRIPTOR_FIELD_TYPE = 4
+    METRIC_DESCRIPTOR_FIELD_AGGREGATION_TEMPORALITY = 5
+    METRIC_DESCRIPTOR_FIELD_IS_MONOTONIC = 6
+
+  class ScopeFieldValueValuesEnum(_messages.Enum):
+    r"""Standard first-class OpenTelemetry `InstrumentationScope` field (e.g.
+    `SCOPE_FIELD_NAME`, `SCOPE_FIELD_VERSION`, `SCOPE_FIELD_SCHEMA_URL`).
+
+    Values:
+      SCOPE_FIELD_UNSPECIFIED: Unspecified scope field.
+      SCOPE_FIELD_NAME: InstrumentationScope name.
+      SCOPE_FIELD_VERSION: InstrumentationScope version.
+      SCOPE_FIELD_SCHEMA_URL: InstrumentationScope schema URL.
+    """
+    SCOPE_FIELD_UNSPECIFIED = 0
+    SCOPE_FIELD_NAME = 1
+    SCOPE_FIELD_VERSION = 2
+    SCOPE_FIELD_SCHEMA_URL = 3
+
+  dataPointAttributePath = _messages.MessageField('AttributePath', 1)
+  descriptorField = _messages.EnumField('DescriptorFieldValueValuesEnum', 2)
+  resourceAttributePath = _messages.MessageField('AttributePath', 3)
+  scopeAttributePath = _messages.MessageField('AttributePath', 4)
+  scopeField = _messages.EnumField('ScopeFieldValueValuesEnum', 5)
+
+
+class MetricFilterPolicy(_messages.Message):
+  r"""Describes a Metric filtering policy. Metric data points pass through by
+  default when no policy matches. When multiple policies match a metric data
+  point, `ACTION_KEEP` always takes precedence over `ACTION_DROP`, acting as
+  an explicit exemption retaining matching data points. If all data points of
+  a metric are dropped, the metric itself is omitted.
+
+  Enums:
+    ActionValueValuesEnum: Required. Action to take when all matchers evaluate
+      to true.
+
+  Fields:
+    action: Required. Action to take when all matchers evaluate to true.
+    matchers: Required. Conditions that must all match (logical AND) for the
+      action to apply. At least one matcher is required.
+  """
+
+  class ActionValueValuesEnum(_messages.Enum):
+    r"""Required. Action to take when all matchers evaluate to true.
+
+    Values:
+      ACTION_UNSPECIFIED: Unspecified action.
+      ACTION_KEEP: Keep the matching record and exempt it from any matching
+        `ACTION_DROP` policies.
+      ACTION_DROP: Drop the matching record unless exempted by a matching
+        `ACTION_KEEP` policy.
+    """
+    ACTION_UNSPECIFIED = 0
+    ACTION_KEEP = 1
+    ACTION_DROP = 2
+
+  action = _messages.EnumField('ActionValueValuesEnum', 1)
+  matchers = _messages.MessageField('MetricMatcher', 2, repeated=True)
+
+
+class MetricMatcher(_messages.Message):
+  r"""MetricMatcher defines a single predicate evaluated against a specific
+  metric field or attribute.
+
+  Fields:
+    containment: Matches if the target contains the specified value: - For
+      array/list attributes: matches if any element equals the value. - For
+      string fields or attributes: matches if the string contains
+      `string_value` as a substring. - For bytes fields or attributes: matches
+      if the byte sequence contains `bytes_value` as a subsequence.
+    equality: Matches if the target equals the specified scalar value of the
+      same type.
+    exclusiveMaximum: Matches if the numeric target (`int64` or `double`) is
+      strictly less than the exclusive maximum.
+    exclusiveMinimum: Matches if the numeric target (`int64` or `double`) is
+      strictly greater than the exclusive minimum.
+    existence: Matches if the target field or attribute exists. For attributes
+      (`data_point_attribute_path`, `resource_attribute_path`,
+      `scope_attribute_path`), this evaluates to true if the attribute key is
+      present. For first-class fields (`descriptor_field`, `scope_field`),
+      this evaluates to true when the field is set to a non-default (non-empty
+      / non-zero) value.
+    glob: Matches if the target string value matches the glob pattern.
+      Supports `*` (matches zero or more characters) and `?` (matches any
+      single character), for example `"system.cpu.*"` or `"http.server.*"`.
+      Matching is case-sensitive and anchored to the full string value.
+      Applies strictly to string fields and string attribute values; evaluates
+      to `false` for non-string targets.
+    inclusiveMaximum: Matches if the numeric target (`int64` or `double`) is
+      less than or equal to the inclusive maximum.
+    inclusiveMinimum: Matches if the numeric target (`int64` or `double`) is
+      greater than or equal to the inclusive minimum.
+    negated: Optional. If true, inverts the result of the predicate
+      evaluation.
+    target: Required. Target field or attribute to evaluate.
+  """
+
+  containment = _messages.MessageField('Value', 1)
+  equality = _messages.MessageField('Value', 2)
+  exclusiveMaximum = _messages.MessageField('NumericValue', 3)
+  exclusiveMinimum = _messages.MessageField('NumericValue', 4)
+  existence = _messages.MessageField('GoogleProtobufEmpty', 5)
+  glob = _messages.StringField(6)
+  inclusiveMaximum = _messages.MessageField('NumericValue', 7)
+  inclusiveMinimum = _messages.MessageField('NumericValue', 8)
+  negated = _messages.BooleanField(9)
+  target = _messages.MessageField('MetricFieldSelector', 10)
+
+
+class NumericValue(_messages.Message):
+  r"""Carries a typed number for ordering comparisons.
+
+  Fields:
+    doubleValue: 64-bit floating-point value.
+    intValue: 64-bit signed integer value.
+  """
+
+  doubleValue = _messages.FloatField(1)
+  intValue = _messages.IntegerField(2)
 
 
 class Operation(_messages.Message):
@@ -306,10 +1073,118 @@ class Pipeline(_messages.Message):
   name = _messages.StringField(3)
 
 
+class PolicySet(_messages.Message):
+  r"""A PolicySet is a collection of Policies A PolicySet may be attached to
+  one or more Fleets or Collectors.
+
+  Fields:
+    componentPolicies: Optional. The component policies to be applied.
+      LogTransformPolicy instances execute in stage order (`renaming` ->
+      `addition` -> `removal` -> `redaction`), breaking ties within a stage by
+      the order in which they are defined.
+    createTime: Output only. The time the PolicySet was created.
+    description: Optional. A human-readable description of this PolicySet.
+    name: Identifier. The name of the PolicySet. For example: `projects/my-
+      project/locations/us-east1/policySets/my-policy-set
+    policySetRevision: Output only. The revision that this PolicySet is
+      associated with. For example: `projects/my-project/locations/us-
+      east1/policySets/my-policy-set/revisions/1234
+    receiverPolicies: Optional. The receiver policies to be applied.
+    universalPolicies: Optional. The universal policies that are applied after
+      the component policies.
+    updateTime: Output only. The time the PolicySet was last updated.
+  """
+
+  componentPolicies = _messages.MessageField('ComponentPolicy', 1, repeated=True)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  name = _messages.StringField(4)
+  policySetRevision = _messages.StringField(5)
+  receiverPolicies = _messages.MessageField('ReceiverPolicy', 6, repeated=True)
+  universalPolicies = _messages.MessageField('UniversalPolicy', 7, repeated=True)
+  updateTime = _messages.StringField(8)
+
+
+class PolicySetRevision(_messages.Message):
+  r"""A PolicySetRevision describes a single revision of a PolicySet. Revision
+  Ids are automatically generated when policy sets are created or updated.
+
+  Fields:
+    createTime: Output only. The timestamp that the revision was created.
+    name: Identifier. name of the revision. Example: projects/my-
+      project/locations/us-east1/policySets/my-policy-set/revisions/1234
+    snapshot: Output only. Snapshot of the PolicySet.
+  """
+
+  createTime = _messages.StringField(1)
+  name = _messages.StringField(2)
+  snapshot = _messages.MessageField('PolicySet', 3)
+
+
+class ReceiverPolicy(_messages.Message):
+  r"""Describes a receiver policy.
+
+  Fields:
+    fileLogSourcePolicy: A file log source policy.
+    hostMetricsSourcePolicy: A host metrics source policy.
+    iisSourcePolicy: An IIS source policy.
+    journaldSourcePolicy: A journald source policy.
+    windowsEventLogSourcePolicy: A Windows Event Log source policy.
+  """
+
+  fileLogSourcePolicy = _messages.MessageField('FileLogSourcePolicy', 1)
+  hostMetricsSourcePolicy = _messages.MessageField('HostMetricsSourcePolicy', 2)
+  iisSourcePolicy = _messages.MessageField('IisSourcePolicy', 3)
+  journaldSourcePolicy = _messages.MessageField('JournaldSourcePolicy', 4)
+  windowsEventLogSourcePolicy = _messages.MessageField('WindowsEventLogSourcePolicy', 5)
+
+
+class Rollout(_messages.Message):
+  r"""A Rollout represents the deployment of a PolicySetRevision to a Fleet.
+
+  Enums:
+    StateValueValuesEnum: Output only. The current state of the rollout.
+
+  Fields:
+    createTime: Output only. The time the rollout was created.
+    endTime: Output only. The time the rollout finished running i.e. polcity
+      set was pushed to all collectors
+    name: Identifier. The name of the rollout. For example: `projects/my-
+      project/locations/us-east1/fleets/my-fleet/rollouts/my-rollout`
+    policySetRevision: Required. The PolicySet revision resource name that was
+      rolled out. Format: `projects/{project}/locations/{location}/policySets/
+      {policy_set}/revisions/{revision}`
+    state: Output only. The current state of the rollout.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the rollout.
+
+    Values:
+      STATE_UNSPECIFIED: Default state.
+      RUNNING: The rollout is running.
+      SUCCEEDED: The rollout succeeded.
+      ABORTED: The rollout was superseded by a new rollout.
+      FAILED: The rollout failed.
+    """
+    STATE_UNSPECIFIED = 0
+    RUNNING = 1
+    SUCCEEDED = 2
+    ABORTED = 3
+    FAILED = 4
+
+  createTime = _messages.StringField(1)
+  endTime = _messages.StringField(2)
+  name = _messages.StringField(3)
+  policySetRevision = _messages.StringField(4)
+  state = _messages.EnumField('StateValueValuesEnum', 5)
+
+
 class Route(_messages.Message):
   r"""Message describing Route object
 
   Fields:
+    createTime: Output only. The time the route was created.
     disabled: Optional. If set to true, this route is disabled and does not
       export any telemetry data.
     name: Identifier. The name of the route. Routes are attached to a specific
@@ -318,14 +1193,17 @@ class Route(_messages.Message):
     target: Required. Destination where the telemetry data will be routed to.
       For example: Target is a pubsub topic
       `pubsub.googleapis.com/projects/my-project/topics/my-topic`
+    updateTime: Output only. The time the route was last updated.
     writerIdentity: Output only. The service account which the Telemetry
       Router uses to write the exported signals to the route's destination.
   """
 
-  disabled = _messages.BooleanField(1)
-  name = _messages.StringField(2)
-  target = _messages.StringField(3)
-  writerIdentity = _messages.StringField(4)
+  createTime = _messages.StringField(1)
+  disabled = _messages.BooleanField(2)
+  name = _messages.StringField(3)
+  target = _messages.StringField(4)
+  updateTime = _messages.StringField(5)
+  writerIdentity = _messages.StringField(6)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -442,6 +1320,201 @@ class Status(_messages.Message):
   message = _messages.StringField(3)
 
 
+class TelemetrymanagementProjectsLocationsCollectorsListRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsCollectorsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results. Supported filter expression format:
+      `lookback_window = ` (e.g., `lookback_window = 24h` or `lookback_window
+      = 1h`). If unspecified, defaults to 24 hours (`24h`).
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Location in which to list collectors. Example:
+      projects/my-project/locations/us-east1
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class TelemetrymanagementProjectsLocationsFleetsCreateRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsFleetsCreateRequest object.
+
+  Fields:
+    fleet: A Fleet resource to be passed as the request body.
+    fleetId: Required. Id of the requesting object Example: "my-fleet"
+    parent: Required. Location in which to create a fleet. Example:
+      projects/my-project/locations/us-east1
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  fleet = _messages.MessageField('Fleet', 1)
+  fleetId = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
+
+
+class TelemetrymanagementProjectsLocationsFleetsDeleteRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsFleetsDeleteRequest object.
+
+  Fields:
+    name: Required. Name of the resource Example
+      `projects/myproject/locations/us-east1/fleets/myfleet
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class TelemetrymanagementProjectsLocationsFleetsGetRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsFleetsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class TelemetrymanagementProjectsLocationsFleetsListRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsFleetsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Location in which to list fleets Example: projects/my-
+      project/locations/us-east1
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class TelemetrymanagementProjectsLocationsFleetsPatchRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsFleetsPatchRequest object.
+
+  Fields:
+    fleet: A Fleet resource to be passed as the request body.
+    name: Identifier. The name of the fleet. For example: `projects/my-
+      project/locations/us-east1/fleets/my-fleet
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the Fleet resource by the update. The fields specified in
+      the update_mask are relative to the resource, not the full request. A
+      field will be overwritten if it is in the mask. If the user does not
+      provide a mask then all fields present in the request will be
+      overwritten.
+  """
+
+  fleet = _messages.MessageField('Fleet', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class TelemetrymanagementProjectsLocationsFleetsRolloutsCreateRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsFleetsRolloutsCreateRequest
+  object.
+
+  Fields:
+    parent: Required. Fleet in which to create a rollout. Example:
+      projects/my-project/locations/us-east1/fleets/my-fleet
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+    rollout: A Rollout resource to be passed as the request body.
+    rolloutId: Required. Id of the requesting object Example: "my-rollout"
+  """
+
+  parent = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+  rollout = _messages.MessageField('Rollout', 3)
+  rolloutId = _messages.StringField(4)
+
+
+class TelemetrymanagementProjectsLocationsFleetsRolloutsDeleteRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsFleetsRolloutsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource. Format: `projects/{project}/location
+      s/{location}/fleets/{fleet}/rollouts/{rollout}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class TelemetrymanagementProjectsLocationsFleetsRolloutsGetRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsFleetsRolloutsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource. Format: `projects/{project}/location
+      s/{location}/fleets/{fleet}/rollouts/{rollout}`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class TelemetrymanagementProjectsLocationsFleetsRolloutsListRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsFleetsRolloutsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results.
+    orderBy: Optional. Hint for how to order the results.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server return 500 items.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Fleet from which to list rollouts. Format:
+      `projects/{project}/locations/{location}/fleets/{fleet}`
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
 class TelemetrymanagementProjectsLocationsGetRequest(_messages.Message):
   r"""A TelemetrymanagementProjectsLocationsGetRequest object.
 
@@ -555,13 +1628,20 @@ class TelemetrymanagementProjectsLocationsPipelinesRoutesCreateRequest(_messages
 
   Fields:
     parent: Required. Value for parent.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
     route: A Route resource to be passed as the request body.
     routeId: Required. Id of the requesting object Example: "my-route"
   """
 
   parent = _messages.StringField(1, required=True)
-  route = _messages.MessageField('Route', 2)
-  routeId = _messages.StringField(3)
+  requestId = _messages.StringField(2)
+  route = _messages.MessageField('Route', 3)
+  routeId = _messages.StringField(4)
 
 
 class TelemetrymanagementProjectsLocationsPipelinesRoutesDeleteRequest(_messages.Message):
@@ -571,9 +1651,16 @@ class TelemetrymanagementProjectsLocationsPipelinesRoutesDeleteRequest(_messages
   Fields:
     name: Required. Name of the resource Example
       `projects/myproject/locations/global/pipelines/_Traces/routes/myroute
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
   """
 
   name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
 
 
 class TelemetrymanagementProjectsLocationsPipelinesRoutesGetRequest(_messages.Message):
@@ -614,6 +1701,12 @@ class TelemetrymanagementProjectsLocationsPipelinesRoutesPatchRequest(_messages.
     name: Identifier. The name of the route. Routes are attached to a specific
       pipeline. For example: `projects/my-
       project/locations/global/pipelines/_Traces/routes/my-export-to-pubsub`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
     route: A Route resource to be passed as the request body.
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the Route resource by the update. The fields specified in
@@ -624,8 +1717,390 @@ class TelemetrymanagementProjectsLocationsPipelinesRoutesPatchRequest(_messages.
   """
 
   name = _messages.StringField(1, required=True)
-  route = _messages.MessageField('Route', 2)
-  updateMask = _messages.StringField(3)
+  requestId = _messages.StringField(2)
+  route = _messages.MessageField('Route', 3)
+  updateMask = _messages.StringField(4)
+
+
+class TelemetrymanagementProjectsLocationsPolicySetsCreateRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsPolicySetsCreateRequest object.
+
+  Fields:
+    parent: Required. Location in which to create the PolicySet Example:
+      projects/my-project/locations/us-east1
+    policySet: A PolicySet resource to be passed as the request body.
+    policySetId: Required. Id of the requesting object Example: "my-
+      policy_set"
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  parent = _messages.StringField(1, required=True)
+  policySet = _messages.MessageField('PolicySet', 2)
+  policySetId = _messages.StringField(3)
+  requestId = _messages.StringField(4)
+
+
+class TelemetrymanagementProjectsLocationsPolicySetsDeleteRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsPolicySetsDeleteRequest object.
+
+  Fields:
+    force: Optional. Indicates whether child revisions of this `PolicySet`
+      should be deleted. If set to `true`, any child revisions of this
+      `PolicySet` will also be deleted. Because a `PolicySet` always has at
+      least one child `PolicySetRevision`, this field must be set to `true`;
+      omitting it or setting it to `false` returns `FAILED_PRECONDITION`.
+    name: Required. Name of the resource Example
+      `projects/myproject/locations/us-east1/policy_sets/mypolicy_set
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  force = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+
+
+class TelemetrymanagementProjectsLocationsPolicySetsGetRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsPolicySetsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class TelemetrymanagementProjectsLocationsPolicySetsListRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsPolicySetsListRequest object.
+
+  Fields:
+    filter: Optional. Filtering results
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Location to list PolicySets from. Example: projects/my-
+      project/locations/us-east1
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class TelemetrymanagementProjectsLocationsPolicySetsPatchRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsPolicySetsPatchRequest object.
+
+  Fields:
+    name: Identifier. The name of the PolicySet. For example: `projects/my-
+      project/locations/us-east1/policySets/my-policy-set
+    policySet: A PolicySet resource to be passed as the request body.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the PolicySet resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. If the user
+      does not provide a mask then all fields present in the request will be
+      overwritten.
+  """
+
+  name = _messages.StringField(1, required=True)
+  policySet = _messages.MessageField('PolicySet', 2)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
+
+
+class TelemetrymanagementProjectsLocationsPolicySetsRevisionsDeleteRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsPolicySetsRevisionsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource Example `projects/my-
+      project/locations/us-east1/policy_sets/my-policy-set/revisions/1234
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
+  """
+
+  name = _messages.StringField(1, required=True)
+  requestId = _messages.StringField(2)
+
+
+class TelemetrymanagementProjectsLocationsPolicySetsRevisionsGetRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsPolicySetsRevisionsGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class TelemetrymanagementProjectsLocationsPolicySetsRevisionsListRequest(_messages.Message):
+  r"""A TelemetrymanagementProjectsLocationsPolicySetsRevisionsListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. PolicySet to list revisions for. Example: projects/my-
+      project/locations/us-east1/policySets/my-policy-set
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class TraceFieldSelector(_messages.Message):
+  r"""TraceFieldSelector designates a first-class OpenTelemetry span field,
+  span attribute, resource attribute, or instrumentation scope
+  field/attribute.
+
+  Enums:
+    RecordFieldValueValuesEnum: Standard first-class OpenTelemetry Span field
+      (e.g. `SPAN_RECORD_FIELD_NAME`, `SPAN_RECORD_FIELD_KIND`,
+      `SPAN_RECORD_FIELD_TRACE_ID`). First-class Span fields must be selected
+      using `record_field`, not `span_attribute_path`.
+    ScopeFieldValueValuesEnum: Standard first-class OpenTelemetry
+      `InstrumentationScope` field (e.g. `SCOPE_FIELD_NAME`,
+      `SCOPE_FIELD_VERSION`, `SCOPE_FIELD_SCHEMA_URL`).
+
+  Fields:
+    recordField: Standard first-class OpenTelemetry Span field (e.g.
+      `SPAN_RECORD_FIELD_NAME`, `SPAN_RECORD_FIELD_KIND`,
+      `SPAN_RECORD_FIELD_TRACE_ID`). First-class Span fields must be selected
+      using `record_field`, not `span_attribute_path`.
+    resourceAttributePath: Attribute in the OpenTelemetry `Resource`
+      associated with the span (describing the entity producing telemetry),
+      specified by key or nested path (e.g. `["service.name"]`,
+      `["k8s.pod.name"]`, or `["host", "id"]`).
+    scopeAttributePath: Attribute in the OpenTelemetry `InstrumentationScope`
+      associated with the span (describing the instrumentation library that
+      emitted the span), specified by key or nested path (e.g.
+      `["otel.scope.attr"]` or `["library", "tier"]`). First-class scope
+      fields (`name`, `version`, `schema_url`) must be selected via
+      `scope_field`.
+    scopeField: Standard first-class OpenTelemetry `InstrumentationScope`
+      field (e.g. `SCOPE_FIELD_NAME`, `SCOPE_FIELD_VERSION`,
+      `SCOPE_FIELD_SCHEMA_URL`).
+    spanAttributePath: Attribute in the Span's `attributes` map, specified by
+      key or nested path (e.g. `["http.route"]` or `["http", "request",
+      "method"]`). This only inspects `Span.attributes`; first-class Span
+      fields (such as `name` or `kind`) must be selected via `record_field`.
+  """
+
+  class RecordFieldValueValuesEnum(_messages.Enum):
+    r"""Standard first-class OpenTelemetry Span field (e.g.
+    `SPAN_RECORD_FIELD_NAME`, `SPAN_RECORD_FIELD_KIND`,
+    `SPAN_RECORD_FIELD_TRACE_ID`). First-class Span fields must be selected
+    using `record_field`, not `span_attribute_path`.
+
+    Values:
+      SPAN_RECORD_FIELD_UNSPECIFIED: Unspecified span record field.
+      SPAN_RECORD_FIELD_NAME: Span name.
+      SPAN_RECORD_FIELD_TRACE_ID: Trace ID (evaluated as a 32-character
+        lowercase hex string representation).
+      SPAN_RECORD_FIELD_SPAN_ID: Span ID (evaluated as a 16-character
+        lowercase hex string representation).
+      SPAN_RECORD_FIELD_PARENT_SPAN_ID: Parent Span ID (evaluated as a
+        16-character lowercase hex string representation; for root spans,
+        `existence` evaluates to `false` and string predicates match against
+        `""`).
+      SPAN_RECORD_FIELD_KIND: Span kind (matched as uppercase string without
+        prefix: `"INTERNAL"`, `"SERVER"`, `"CLIENT"`, `"PRODUCER"`,
+        `"CONSUMER"`).
+    """
+    SPAN_RECORD_FIELD_UNSPECIFIED = 0
+    SPAN_RECORD_FIELD_NAME = 1
+    SPAN_RECORD_FIELD_TRACE_ID = 2
+    SPAN_RECORD_FIELD_SPAN_ID = 3
+    SPAN_RECORD_FIELD_PARENT_SPAN_ID = 4
+    SPAN_RECORD_FIELD_KIND = 5
+
+  class ScopeFieldValueValuesEnum(_messages.Enum):
+    r"""Standard first-class OpenTelemetry `InstrumentationScope` field (e.g.
+    `SCOPE_FIELD_NAME`, `SCOPE_FIELD_VERSION`, `SCOPE_FIELD_SCHEMA_URL`).
+
+    Values:
+      SCOPE_FIELD_UNSPECIFIED: Unspecified scope field.
+      SCOPE_FIELD_NAME: InstrumentationScope name.
+      SCOPE_FIELD_VERSION: InstrumentationScope version.
+      SCOPE_FIELD_SCHEMA_URL: InstrumentationScope schema URL.
+    """
+    SCOPE_FIELD_UNSPECIFIED = 0
+    SCOPE_FIELD_NAME = 1
+    SCOPE_FIELD_VERSION = 2
+    SCOPE_FIELD_SCHEMA_URL = 3
+
+  recordField = _messages.EnumField('RecordFieldValueValuesEnum', 1)
+  resourceAttributePath = _messages.MessageField('AttributePath', 2)
+  scopeAttributePath = _messages.MessageField('AttributePath', 3)
+  scopeField = _messages.EnumField('ScopeFieldValueValuesEnum', 4)
+  spanAttributePath = _messages.MessageField('AttributePath', 5)
+
+
+class TraceFilterPolicy(_messages.Message):
+  r"""Describes a Trace filtering policy that drops matching spans. Spans pass
+  through by default when no policy matches. If all matchers in a
+  `TraceFilterPolicy` evaluate to true for a span, the span is dropped. Note:
+  `TraceFilterPolicy` only supports dropping spans (and does not have an
+  `Action` field) because keeping individual spans in isolation can break
+  trace continuity; retaining complete traces is handled by
+  `TraceSamplingPolicy`.
+
+  Fields:
+    matchers: Required. Conditions that must all match (logical AND) for the
+      span to be dropped. At least one matcher is required.
+  """
+
+  matchers = _messages.MessageField('TraceMatcher', 1, repeated=True)
+
+
+class TraceMatcher(_messages.Message):
+  r"""TraceMatcher defines a single predicate evaluated against a specific
+  span field or attribute.
+
+  Fields:
+    containment: Matches if the target contains the specified value: - For
+      array/list attributes: matches if any element equals the value. - For
+      string fields or attributes: matches if the string contains
+      `string_value` as a substring. - For bytes fields or attributes: matches
+      if the byte sequence contains `bytes_value` as a subsequence.
+    equality: Matches if the target equals the specified scalar value of the
+      same type.
+    exclusiveMaximum: Matches if the numeric target (`int64` or `double`) is
+      strictly less than the exclusive maximum.
+    exclusiveMinimum: Matches if the numeric target (`int64` or `double`) is
+      strictly greater than the exclusive minimum.
+    existence: Matches if the target field or attribute exists. For attributes
+      (`span_attribute_path`, `resource_attribute_path`,
+      `scope_attribute_path`), this evaluates to true if the attribute key is
+      present. For first-class fields (`record_field`, `scope_field`), this
+      evaluates to true when the field is set to a non-default (non-empty /
+      non-zero) value.
+    glob: Matches if the target string value matches the glob pattern.
+      Supports `*` (matches zero or more characters) and `?` (matches any
+      single character), for example `"/healthz*"` or `"GET /api/v?/users"`.
+      Matching is case-sensitive and anchored to the full string value.
+      Applies strictly to string fields and string attribute values; evaluates
+      to `false` for non-string targets.
+    inclusiveMaximum: Matches if the numeric target (`int64` or `double`) is
+      less than or equal to the inclusive maximum.
+    inclusiveMinimum: Matches if the numeric target (`int64` or `double`) is
+      greater than or equal to the inclusive minimum.
+    negated: Optional. If true, inverts the result of the predicate
+      evaluation.
+    target: Required. Target field or attribute to evaluate.
+  """
+
+  containment = _messages.MessageField('Value', 1)
+  equality = _messages.MessageField('Value', 2)
+  exclusiveMaximum = _messages.MessageField('NumericValue', 3)
+  exclusiveMinimum = _messages.MessageField('NumericValue', 4)
+  existence = _messages.MessageField('GoogleProtobufEmpty', 5)
+  glob = _messages.StringField(6)
+  inclusiveMaximum = _messages.MessageField('NumericValue', 7)
+  inclusiveMinimum = _messages.MessageField('NumericValue', 8)
+  negated = _messages.BooleanField(9)
+  target = _messages.MessageField('TraceFieldSelector', 10)
+
+
+class TraceSamplingPolicy(_messages.Message):
+  r"""Describes a probabilistic trace sampling policy backed by the W3C
+  TraceState Consistent Probability Sampling specification (OTEP 235) in
+  equalizing mode. Spans pass through unsampled by default when no matching
+  policy is configured. When multiple `TraceSamplingPolicy` instances match a
+  span, the effective sampling rate is the minimum `sampling_percent` across
+  all matching policies. Note on trace completeness: Spans are evaluated
+  statelessly without trace reassembly using the randomness value (`ot=rv`) in
+  W3C `tracestate` (or the lower 56 bits of `trace_id` when `ot=rv` is
+  absent). Policies with empty `matchers` or `matchers` that only inspect
+  trace-constant resource attributes keep or drop entire traces intact.
+  Policies with `matchers` targeting span-level fields (such as
+  `SPAN_RECORD_FIELD_NAME`, `SPAN_RECORD_FIELD_KIND`, or
+  `span_attribute_path`) evaluate each span independently and can sample a
+  subset of spans within a trace, producing partial traces with orphaned child
+  spans (`parent_span_id` referencing a dropped span).
+
+  Fields:
+    matchers: Optional. Optional conditions that must all match (logical AND)
+      for this sampling policy to apply to a span. When empty, the sampling
+      policy applies unconditionally to all spans.
+    samplingPercent: Required. Probabilistic sampling percentage in the range
+      `(0.0, 100.0]`.
+  """
+
+  matchers = _messages.MessageField('TraceMatcher', 1, repeated=True)
+  samplingPercent = _messages.FloatField(2)
+
+
+class UniversalPolicy(_messages.Message):
+  r"""Describes a policy to be applied to all data.
+
+  Fields:
+    logFilterPolicy: A Log filtering policy.
+    metricFilterPolicy: A Metric filtering policy.
+    traceFilterPolicy: A Trace filtering policy.
+    traceSamplingPolicy: A trace sampling policy.
+  """
+
+  logFilterPolicy = _messages.MessageField('LogFilterPolicy', 1)
+  metricFilterPolicy = _messages.MessageField('MetricFilterPolicy', 2)
+  traceFilterPolicy = _messages.MessageField('TraceFilterPolicy', 3)
+  traceSamplingPolicy = _messages.MessageField('TraceSamplingPolicy', 4)
+
+
+class Value(_messages.Message):
+  r"""Carries a typed scalar for equality and containment comparisons.
+
+  Fields:
+    boolValue: Boolean value.
+    bytesValue: Raw bytes value.
+    doubleValue: 64-bit floating-point value.
+    intValue: 64-bit signed integer value.
+    stringValue: String value.
+  """
+
+  boolValue = _messages.BooleanField(1)
+  bytesValue = _messages.BytesField(2)
+  doubleValue = _messages.FloatField(3)
+  intValue = _messages.IntegerField(4)
+  stringValue = _messages.StringField(5)
+
+
+class WindowsEventLogSourcePolicy(_messages.Message):
+  r"""Enables Windows Event Log collection for the specified channels.
+
+  Fields:
+    channels: Required. Windows Event Log channel names to subscribe to (e.g.
+      "Security", "System", "Application"). At least one channel is required.
+  """
+
+  channels = _messages.StringField(1, repeated=True)
 
 
 encoding.AddCustomJsonFieldMapping(

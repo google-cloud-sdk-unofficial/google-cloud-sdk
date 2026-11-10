@@ -24,13 +24,21 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import properties
 
 _DETAILED_HELP = {
-    "DESCRIPTION": "Create a new Audit Schedule.",
+    "DESCRIPTION": (
+        "Create a new Audit Schedule. Parameter overrides are applied to every"
+        " audit run of the schedule and cannot be changed after the schedule"
+        " is created."
+    ),
     "EXAMPLES": (
         """ \
         To create an Audit Schedule in the `us-central1` region,
-        for a project with ID `123` for compliance framework `fedramp_moderate` in `odf` format, run:
+        for a project with ID `123` against the compliance framework `organizations/456/locations/global/frameworks/builtin-nist-800-53-revision5` in `odf` format, run:
 
-          $ {command} --project=123 --location=us-central1 --audit-schedule-id=my-schedule --compliance-framework=fedramp_moderate --report-format=odf --gcs-uri=gs://testbucketauditmanager --start-time="2026-03-01T00:00:00Z" --frequency=DAILY
+          $ {command} --project=123 --location=us-central1 --audit-schedule-id=my-schedule --compliance-framework=organizations/456/locations/global/frameworks/builtin-nist-800-53-revision5 --report-format=odf --gcs-uri=gs://testbucketauditmanager --start-time="2026-03-01T00:00:00Z" --frequency=DAILY
+
+        If the compliance framework is parameterized, to create the same Audit Schedule while overriding cloud control parameters defined in the file `overrides.json`, run:
+
+          $ {command} --project=123 --location=us-central1 --audit-schedule-id=my-schedule --compliance-framework=organizations/456/locations/global/frameworks/builtin-nist-800-53-revision5 --report-format=odf --gcs-uri=gs://testbucketauditmanager --start-time="2026-03-01T00:00:00Z" --frequency=DAILY --parameter-overrides=overrides.json
         """
     ),
 }
@@ -56,6 +64,7 @@ class Create(base.CreateCommand):
     flags.AddDestinationFlags(parser)
     flags.AddScheduleConfigFlags(parser)
     flags.AddDisplayNameFlag(parser)
+    flags.AddParameterOverridesFlag(parser)
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 
   def Run(self, args):
@@ -90,6 +99,7 @@ class Create(base.CreateCommand):
           display_name=getattr(args, "display_name", None),
           is_parent_folder=is_parent_folder,
           is_parent_organization=is_parent_organization,
+          parameter_overrides=args.parameter_overrides,
       )
 
     except apitools_exceptions.HttpError as error:

@@ -32,7 +32,7 @@ class ApigatewayApi(_messages.Message):
       ( https://cloud.google.com/service-
       infrastructure/docs/glossary#managed). If not specified, a new Service
       will automatically be created in the same project as this API.
-    name: Output only. Resource name of the API. Format:
+    name: Identifier. Resource name of the API. Format:
       projects/{project}/locations/global/apis/{api}
     state: Output only. State of the API.
     updateTime: Output only. Updated time.
@@ -128,7 +128,7 @@ class ApigatewayApiConfig(_messages.Message):
       semantics in the order of the files uploaded. * Repeated fields are
       concatenated. * Singular embedded messages are merged using these rules
       for nested fields.
-    name: Output only. Resource name of the API Config. Format:
+    name: Identifier. Resource name of the API Config. Format:
       projects/{project}/locations/global/apis/{api}/configs/{api_config}
     openapiDocuments: Optional. OpenAPI specification documents. If specified,
       grpc_services and managed_service_configs must not be included.
@@ -493,7 +493,7 @@ class ApigatewayGateway(_messages.Message):
     labels: Optional. Resource labels to represent user-provided metadata.
       Refer to cloud documentation on labels for more details.
       https://cloud.google.com/compute/docs/labeling-resources
-    name: Output only. Resource name of the Gateway. Format:
+    name: Identifier. Resource name of the Gateway. Format:
       projects/{project}/locations/{location}/gateways/{gateway}
     state: Output only. The current state of the Gateway.
     streamingMode: Optional. Immutable. Requests streaming for a new gateway.
@@ -1060,19 +1060,19 @@ class ApigatewayProjectsLocationsApisConfigsGetRequest(_messages.Message):
   r"""A ApigatewayProjectsLocationsApisConfigsGetRequest object.
 
   Enums:
-    ViewValueValuesEnum: Specifies which fields of the API Config are returned
-      in the response. Defaults to `BASIC` view.
+    ViewValueValuesEnum: Optional. Specifies which fields of the API Config
+      are returned in the response. Defaults to `BASIC` view.
 
   Fields:
     name: Required. Resource name of the form:
       `projects/*/locations/global/apis/*/configs/*`
-    view: Specifies which fields of the API Config are returned in the
-      response. Defaults to `BASIC` view.
+    view: Optional. Specifies which fields of the API Config are returned in
+      the response. Defaults to `BASIC` view.
   """
 
   class ViewValueValuesEnum(_messages.Enum):
-    r"""Specifies which fields of the API Config are returned in the response.
-    Defaults to `BASIC` view.
+    r"""Optional. Specifies which fields of the API Config are returned in the
+    response. Defaults to `BASIC` view.
 
     Values:
       CONFIG_VIEW_UNSPECIFIED: <no description>
@@ -1091,10 +1091,10 @@ class ApigatewayProjectsLocationsApisConfigsListRequest(_messages.Message):
   r"""A ApigatewayProjectsLocationsApisConfigsListRequest object.
 
   Fields:
-    filter: Filter.
-    orderBy: Order by parameters.
-    pageSize: Page size.
-    pageToken: Page token.
+    filter: Optional. Filter.
+    orderBy: Optional. Order by parameters.
+    pageSize: Optional. Page size.
+    pageToken: Optional. Page token.
     parent: Required. Parent resource of the API Config, of the form:
       `projects/*/locations/global/apis/*`
   """
@@ -1112,13 +1112,13 @@ class ApigatewayProjectsLocationsApisConfigsPatchRequest(_messages.Message):
   Fields:
     apigatewayApiConfig: A ApigatewayApiConfig resource to be passed as the
       request body.
-    name: Output only. Resource name of the API Config. Format:
+    name: Identifier. Resource name of the API Config. Format:
       projects/{project}/locations/global/apis/{api}/configs/{api_config}
-    updateMask: Field mask is used to specify the fields to be overwritten in
-      the ApiConfig resource by the update. The fields specified in the
-      update_mask are relative to the resource, not the full request. A field
-      will be overwritten if it is in the mask. If the user does not provide a
-      mask then all fields will be overwritten.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the ApiConfig resource by the update. The fields
+      specified in the update_mask are relative to the resource, not the full
+      request. A field will be overwritten if it is in the mask. The request
+      fails if `update_mask` is missing or empty.
   """
 
   apigatewayApiConfig = _messages.MessageField('ApigatewayApiConfig', 1)
@@ -1227,10 +1227,10 @@ class ApigatewayProjectsLocationsApisListRequest(_messages.Message):
   r"""A ApigatewayProjectsLocationsApisListRequest object.
 
   Fields:
-    filter: Filter.
-    orderBy: Order by parameters.
-    pageSize: Page size.
-    pageToken: Page token.
+    filter: Optional. Filter.
+    orderBy: Optional. Order by parameters.
+    pageSize: Optional. Page size.
+    pageToken: Optional. Page token.
     parent: Required. Parent resource of the API, of the form:
       `projects/*/locations/global`
   """
@@ -1247,13 +1247,13 @@ class ApigatewayProjectsLocationsApisPatchRequest(_messages.Message):
 
   Fields:
     apigatewayApi: A ApigatewayApi resource to be passed as the request body.
-    name: Output only. Resource name of the API. Format:
+    name: Identifier. Resource name of the API. Format:
       projects/{project}/locations/global/apis/{api}
-    updateMask: Field mask is used to specify the fields to be overwritten in
-      the Api resource by the update. The fields specified in the update_mask
-      are relative to the resource, not the full request. A field will be
-      overwritten if it is in the mask. If the user does not provide a mask
-      then all fields will be overwritten.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the Api resource by the update. The fields specified in
+      the update_mask are relative to the resource, not the full request. A
+      field will be overwritten if it is in the mask. The request fails if
+      `update_mask` is missing or empty.
   """
 
   apigatewayApi = _messages.MessageField('ApigatewayApi', 1)
@@ -1362,10 +1362,10 @@ class ApigatewayProjectsLocationsGatewaysListRequest(_messages.Message):
   r"""A ApigatewayProjectsLocationsGatewaysListRequest object.
 
   Fields:
-    filter: Filter.
-    orderBy: Order by parameters.
-    pageSize: Page size.
-    pageToken: Page token.
+    filter: Optional. Filter.
+    orderBy: Optional. Order by parameters.
+    pageSize: Optional. Page size.
+    pageToken: Optional. Page token.
     parent: Required. Parent resource of the Gateway, of the form:
       `projects/*/locations/*`
   """
@@ -1383,13 +1383,13 @@ class ApigatewayProjectsLocationsGatewaysPatchRequest(_messages.Message):
   Fields:
     apigatewayGateway: A ApigatewayGateway resource to be passed as the
       request body.
-    name: Output only. Resource name of the Gateway. Format:
+    name: Identifier. Resource name of the Gateway. Format:
       projects/{project}/locations/{location}/gateways/{gateway}
-    updateMask: Field mask is used to specify the fields to be overwritten in
-      the Gateway resource by the update. The fields specified in the
-      update_mask are relative to the resource, not the full request. A field
-      will be overwritten if it is in the mask. If the user does not provide a
-      mask then all fields will be overwritten.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the Gateway resource by the update. The fields specified
+      in the update_mask are relative to the resource, not the full request. A
+      field will be overwritten if it is in the mask. The request fails if
+      `update_mask` is missing or empty.
   """
 
   apigatewayGateway = _messages.MessageField('ApigatewayGateway', 1)

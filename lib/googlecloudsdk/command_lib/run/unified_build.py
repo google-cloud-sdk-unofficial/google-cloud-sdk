@@ -133,7 +133,7 @@ def _ResolveImageRepository(
     service_ref: Any,
     skip_activation_prompt: bool,
     ar_region: str | None,
-) -> str:
+) -> str | None:
   """Resolves the target Artifact Registry image repository URI."""
   container_name = container_args.local_context.name
   image_path = (
@@ -141,7 +141,14 @@ def _ResolveImageRepository(
       if container_name
       else service_ref.servicesId
   )
-  # 1. Explicit --image flag overrides any previous repository.
+  skip_ar_creation = properties.VALUES.run.skip_ar_creation.GetBool()
+  # 1. Explicit --image flag overrides (or clears) any previous repository.
+  if (
+      skip_ar_creation
+      and container_args.IsKnownAndSpecified('image')
+      and not container_args.image
+  ):
+    return None
   if getattr(container_args, 'image', None):
     repository = artifact_registry.ValidateAndGetArRepository(
         container_args.image, skip_activation_prompt, enable_by_default=True
@@ -155,6 +162,9 @@ def _ResolveImageRepository(
   # roll-forward).
   if build_config.imageRepositoryUri:
     return build_config.imageRepositoryUri
+
+  if skip_ar_creation:
+    return None
 
   # 3. Default to `cloud-run-source-deploy` (and mark for creation if missing).
   # TODO(b/563121521): Remove client-side default repo resolution and creation

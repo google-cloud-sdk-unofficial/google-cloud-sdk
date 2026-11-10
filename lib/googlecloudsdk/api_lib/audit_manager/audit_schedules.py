@@ -14,6 +14,7 @@
 # limitations under the License.
 """Utilities for Audit Manager API, Audit Schedule Endpoints."""
 
+from apitools.base.py import encoding
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.audit_manager import constants
 from googlecloudsdk.api_lib.audit_manager import util
@@ -61,6 +62,7 @@ class AuditSchedulesClient(object):
       display_name: str = None,
       is_parent_folder: bool = False,
       is_parent_organization: bool = False,
+      parameter_overrides=None,
   ):
     """Create an Audit Schedule."""
     if is_parent_folder and is_parent_organization:
@@ -85,6 +87,11 @@ class AuditSchedulesClient(object):
     )
     if display_name:
       audit_schedule.displayName = display_name
+    if parameter_overrides is not None:
+      audit_schedule.parameterOverrides = encoding.DictToMessage(
+          parameter_overrides,
+          self.messages.AuditSchedule.ParameterOverridesValue,
+      )
 
     if is_parent_folder:
       service = self.client.folders_locations_auditSchedules

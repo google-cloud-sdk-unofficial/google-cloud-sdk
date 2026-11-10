@@ -14,7 +14,6 @@
 # limitations under the License.
 """Utilities for `gcloud network-connectivity`."""
 
-
 import argparse
 from typing import Any
 
@@ -22,7 +21,6 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 import googlecloudsdk.generated_clients.apis.networkconnectivity.v1.networkconnectivity_v1_messages as v1
 import googlecloudsdk.generated_clients.apis.networkconnectivity.v1beta.networkconnectivity_v1beta_messages as v1beta
-
 
 # Constants
 PROJECTS_RESOURCE_PATH = "projects/"
@@ -108,15 +106,26 @@ def AppendLocationsGlobalToParent(unused_ref, unused_args, request):
   return request
 
 
-def SetExportPscBeta(unused_ref, args, request):
-  """Set legacy export_psc field based on new PSC flags."""
+def _SetExportPsc(args, hub):
+  """Set legacy export_psc field on the hub based on new PSC flags."""
   if not args.IsSpecified("export_psc"):
     # If either of the new flags are specified, set export_psc to true too.
     if (
         args.export_psc_published_services_and_regional_google_apis
         or args.export_psc_global_google_apis
     ):
-      request.googleCloudNetworkconnectivityV1betaHub.exportPsc = True
+      hub.exportPsc = True
+
+
+def SetExportPscBeta(unused_ref, args, request):
+  """Set legacy export_psc field based on new PSC flags in the BETA track."""
+  _SetExportPsc(args, request.googleCloudNetworkconnectivityV1betaHub)
+  return request
+
+
+def SetExportPscGA(unused_ref, args, request):
+  """Set legacy export_psc field based on new PSC flags in the GA track."""
+  _SetExportPsc(args, request.hub)
   return request
 
 
@@ -276,8 +285,7 @@ def SetGatewayAdvertisedRouteRecipient(unused_ref, args, request):
     ):
       route = request.googleCloudNetworkconnectivityV1betaGatewayAdvertisedRoute
       enum_cls = (
-          v1beta.GoogleCloudNetworkconnectivityV1betaGatewayAdvertisedRoute
-          .RecipientValueValuesEnum
+          v1beta.GoogleCloudNetworkconnectivityV1betaGatewayAdvertisedRoute.RecipientValueValuesEnum
       )
       route.recipient = enum_cls.ADVERTISE_TO_HUB
   return request

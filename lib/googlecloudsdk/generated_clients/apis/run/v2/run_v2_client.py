@@ -38,6 +38,7 @@ class RunV2(base_api.BaseApiClient):
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
     self.projects_locations_builds = self.ProjectsLocationsBuildsService(self)
+    self.projects_locations_domainMappings = self.ProjectsLocationsDomainMappingsService(self)
     self.projects_locations_instances = self.ProjectsLocationsInstancesService(self)
     self.projects_locations_jobs_executions_tasks = self.ProjectsLocationsJobsExecutionsTasksService(self)
     self.projects_locations_jobs_executions = self.ProjectsLocationsJobsExecutionsService(self)
@@ -85,6 +86,151 @@ class RunV2(base_api.BaseApiClient):
         request_field='googleCloudRunV2SubmitBuildRequest',
         request_type_name='RunProjectsLocationsBuildsSubmitRequest',
         response_type_name='GoogleCloudRunV2SubmitBuildResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDomainMappingsService(base_api.BaseApiService):
+    """Service class for the projects_locations_domainMappings resource."""
+
+    _NAME = 'projects_locations_domainMappings'
+
+    def __init__(self, client):
+      super(RunV2.ProjectsLocationsDomainMappingsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new DomainMapping in a given project and location.
+
+      Args:
+        request: (RunProjectsLocationsDomainMappingsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/domainMappings',
+        http_method='POST',
+        method_id='run.projects.locations.domainMappings.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['domainMappingId', 'validateOnly'],
+        relative_path='v2/{+parent}/domainMappings',
+        request_field='googleCloudRunV2DomainMapping',
+        request_type_name='RunProjectsLocationsDomainMappingsCreateRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a DomainMapping.
+
+      Args:
+        request: (RunProjectsLocationsDomainMappingsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/domainMappings/{domainMappingsId}',
+        http_method='DELETE',
+        method_id='run.projects.locations.domainMappings.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'validateOnly'],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='RunProjectsLocationsDomainMappingsDeleteRequest',
+        response_type_name='GoogleLongrunningOperation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets information about a DomainMapping.
+
+      Args:
+        request: (RunProjectsLocationsDomainMappingsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudRunV2DomainMapping) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/domainMappings/{domainMappingsId}',
+        http_method='GET',
+        method_id='run.projects.locations.domainMappings.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='RunProjectsLocationsDomainMappingsGetRequest',
+        response_type_name='GoogleCloudRunV2DomainMapping',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists DomainMappings. Results are sorted by creation time, descending.
+
+      Args:
+        request: (RunProjectsLocationsDomainMappingsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudRunV2ListDomainMappingsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/domainMappings',
+        http_method='GET',
+        method_id='run.projects.locations.domainMappings.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken', 'showDeleted'],
+        relative_path='v2/{+parent}/domainMappings',
+        request_field='',
+        request_type_name='RunProjectsLocationsDomainMappingsListRequest',
+        response_type_name='GoogleCloudRunV2ListDomainMappingsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a DomainMapping.
+
+      Args:
+        request: (RunProjectsLocationsDomainMappingsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/domainMappings/{domainMappingsId}',
+        http_method='PATCH',
+        method_id='run.projects.locations.domainMappings.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['allowMissing', 'updateMask', 'validateOnly'],
+        relative_path='v2/{+name}',
+        request_field='googleCloudRunV2DomainMapping',
+        request_type_name='RunProjectsLocationsDomainMappingsPatchRequest',
+        response_type_name='GoogleLongrunningOperation',
         supports_download=False,
     )
 

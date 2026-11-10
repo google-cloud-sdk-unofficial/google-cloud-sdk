@@ -30,6 +30,12 @@
           --gke-namespace diagon --gke-workload-name mldiag-prod-demo-jobset --gke-kind JobSet
           --gke-workload-create-time 2026-02-20T06:00:00Z --labels "created_by"="cli"
           --run-phase COMPLETED --etag "1f54a7f4-bd25-4f98-a91c-97bfa1c5b7a6"
+          --auto-capture-enabled --auto-capture-default-duration 10s
+          --auto-capture-type snapshot-over-on-demand
+          --auto-capture-host-tracer-level host-tracer-level-info
+          --auto-capture-device-tracer-level device-tracer-level-enabled
+          --auto-capture-python-tracer-level python-tracer-level-disabled
+          --auto-capture-max-session-count-per-event 5
 
           Update command support only full update (partial update is not supported). Hence, user
           should get the existing metadata of the ML run using get/list command and modify
@@ -43,6 +49,14 @@
             Updated machine_learning_run [my-run].
             artifacts:
               gcsPath: gs://diagon-prod-data
+            autoCaptureSettings:
+              captureType: SNAPSHOT_OVER_ON_DEMAND
+              defaultDuration: 10s
+              deviceTracerLevel: DEVICE_TRACER_LEVEL_ENABLED
+              enabled: true
+              hostTracerLevel: HOST_TRACER_LEVEL_INFO
+              maxSessionCountPerEvent: 5
+              pythonTracerLevel: PYTHON_TRACER_LEVEL_DISABLED
             createTime: '2026-02-05T16:25:28.367865234Z'
             displayName: updated-gcloud-cli-run
             endTime: '0001-01-01T00:00:00Z'
@@ -335,6 +349,118 @@
         enum_value: FAILED
         help_text: |-
           Run is failed.
+    - group:
+        api_field: machineLearningRun.autoCaptureSettings
+        required: false
+        help_text: |-
+          Configuration for auto-capturing profiler sessions upon degradation events.
+        params:
+        - arg_name: auto-capture-enabled
+          api_field: machineLearningRun.autoCaptureSettings.enabled
+          action: store_true
+          required: false
+          type: bool
+          default: null
+          help_text: |-
+            Enable auto-capture for the Machine Learning Run. Defaults to false if not set.
+        - arg_name: auto-capture-default-duration
+          api_field: machineLearningRun.autoCaptureSettings.defaultDuration
+          required: false
+          repeated: false
+          type: googlecloudsdk.core.util.times:ParseDuration
+          processor: googlecloudsdk.core.util.times:FormatDurationForJson
+          help_text: |-
+            Default duration for on-demand profiler session during auto-capture.
+            If not set, value of 10 seconds will be used by backend.
+        - arg_name: auto-capture-type
+          api_field: machineLearningRun.autoCaptureSettings.captureType
+          required: false
+          help_text: |-
+            Capture type for profiler session.
+          choices:
+          - arg_value: snapshot-over-on-demand
+            enum_value: SNAPSHOT_OVER_ON_DEMAND
+            help_text: |-
+              Capture snapshot first, if not possible then try to capture on-demand.
+          - arg_value: on-demand-over-snapshot
+            enum_value: ON_DEMAND_OVER_SNAPSHOT
+            help_text: |-
+              Capture on-demand, if not possible then try to capture snapshot.
+          - arg_value: only-on-demand
+            enum_value: ONLY_ON_DEMAND
+            help_text: |-
+              Capture only on-demand session.
+          - arg_value: only-snapshot
+            enum_value: ONLY_SNAPSHOT
+            help_text: |-
+              Capture only snapshot.
+        - arg_name: auto-capture-default-profiler-targets
+          api_field: machineLearningRun.autoCaptureSettings.defaultProfilerTargets
+          required: false
+          repeated: true
+          type: str
+          help_text: |-
+            Targets actively being profiled. This will be used only if targets are not
+            specified during capture request. If not set, all targets will be profiled.
+            Format: projects/{project}/locations/{location}/machineLearningRuns/{machine_learning_run}/profilerTargets/{profiler_target}
+        - arg_name: auto-capture-host-tracer-level
+          api_field: machineLearningRun.autoCaptureSettings.hostTracerLevel
+          required: false
+          help_text: |-
+            The host tracer level for the profiler session activity.
+          choices:
+          - arg_value: host-tracer-level-disabled
+            enum_value: HOST_TRACER_LEVEL_DISABLED
+            help_text: |-
+              Tracer level is disabled.
+          - arg_value: host-tracer-level-critical
+            enum_value: HOST_TRACER_LEVEL_CRITICAL
+            help_text: |-
+              Tracer level is critical.
+          - arg_value: host-tracer-level-info
+            enum_value: HOST_TRACER_LEVEL_INFO
+            help_text: |-
+              Tracer level is info.
+          - arg_value: host-tracer-level-verbose
+            enum_value: HOST_TRACER_LEVEL_VERBOSE
+            help_text: |-
+              Tracer level is verbose.
+        - arg_name: auto-capture-device-tracer-level
+          api_field: machineLearningRun.autoCaptureSettings.deviceTracerLevel
+          required: false
+          help_text: |-
+            The device tracer level for the profiler session activity.
+          choices:
+          - arg_value: device-tracer-level-disabled
+            enum_value: DEVICE_TRACER_LEVEL_DISABLED
+            help_text: |-
+              Tracer level is disabled.
+          - arg_value: device-tracer-level-enabled
+            enum_value: DEVICE_TRACER_LEVEL_ENABLED
+            help_text: |-
+              Tracer level is enabled.
+        - arg_name: auto-capture-python-tracer-level
+          api_field: machineLearningRun.autoCaptureSettings.pythonTracerLevel
+          required: false
+          help_text: |-
+            The python tracer level for the profiler session activity.
+          choices:
+          - arg_value: python-tracer-level-disabled
+            enum_value: PYTHON_TRACER_LEVEL_DISABLED
+            help_text: |-
+              Tracer level is disabled.
+          - arg_value: python-tracer-level-enabled
+            enum_value: PYTHON_TRACER_LEVEL_ENABLED
+            help_text: |-
+              Tracer level is enabled.
+        - arg_name: auto-capture-max-session-count-per-event
+          api_field: machineLearningRun.autoCaptureSettings.maxSessionCountPerEvent
+          required: false
+          repeated: false
+          type: int
+          help_text: |-
+            Max number of profiler sessions per monitored event.
+            If not set, max of 500 sessions are allowed.
   request:
     api_version: v1alpha
     collection:

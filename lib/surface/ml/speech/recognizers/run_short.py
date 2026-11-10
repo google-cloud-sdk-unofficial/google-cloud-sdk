@@ -29,6 +29,7 @@ class RunShort(base.Command):
     """Validates run short flags."""
     flag_validations.ValidateDecodingConfig(args)
     flag_validations.ValidateAudioSource(args)
+    flag_validations.ValidateRecognizerResourceFlag(args)
 
   @staticmethod
   def Args(parser):
@@ -36,10 +37,11 @@ class RunShort(base.Command):
     flags_v2.AddRecognizeRequestFlagsToParser(parser)
 
   def Run(self, args):
-    resource = args.CONCEPTS.recognizer.Parse()
-    speech_client = client.SpeechV2Client()
 
     self.ValidateRunShortFlags(args)
+
+    resource = args.CONCEPTS.recognizer.Parse()
+    speech_client = client.SpeechV2Client()
 
     recognition_config_update_mask = []
 

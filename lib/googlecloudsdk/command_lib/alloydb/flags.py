@@ -557,9 +557,12 @@ def AddEnablePscAutoDns(parser):
   parser.add_argument(
       '--enable-psc-auto-dns',
       required=False,
-      help='Enable PSC auto DNS for an AlloyDB instance.',
+      help=(
+          'Enable automatic creation of DNS records (PSC auto DNS) for the'
+          ' Private Service Connect (PSC) auto connections of the instance,'
+          ' which are configured with `--psc-auto-connections`.'
+      ),
       action=arg_parsers.StoreTrueFalseAction,
-      hidden=True,
   )
 
 
@@ -572,9 +575,13 @@ def AddEnablePscAutoConnectionPolicy(parser):
   parser.add_argument(
       '--enable-psc-auto-connection-policy',
       required=False,
-      help='Enable PSC auto connection policy for an AlloyDB instance.',
+      help=(
+          'Enable automatic creation of service connection policies (PSC auto'
+          ' connection policy) for the Private Service Connect (PSC) auto'
+          ' connections of the instance, which are configured with'
+          ' `--psc-auto-connections`.'
+      ),
       action=arg_parsers.StoreTrueFalseAction,
-      hidden=True,
   )
 
 
@@ -2125,6 +2132,17 @@ def AddAgentModeFlags(parser: argparse.ArgumentParser) -> None:
       required=False,
       hidden=True,
       help='Enable or disable Agent Mode for this cluster.',
+  )
+  parser.add_argument(
+      '--enable-lakehouse-integration',
+      action=arg_parsers.StoreTrueFalseAction,
+      required=False,
+      hidden=True,
+      help=(
+          'Enable or disable Lakehouse integration for this cluster. Can only'
+          ' be changed in the same command that enables or disables Agent'
+          ' Mode.'
+      ),
   )
 
 

@@ -11696,8 +11696,18 @@ class WizSensorConfig(_messages.Message):
       "projects/{project_id}/secrets/{secret_name}/versions/{version}" or
       Format: "projects/{project_id}/locations/{location_id}/secrets/{secret_n
       ame}/versions/{version}"
+    effectiveImageTag: Output only. The image tag GKE runs for the Wiz Sensor:
+      "v1" when `image_tag` is unset, otherwise `image_tag`, unless a pinned
+      version is below GKE's minimum supported sensor version, in which case
+      it is that minimum.
     enabled: Optional. Whether the Wiz Sensor add-on is enabled for this
       cluster.
+    imageTag: Optional. The Wiz Sensor image tag to run. Use "v1" or "v1-prev"
+      to follow Wiz's auto-update tags, or a sensor version such as
+      "1.0.12603" to pin the sensor to that release. If unset, the sensor runs
+      the "v1" tag; GKE doesn't fill in this field. If a pinned version is
+      below GKE's minimum supported sensor version, GKE runs the minimum
+      instead and reports it in `effective_image_tag`.
     proxySecretUri: Optional. The GCP Secret Manager URI for the Wiz proxy
       configuration. Format:
       "projects/{project_id}/secrets/{secret_name}/versions/{version}" or
@@ -11708,12 +11718,19 @@ class WizSensorConfig(_messages.Message):
       "projects/{project_id}/secrets/{secret_name}/versions/{version}" or
       Format: "projects/{project_id}/locations/{location_id}/secrets/{secret_n
       ame}/versions/{version}"
+    systemCriticalPriorityEnabled: Optional. When true, the Wiz Sensor
+      DaemonSet runs with the system-node-critical priority class, so it can
+      preempt lower-priority pods to get scheduled and is among the last pods
+      evicted under node pressure. Defaults to false.
   """
 
   apiKeySecretUri = _messages.StringField(1)
-  enabled = _messages.BooleanField(2)
-  proxySecretUri = _messages.StringField(3)
-  registrySecretUri = _messages.StringField(4)
+  effectiveImageTag = _messages.StringField(2)
+  enabled = _messages.BooleanField(3)
+  imageTag = _messages.StringField(4)
+  proxySecretUri = _messages.StringField(5)
+  registrySecretUri = _messages.StringField(6)
+  systemCriticalPriorityEnabled = _messages.BooleanField(7)
 
 
 class WorkloadALTSConfig(_messages.Message):

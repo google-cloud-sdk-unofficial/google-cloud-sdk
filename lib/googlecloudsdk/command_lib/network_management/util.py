@@ -18,7 +18,8 @@ import re
 from typing import Any
 
 from googlecloudsdk.core import exceptions
-_DMS_PRIVATE_CONNECTION_PATTERN = re.compile(
+
+_PRIVATE_CONNECTION_PATTERN = re.compile(
     r"projects/(?:[a-z][a-z0-9-\.:]*[a-z0-9])/locations/[-\w]+/privateConnections/[-\w]+"
 )
 
@@ -106,6 +107,7 @@ def ClearSingleEndpointAttr(patch_request, endpoint_type, endpoint_name):
       "cloudRunRevision",
       "cloudRunJob",
       "dmsPrivateConnection",
+      "datastreamPrivateConnection",
       "forwardingRule",
       "redisInstance",
       "redisCluster",
@@ -138,6 +140,7 @@ def ClearSingleEndpointAttr(patch_request, endpoint_type, endpoint_name):
           "cloud-run-revision",
           "cloud-run-job",
           "dms-private-connection",
+          "datastream-private-connection",
       ])
     if endpoint_type == "destination":
       endpoints.extend([
@@ -163,6 +166,11 @@ def ClearEndpointAttrs(unused_ref, args, patch_request):
       ("clear_source_cloud_run_revision", "source", "cloudRunRevision"),
       ("clear_source_cloud_run_job", "source", "cloudRunJob"),
       ("clear_source_dms_private_connection", "source", "dmsPrivateConnection"),
+      (
+          "clear_source_datastream_private_connection",
+          "source",
+          "datastreamPrivateConnection",
+      ),
       ("clear_destination_instance", "destination", "instance"),
       ("clear_destination_ip_address", "destination", "ipAddress"),
       (
@@ -207,6 +215,7 @@ def ClearSingleEndpointAttrBeta(patch_request, endpoint_type, endpoint_name):
       "cloudRunRevision",
       "cloudRunJob",
       "dmsPrivateConnection",
+      "datastreamPrivateConnection",
       "forwardingRule",
       "redisInstance",
       "redisCluster",
@@ -239,6 +248,7 @@ def ClearSingleEndpointAttrBeta(patch_request, endpoint_type, endpoint_name):
           "cloud-run-revision",
           "cloud-run-job",
           "dms-private-connection",
+          "datastream-private-connection",
       ])
     if endpoint_type == "destination":
       endpoints.extend([
@@ -264,6 +274,11 @@ def ClearEndpointAttrsBeta(unused_ref, args, patch_request):
       ("clear_source_cloud_run_revision", "source", "cloudRunRevision"),
       ("clear_source_cloud_run_job", "source", "cloudRunJob"),
       ("clear_source_dms_private_connection", "source", "dmsPrivateConnection"),
+      (
+          "clear_source_datastream_private_connection",
+          "source",
+          "datastreamPrivateConnection",
+      ),
       ("clear_destination_instance", "destination", "instance"),
       ("clear_destination_ip_address", "destination", "ipAddress"),
       (
@@ -489,10 +504,29 @@ def ValidateDmsPrivateConnectionsURIs(unused_ref, args, request):
       continue
 
     connection = getattr(args, flag)
-    if not _DMS_PRIVATE_CONNECTION_PATTERN.match(connection):
+    if not _PRIVATE_CONNECTION_PATTERN.match(connection):
       raise InvalidInputError(
           f"Invalid value for flag {flag}: {connection}\n"
           "Expected DMS private connection in the following format:\n"
+          "  projects/my-project/locations/location/privateConnections/my-connection"
+      )
+  return request
+
+
+def ValidateDatastreamPrivateConnectionsURIs(unused_ref, args, request):
+  """Checks if all provided Datastream private connections URIs are in correct format."""
+  flags = [
+      "source_datastream_private_connection",
+  ]
+  for flag in flags:
+    if not args.IsSpecified(flag):
+      continue
+
+    connection = getattr(args, flag)
+    if not _PRIVATE_CONNECTION_PATTERN.match(connection):
+      raise InvalidInputError(
+          f"Invalid value for flag {flag}: {connection}\n"
+          "Expected Datastream private connection in the following format:\n"
           "  projects/my-project/locations/location/privateConnections/my-connection"
       )
   return request

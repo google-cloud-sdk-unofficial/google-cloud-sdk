@@ -37,6 +37,7 @@ __protobuf__ = proto.module(
         'EmptyDirVolumeSource',
         'NFSVolumeSource',
         'GCSVolumeSource',
+        'FilestoreVolumeSource',
         'Probe',
         'HTTPGetAction',
         'HTTPHeader',
@@ -457,6 +458,11 @@ class Volume(proto.Message):
             Storage bucket.
 
             This field is a member of `oneof`_ ``volume_type``.
+        filestore (googlecloudsdk.generated_clients.gapic_clients.run_v2.types.FilestoreVolumeSource):
+            Optional. Represents a volume backed by a
+            Filestore instance.
+
+            This field is a member of `oneof`_ ``volume_type``.
     """
 
     name: str = proto.Field(
@@ -492,6 +498,12 @@ class Volume(proto.Message):
         number=6,
         oneof='volume_type',
         message='GCSVolumeSource',
+    )
+    filestore: 'FilestoreVolumeSource' = proto.Field(
+        proto.MESSAGE,
+        number=7,
+        oneof='volume_type',
+        message='FilestoreVolumeSource',
     )
 
 
@@ -747,6 +759,21 @@ class GCSVolumeSource(proto.Message):
     mount_options: MutableSequence[str] = proto.RepeatedField(
         proto.STRING,
         number=3,
+    )
+
+
+class FilestoreVolumeSource(proto.Message):
+    r"""Represents a volume backed by a Filestore instance.
+
+    Attributes:
+        volume (str):
+            Required. The resource name of the Filestore volume. Format:
+            ``projects/{project}/locations/{location}/volumePools/{volume_pool}/volumes/{volume}``
+    """
+
+    volume: str = proto.Field(
+        proto.STRING,
+        number=1,
     )
 
 

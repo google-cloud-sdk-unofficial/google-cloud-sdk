@@ -113,6 +113,7 @@ class _TransformCall(object):
     self.kwargs = kwargs or {}
 
   def __str__(self):
+    # TODO(b/532454974): Fix '<projecton>' typo (missing 'i').
     args = ['<projecton>' if isinstance(
         arg, resource_projection_spec.ProjectionSpec) else arg
             for arg in self.args]
@@ -481,6 +482,8 @@ class Lexer(object):
         break
       i += 1
     if quote:
+      # TODO: b/532454974 - Annotates at the start of Token() rather than the
+      # opening quote index.
       raise resource_exceptions.ExpressionSyntaxError(
           'Unterminated [{0}] quote [{1}].'.format(quote, self.Annotate()))
     self.SetPosition(i)
@@ -622,6 +625,8 @@ class Lexer(object):
       while self.IsCharacter('[', eoi_ok=True):
         # [] slice or [NUMBER] array index.
         index = self.Token(']', convert=True)
+        # TODO: b/532454974 - Raises 'More tokens expected' on unclosed '[' at
+        # EOI instead of an unclosed bracket error.
         self.IsCharacter(']')
         key.append(index)
       if not self.IsCharacter('.', eoi_ok=True):
@@ -892,4 +897,3 @@ def GetKeyName(key, quote=True, omit_indices=False):
       part = '"{part}"'.format(part=part)
     parts.append(part)
   return '.'.join(parts) if parts else '.'
-

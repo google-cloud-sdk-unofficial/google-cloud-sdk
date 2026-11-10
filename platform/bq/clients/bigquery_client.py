@@ -443,6 +443,21 @@ class BigqueryClient:
           )
           logging.error('%s:\n%s', msg, discovery_document)
           raise bq_error.BigqueryCommunicationError(msg)
+        try:
+          parsed_discovery_doc = json.loads(discovery_document)
+        except ValueError as e:
+          raise bq_error.BigqueryCommunicationError(
+              'Received corrupt "%s" discovery doc\n%s'
+              % (service, discovery_document)
+          ) from e
+        if not isinstance(
+            parsed_discovery_doc, dict
+        ) or not parsed_discovery_doc.get('resources'):
+          raise bq_error.BigqueryCommunicationError(
+              'Discovery document from %s for "%s" contains no resources.'
+              ' Please verify that the API endpoint is correct.'
+              % (discovery_url, service)
+          )
       except (
           httplib2.HttpLib2Error,
           googleapiclient.errors.HttpError,

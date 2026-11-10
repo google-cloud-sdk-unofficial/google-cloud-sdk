@@ -228,6 +228,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_KEYVALUESTORES = (
+      'projects.locations.keyValueStores',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/keyValueStores/'
+              '{keyValueStoresId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_LBEDGEEXTENSIONS = (
       'projects.locations.lbEdgeExtensions',
       '{+name}',

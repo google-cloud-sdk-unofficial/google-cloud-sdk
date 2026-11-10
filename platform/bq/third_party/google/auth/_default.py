@@ -17,6 +17,7 @@
 
 Implements application default credentials and project ID detection.
 """
+
 from __future__ import annotations
 
 import io
@@ -24,11 +25,10 @@ import json
 import logging
 import os
 import typing
-from typing import Optional, Sequence, TYPE_CHECKING
 import warnings
+from typing import TYPE_CHECKING, Optional, Sequence
 
-from google.auth import environment_vars
-from google.auth import exceptions
+from google.auth import environment_vars, exceptions
 
 if TYPE_CHECKING:  # pragma: NO COVER
     import google.auth.credentials.Credentials  # type: ignore
@@ -395,9 +395,9 @@ def _get_gce_credentials(request=None, quota_project_id=None):
     # some cases where it's not available, so we tolerate ImportError.
     # Compute Engine requires optional `requests` dependency.
     try:
+        import google.auth.transport.requests
         from google.auth import compute_engine
         from google.auth.compute_engine import _metadata
-        import google.auth.transport.requests
     except ImportError:
         _LOGGER.warning("Import of Compute Engine auth library failed.")
         return None, None
@@ -694,8 +694,10 @@ def default(
             If no credentials were found, or if the credentials found were
             invalid.
     """
-    from google.auth.credentials import with_scopes_if_required
-    from google.auth.credentials import CredentialsWithQuotaProject
+    from google.auth.credentials import (
+        CredentialsWithQuotaProject,
+        with_scopes_if_required,
+    )
 
     explicit_project_id = os.environ.get(
         environment_vars.PROJECT, os.environ.get(environment_vars.LEGACY_PROJECT)

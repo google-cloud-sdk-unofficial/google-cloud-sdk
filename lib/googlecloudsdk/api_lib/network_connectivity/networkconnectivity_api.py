@@ -14,7 +14,6 @@
 # limitations under the License.
 """Commands for interacting with the Network Connectivity API."""
 
-
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.network_connectivity import networkconnectivity_util
 from googlecloudsdk.calliope import base
@@ -226,10 +225,8 @@ class HubsClient(object):
 
   def AcceptSpokeUpdateBeta(self, hub_ref, spoke, spoke_etag):
     """Call API to accept proposal to update spoke in a hub in the BETA release track."""
-    accept_spoke_update_req = (
-        self.messages.GoogleCloudNetworkconnectivityV1betaAcceptSpokeUpdateRequest(
-            spokeUri=spoke, spokeEtag=spoke_etag
-        )
+    accept_spoke_update_req = self.messages.GoogleCloudNetworkconnectivityV1betaAcceptSpokeUpdateRequest(
+        spokeUri=spoke, spokeEtag=spoke_etag
     )
     req = self.messages.NetworkconnectivityProjectsLocationsGlobalHubsAcceptSpokeUpdateRequest(
         name=hub_ref.RelativeName(),
@@ -273,10 +270,8 @@ class HubsClient(object):
 
   def RejectSpokeUpdateBeta(self, hub_ref, spoke, spoke_etag, details):
     """Call API to reject proposal to update spoke in a hub in the BETA release track."""
-    reject_spoke_update_req = (
-        self.messages.GoogleCloudNetworkconnectivityV1betaRejectSpokeUpdateRequest(
-            spokeUri=spoke, spokeEtag=spoke_etag, details=details
-        )
+    reject_spoke_update_req = self.messages.GoogleCloudNetworkconnectivityV1betaRejectSpokeUpdateRequest(
+        spokeUri=spoke, spokeEtag=spoke_etag, details=details
     )
     req = self.messages.NetworkconnectivityProjectsLocationsGlobalHubsRejectSpokeUpdateRequest(
         name=hub_ref.RelativeName(),
@@ -318,6 +313,19 @@ class HubsClient(object):
         )
     )
     return self.hub_service.Get(get_req)
+
+  def UpdateHub(self, hub_ref, hub, update_mask, request_id=None):
+    """Call API to update a hub in the GA release track."""
+    name = hub_ref.RelativeName()
+    update_mask_string = ','.join(update_mask)
+
+    update_req = self.messages.NetworkconnectivityProjectsLocationsGlobalHubsPatchRequest(
+        name=name,
+        requestId=request_id,
+        hub=hub,
+        updateMask=update_mask_string,
+    )
+    return self.hub_service.Patch(update_req)
 
   def UpdateHubBeta(self, hub_ref, hub, update_mask, request_id=None):
     """Call API to update a hub in the BETA release track."""

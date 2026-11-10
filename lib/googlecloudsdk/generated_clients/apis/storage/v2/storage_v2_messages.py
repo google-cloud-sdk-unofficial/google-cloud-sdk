@@ -59,6 +59,60 @@ class ApplyFeaturePermissionsRequest(_messages.Message):
   requestId = _messages.StringField(1)
 
 
+class Attribute(_messages.Message):
+  r"""Definition of a metadata attribute.
+
+  Enums:
+    TypeValueValuesEnum: Required. The attribute type.
+
+  Fields:
+    filterable: Optional. Whether the Attribute may be used for filtering
+      VectorDocuments in a query.
+    id: Required. The attribute name.
+    type: Required. The attribute type.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Required. The attribute type.
+
+    Values:
+      ATTRIBUTE_TYPE_UNSPECIFIED: Unspecified attribute type.
+      STRING: String attribute type.
+      INT32: 32-bit integer attribute type.
+      INT64: 64-bit integer attribute type.
+      DOUBLE: Double-precision floating-point attribute type.
+      UUID: UUID attribute type.
+      TIMESTAMP: Timestamp attribute type.
+      BOOL: Boolean attribute type.
+      STRING_ARRAY: Array of strings attribute type.
+      INT32_ARRAY: Array of 32-bit integers attribute type.
+      INT64_ARRAY: Array of 64-bit integers attribute type.
+      DOUBLE_ARRAY: Array of doubles attribute type.
+      UUID_ARRAY: Array of UUIDs attribute type.
+      TIMESTAMP_ARRAY: Array of timestamps attribute type.
+      BOOL_ARRAY: Array of booleans attribute type.
+    """
+    ATTRIBUTE_TYPE_UNSPECIFIED = 0
+    STRING = 1
+    INT32 = 2
+    INT64 = 3
+    DOUBLE = 4
+    UUID = 5
+    TIMESTAMP = 6
+    BOOL = 7
+    STRING_ARRAY = 8
+    INT32_ARRAY = 9
+    INT64_ARRAY = 10
+    DOUBLE_ARRAY = 11
+    UUID_ARRAY = 12
+    TIMESTAMP_ARRAY = 13
+    BOOL_ARRAY = 14
+
+  filterable = _messages.BooleanField(1)
+  id = _messages.StringField(2)
+  type = _messages.EnumField('TypeValueValuesEnum', 3)
+
+
 class AutoAnnotateConfig(_messages.Message):
   r"""Configuration for AutoAnnotate.
 
@@ -283,6 +337,17 @@ class Bucket(_messages.Message):
       service behaves when accessing bucket contents as a web site. See the
       [Static website examples](https://cloud.google.com/storage/docs/static-
       website) for more information.
+    zoneSeparationRootCustomerProject: Optional. Input only. The project whose
+      organization policies determine whether this bucket must satisfy
+      physical zone separation (PZS). Format: `projects/{projectIdentifier}`,
+      where `{projectIdentifier}` can be a project ID or project number. Set
+      this only when a service creates a bucket inside its own tenant or
+      umbrella project on behalf of a consumer: such a project does not carry
+      the consumer's organization policies, so this field names the consumer
+      project to evaluate them against instead. When unset, the bucket's own
+      project is used. May only be set as part of a CreateBucket request. This
+      is an internal-only parameter and should never be publicly visible. It
+      is an error for any request from outside of prod or corp to set this.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -345,6 +410,7 @@ class Bucket(_messages.Message):
   updateTime = _messages.StringField(34)
   versioning = _messages.MessageField('Versioning', 35)
   website = _messages.MessageField('Website', 36)
+  zoneSeparationRootCustomerProject = _messages.StringField(37)
 
 
 class BucketAccessControl(_messages.Message):
@@ -620,6 +686,61 @@ class Condition(_messages.Message):
   sizeBelowBytes = _messages.IntegerField(14)
 
 
+class ConsumptionConfig(_messages.Message):
+  r"""Defines the billing, routing, and SLA mechanics for model inference.
+
+  Enums:
+    SharedTierValueValuesEnum: Optional. The shared capacity tier to use. Maps
+      to the `service_tier` parameter in Vertex AI `GenerateContentRequest`.
+    TrafficTypeValueValuesEnum: Optional. Controls which quota bucket the
+      request is charged against for Provisioned Throughput (PT) routing.
+
+  Fields:
+    sharedTier: Optional. The shared capacity tier to use. Maps to the
+      `service_tier` parameter in Vertex AI `GenerateContentRequest`.
+    trafficType: Optional. Controls which quota bucket the request is charged
+      against for Provisioned Throughput (PT) routing.
+  """
+
+  class SharedTierValueValuesEnum(_messages.Enum):
+    r"""Optional. The shared capacity tier to use. Maps to the `service_tier`
+    parameter in Vertex AI `GenerateContentRequest`.
+
+    Values:
+      SHARED_TIER_UNSPECIFIED: Shared tier is unspecified. Equivalent to
+        `STANDARD`.
+      STANDARD: Standard PayGo. Pay-as-you-go processing with no upfront
+        commitment.
+      FLEX: Flex PayGo. Lower-cost processing for workloads that tolerate
+        higher latency and throttling.
+      PRIORITY: Priority PayGo. Priority processing with higher reliability
+        and limits than `STANDARD`.
+    """
+    SHARED_TIER_UNSPECIFIED = 0
+    STANDARD = 1
+    FLEX = 2
+    PRIORITY = 3
+
+  class TrafficTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Controls which quota bucket the request is charged against
+    for Provisioned Throughput (PT) routing.
+
+    Values:
+      TRAFFIC_TYPE_UNSPECIFIED: Default Vertex AI behavior. Attempts to use
+        Provisioned Throughput (PT) capacity first; if PT is exhausted, falls
+        back to the specified `shared_tier`.
+      DEDICATED: Strictly routes to the reserved PT capacity pool. Fails with
+        `RESOURCE_EXHAUSTED` (429) if capacity is exceeded.
+      SHARED: Bypasses PT completely and routes directly to the `shared_tier`.
+    """
+    TRAFFIC_TYPE_UNSPECIFIED = 0
+    DEDICATED = 1
+    SHARED = 2
+
+  sharedTier = _messages.EnumField('SharedTierValueValuesEnum', 1)
+  trafficType = _messages.EnumField('TrafficTypeValueValuesEnum', 2)
+
+
 class Cors(_messages.Message):
   r"""Cross-Origin Response sharing (CORS) properties for a bucket. For more
   on Cloud Storage and CORS, see https://cloud.google.com/storage/docs/cross-
@@ -649,7 +770,8 @@ class Cors(_messages.Message):
 
 
 class CreateAuthSessionRequest(_messages.Message):
-  r"""Request message for CreateAuthSession.
+  r"""LINT.IfChange(create_auth_session) Request message for
+  CreateAuthSession.
 
   Enums:
     AuthSessionTypeValueValuesEnum: Optional. OPTIONAL: The type of session
@@ -741,6 +863,22 @@ class CrossRegionEgressSpike(_messages.Message):
   percentageIncrease = _messages.FloatField(1)
   topBuckets = _messages.MessageField('IntelligenceFindingCrossRegionEgressSpikeBucketContribution', 2, repeated=True)
   totalEgressBytes = _messages.IntegerField(3)
+
+
+class CsekRestrictionViolation(_messages.Message):
+  r"""Details about a bucket with no CSEK objects that lacks CSEK encryption
+  restrictions. This corresponds to the
+  `FINDING_TYPE_CSEK_RESTRICTION_VIOLATION` finding type.
+
+  Fields:
+    allowedEncryptionTypes: Output only. The allowed and enforced encryption
+      types configured on the bucket. Acceptable values are `GMEK`, `CMEK`,
+      and `CSEK`.
+    bucketViolationDetails: Output only. Bucket level violation details.
+  """
+
+  allowedEncryptionTypes = _messages.StringField(1, repeated=True)
+  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 2)
 
 
 class CustomPlacementConfig(_messages.Message):
@@ -964,6 +1102,7 @@ class Empty(_messages.Message):
   """
 
 
+
 class Encryption(_messages.Message):
   r"""Encryption properties of a bucket.
 
@@ -1058,6 +1197,8 @@ class FeatureConfig(_messages.Message):
     dataScanningConfig: Optional. Placeholder FeatureConfig for data_scanning.
     description: Optional. A description of the feature configuration.
     filter: Optional. Filter over location and bucket.
+    geminiEnrichmentsConfig: Optional. Placeholder FeatureConfig for
+      gemini_enrichments.
     name: Identifier. The name of the `FeatureConfig` resource associated with
       your organization, folder, or project. The name format varies based on
       the scope as follows: * For project: `projects/{project}/locations/{loca
@@ -1075,19 +1216,23 @@ class FeatureConfig(_messages.Message):
         used if the feature type is omitted.
       AUTO_ANNOTATE: Indicates that the feature type is auto_annotate.
       DATA_SCANNING: Indicates that the feature type is data_scanning.
+      GEMINI_ENRICHMENTS: Indicates that the feature type is
+        gemini_enrichments.
     """
     FEATURE_TYPE_UNSPECIFIED = 0
     AUTO_ANNOTATE = 1
     DATA_SCANNING = 2
+    GEMINI_ENRICHMENTS = 3
 
   autoAnnotateConfig = _messages.MessageField('AutoAnnotateConfig', 1)
   createTime = _messages.StringField(2)
   dataScanningConfig = _messages.MessageField('DataScanningConfig', 3)
   description = _messages.StringField(4)
   filter = _messages.MessageField('FeatureConfigFilter', 5)
-  name = _messages.StringField(6)
-  type = _messages.EnumField('TypeValueValuesEnum', 7)
-  updateTime = _messages.StringField(8)
+  geminiEnrichmentsConfig = _messages.MessageField('GeminiEnrichmentsConfig', 6)
+  name = _messages.StringField(7)
+  type = _messages.EnumField('TypeValueValuesEnum', 8)
+  updateTime = _messages.StringField(9)
 
 
 class FeatureConfigFilter(_messages.Message):
@@ -1158,12 +1303,18 @@ class FindingSummary(_messages.Message):
       FINDING_CATEGORY_PERFORMANCE: Category is 'Performance'.
       FINDING_CATEGORY_SECURITY: Category is 'Security'.
       FINDING_CATEGORY_USAGE_MANAGEMENT: Category is 'Usage Management'.
+      FINDING_CATEGORY_DATA_ENCRYPTION: Category is 'Data Encryption'.
+      FINDING_CATEGORY_DATA_PROTECTION: Category is 'Data Protection'.
+      FINDING_CATEGORY_DATA_ACCESS: Category is 'Data Access'.
     """
     FINDING_CATEGORY_UNSPECIFIED = 0
     FINDING_CATEGORY_DATA_MANAGEMENT = 1
     FINDING_CATEGORY_PERFORMANCE = 2
     FINDING_CATEGORY_SECURITY = 3
     FINDING_CATEGORY_USAGE_MANAGEMENT = 4
+    FINDING_CATEGORY_DATA_ENCRYPTION = 5
+    FINDING_CATEGORY_DATA_PROTECTION = 6
+    FINDING_CATEGORY_DATA_ACCESS = 7
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Severity of the finding.
@@ -1213,6 +1364,19 @@ class FindingSummary(_messages.Message):
         within the bucket missing default CMEK protection.
       FINDING_TYPE_ENFORCED_ENCRYPTION_VIOLATION: Finding is about objects
         within the bucket violating enforced encryption rules.
+      FINDING_TYPE_CSEK_RESTRICTION_VIOLATION: Finding is about a bucket with
+        no CSEK objects that lacks CSEK encryption restrictions.
+      FINDING_TYPE_PROJECT_DELETION_LIEN_VIOLATION: Finding is about a project
+        missing deletion lien protection.
+      FINDING_TYPE_USER_HMAC_KEY_RESTRICTION_VIOLATION: Finding is about a
+        project that does not restrict authentication with user-created HMAC
+        keys.
+      FINDING_TYPE_SECURE_HTTP_TRANSPORT_VIOLATION: Finding is about a project
+        that does not block unencrypted HTTP traffic.
+      FINDING_TYPE_LEGACY_TLS_RESTRICTION_VIOLATION: Finding is about a
+        project that does not restrict legacy TLS versions.
+      FINDING_TYPE_PUBLIC_ACCESS_PREVENTION_VIOLATION: Finding is about a non-
+        website bucket with public access prevention disabled.
     """
     FINDING_TYPE_UNSPECIFIED = 0
     FINDING_TYPE_COLDLINE_AND_ARCHIVAL_STORAGE_OPERATIONS_SPIKE = 1
@@ -1231,6 +1395,12 @@ class FindingSummary(_messages.Message):
     FINDING_TYPE_BANDWIDTH_SPIKE = 14
     FINDING_TYPE_DEFAULT_CMEK_ENCRYPTION_VIOLATION = 15
     FINDING_TYPE_ENFORCED_ENCRYPTION_VIOLATION = 16
+    FINDING_TYPE_CSEK_RESTRICTION_VIOLATION = 17
+    FINDING_TYPE_PROJECT_DELETION_LIEN_VIOLATION = 18
+    FINDING_TYPE_USER_HMAC_KEY_RESTRICTION_VIOLATION = 19
+    FINDING_TYPE_SECURE_HTTP_TRANSPORT_VIOLATION = 20
+    FINDING_TYPE_LEGACY_TLS_RESTRICTION_VIOLATION = 21
+    FINDING_TYPE_PUBLIC_ACCESS_PREVENTION_VIOLATION = 22
 
   category = _messages.EnumField('CategoryValueValuesEnum', 1)
   createTime = _messages.StringField(2)
@@ -1253,7 +1423,10 @@ class Folder(_messages.Message):
       `projects/{project}/buckets/{bucket}/folders/{folder}`
     pendingDeleteFolderRecursiveInfo: Output only. Only present if the folder
       is part of an ongoing DeleteFolderRecursive operation. Contains
-      information which can be used to query the operation status.
+      information which can be used to query the operation status. The
+      presence of this field also indicates all write operations are blocked
+      for this folder, including folder, managed folder, and object
+      operations.
     pendingRenameInfo: Output only. Only present if the folder is part of an
       ongoing RenameFolder operation. Contains information which can be used
       to query the operation status. The presence of this field also indicates
@@ -1293,6 +1466,178 @@ class FolderPreconditions(_messages.Message):
   ifMetagenerationNotMatch = _messages.IntegerField(3)
   managedFolderNotExist = _messages.BooleanField(4)
   requireEmptyFolderMarker = _messages.BooleanField(5)
+
+
+class GeminiEnrichmentsConfig(_messages.Message):
+  r"""Configuration for Gemini object enrichments.
+
+  Enums:
+    EnrichmentBehaviorValueValuesEnum: Optional. The behavior when an object
+      context entry already exists for `object_context_key`.
+    ModeValueValuesEnum: Required. Specifies the workload mode.
+
+  Messages:
+    ModelParametersValue: Optional. Additional model parameters, as a JSON
+      object that maps to the Vertex AI `GenerateContentRequest` message. For
+      example, `generation_config` and `safety_settings`. Fields that are
+      configured through dedicated fields of this configuration (such as
+      `model`, `contents`, `service_tier`, and
+      `generation_config.response_format`) or that are unsupported (such as
+      `system_instruction`, `cached_content`, `tools`, `tool_config`,
+      `generation_config.response_modalities`,
+      `generation_config.audio_timestamp`,
+      `generation_config.media_resolution`, and
+      `generation_config.routing_config`) must not be set.
+    OutputSchemaValue: Optional. A JSON schema that the model response must
+      conform to. The maximum size is 5 KiB. Field names in the schema must
+      contain only alphanumeric characters.
+
+  Fields:
+    consumptionConfig: Optional. The consumption configuration for Vertex AI
+      requests.
+    enrichmentBehavior: Optional. The behavior when an object context entry
+      already exists for `object_context_key`.
+    inlinePrompt: Optional. Inline prompt string sent to the model for each
+      object. The maximum size is 10 KiB.
+    mode: Required. Specifies the workload mode.
+    model: Required. The fully qualified name of the Gemini model used for
+      enrichment, in the format `projects/{project}/locations/{location}/publi
+      shers/google/models/{model}`. The project must match the project of the
+      feature configuration, and the model must be a supported Gemini model.
+    modelParameters: Optional. Additional model parameters, as a JSON object
+      that maps to the Vertex AI `GenerateContentRequest` message. For
+      example, `generation_config` and `safety_settings`. Fields that are
+      configured through dedicated fields of this configuration (such as
+      `model`, `contents`, `service_tier`, and
+      `generation_config.response_format`) or that are unsupported (such as
+      `system_instruction`, `cached_content`, `tools`, `tool_config`,
+      `generation_config.response_modalities`,
+      `generation_config.audio_timestamp`,
+      `generation_config.media_resolution`, and
+      `generation_config.routing_config`) must not be set.
+    objectConditions: Optional. Select objects matching a set of conditions.
+    objectContextKey: Required. The object context key under which the model
+      output is stored. Must follow the object context key naming
+      requirements, and must not start with a reserved prefix such as `gcp`,
+      `gcs`, `goog`, or `x-goog`.
+    objectContextMappings: Optional. Mappings that store parts of the model
+      output as top-level object context entries. If set, `output_schema` must
+      also be set. The maximum number of mappings is 50.
+    objectManifest: Optional. Select the objects enumerated in a manifest
+      file. Only valid for a feature running in an on-demand mode because
+      manifest enumerates a fixed set of objects.
+    outputSchema: Optional. A JSON schema that the model response must conform
+      to. The maximum size is 5 KiB. Field names in the schema must contain
+      only alphanumeric characters.
+    promptGcsUri: Optional. Cloud Storage URI pointing to the prompt object,
+      in the format `gs://bucket-name/object-name` or `gs://bucket-
+      name/object-name#generation`.
+    serviceEndpoint: Required. The Vertex AI service endpoint that requests
+      are routed to. Must be one of the following: * The global endpoint:
+      `aiplatform.googleapis.com` * A regional endpoint:
+      `{region}-aiplatform.googleapis.com`, for example `us-
+      central1-aiplatform.googleapis.com` * A multi-region endpoint:
+      `aiplatform.us.rep.googleapis.com` or `aiplatform.eu.rep.googleapis.com`
+  """
+
+  class EnrichmentBehaviorValueValuesEnum(_messages.Enum):
+    r"""Optional. The behavior when an object context entry already exists for
+    `object_context_key`.
+
+    Values:
+      ENRICHMENT_BEHAVIOR_UNSPECIFIED: Enrichment behavior is unspecified.
+      ENRICH_IF_MISSING: Enriches the object only if the `object_context_key`
+        entry doesn't already exist.
+      ALWAYS_ENRICH: Always writes the object context entry, overwriting any
+        existing `object_context_key` entry.
+    """
+    ENRICHMENT_BEHAVIOR_UNSPECIFIED = 0
+    ENRICH_IF_MISSING = 1
+    ALWAYS_ENRICH = 2
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Required. Specifies the workload mode.
+
+    Values:
+      MODE_UNSPECIFIED: Mode is unspecified.
+      ON_DEMAND: On-demand user-triggered workloads. Runs once and stops.
+    """
+    MODE_UNSPECIFIED = 0
+    ON_DEMAND = 1
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ModelParametersValue(_messages.Message):
+    r"""Optional. Additional model parameters, as a JSON object that maps to
+    the Vertex AI `GenerateContentRequest` message. For example,
+    `generation_config` and `safety_settings`. Fields that are configured
+    through dedicated fields of this configuration (such as `model`,
+    `contents`, `service_tier`, and `generation_config.response_format`) or
+    that are unsupported (such as `system_instruction`, `cached_content`,
+    `tools`, `tool_config`, `generation_config.response_modalities`,
+    `generation_config.audio_timestamp`, `generation_config.media_resolution`,
+    and `generation_config.routing_config`) must not be set.
+
+    Messages:
+      AdditionalProperty: An additional property for a ModelParametersValue
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ModelParametersValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class OutputSchemaValue(_messages.Message):
+    r"""Optional. A JSON schema that the model response must conform to. The
+    maximum size is 5 KiB. Field names in the schema must contain only
+    alphanumeric characters.
+
+    Messages:
+      AdditionalProperty: An additional property for a OutputSchemaValue
+        object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a OutputSchemaValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  consumptionConfig = _messages.MessageField('ConsumptionConfig', 1)
+  enrichmentBehavior = _messages.EnumField('EnrichmentBehaviorValueValuesEnum', 2)
+  inlinePrompt = _messages.StringField(3)
+  mode = _messages.EnumField('ModeValueValuesEnum', 4)
+  model = _messages.StringField(5)
+  modelParameters = _messages.MessageField('ModelParametersValue', 6)
+  objectConditions = _messages.MessageField('ObjectConditions', 7)
+  objectContextKey = _messages.StringField(8)
+  objectContextMappings = _messages.MessageField('ObjectContextMapping', 9, repeated=True)
+  objectManifest = _messages.MessageField('ObjectManifest', 10)
+  outputSchema = _messages.MessageField('OutputSchemaValue', 11)
+  promptGcsUri = _messages.StringField(12)
+  serviceEndpoint = _messages.StringField(13)
 
 
 class GoogleManagedEncryptionEnforcementConfig(_messages.Message):
@@ -1567,6 +1912,8 @@ class IntelligenceFinding(_messages.Message):
     createTime: Output only. The time at which the finding was created.
     crossRegionEgressSpike: Output only. `IntelligenceFinding` about a spike
       in cross-region egress.
+    csekRestrictionViolation: Output only. `IntelligenceFinding` about a
+      bucket with no CSEK objects that lacks CSEK encryption restrictions.
     defaultCmekEncryptionViolation: Output only. `IntelligenceFinding` about
       objects missing default CMEK encryption.
     description: Output only. A short description about the finding.
@@ -1580,6 +1927,8 @@ class IntelligenceFinding(_messages.Message):
       inefficient object sizes in a bucket.
     inefficientOverwrite: Output only. A finding about inefficient overwrites
       in a bucket.
+    legacyTlsRestrictionViolation: Output only. `IntelligenceFinding` about a
+      project that does not restrict legacy TLS versions.
     missingSoftDelete: Output only. `IntelligenceFinding` about buckets with
       no soft delete configured.
     name: Identifier. The resource name of `IntelligenceFinding`. Format: `pro
@@ -1587,6 +1936,12 @@ class IntelligenceFinding(_messages.Message):
       finding}`
     observationPeriod: Output only. The time interval during which the
       underlying data was used to generate this `IntelligenceFinding`.
+    projectDeletionLienViolation: Output only. `IntelligenceFinding` about a
+      project missing deletion lien protection.
+    publicAccessPreventionViolation: Output only. `IntelligenceFinding` about
+      a non-website bucket with public access prevention disabled.
+    secureHttpTransportViolation: Output only. `IntelligenceFinding` about a
+      project that does not block unencrypted HTTP traffic.
     severity: Output only. Severity of the finding.
     staleTemporaryData: Output only. `IntelligenceFinding` about stale
       temporary data ( objects with tmp/ or staging/) in a bucket.
@@ -1600,6 +1955,9 @@ class IntelligenceFinding(_messages.Message):
       in throttled requests (429 errors) within a project.
     type: Output only. Type of this finding.
     updateTime: Output only. The time at which the finding was last updated.
+    userHmacKeyRestrictionViolation: Output only. `IntelligenceFinding` about
+      a project that does not restrict authentication with user-created HMAC
+      keys.
     zeroByteObject: Output only. `IntelligenceFinding` about zero-byte objects
       in a bucket.
   """
@@ -1613,12 +1971,18 @@ class IntelligenceFinding(_messages.Message):
       FINDING_CATEGORY_PERFORMANCE: Category is 'Performance'.
       FINDING_CATEGORY_SECURITY: Category is 'Security'.
       FINDING_CATEGORY_USAGE_MANAGEMENT: Category is 'Usage Management'.
+      FINDING_CATEGORY_DATA_ENCRYPTION: Category is 'Data Encryption'.
+      FINDING_CATEGORY_DATA_PROTECTION: Category is 'Data Protection'.
+      FINDING_CATEGORY_DATA_ACCESS: Category is 'Data Access'.
     """
     FINDING_CATEGORY_UNSPECIFIED = 0
     FINDING_CATEGORY_DATA_MANAGEMENT = 1
     FINDING_CATEGORY_PERFORMANCE = 2
     FINDING_CATEGORY_SECURITY = 3
     FINDING_CATEGORY_USAGE_MANAGEMENT = 4
+    FINDING_CATEGORY_DATA_ENCRYPTION = 5
+    FINDING_CATEGORY_DATA_PROTECTION = 6
+    FINDING_CATEGORY_DATA_ACCESS = 7
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Output only. Severity of the finding.
@@ -1668,6 +2032,19 @@ class IntelligenceFinding(_messages.Message):
         within the bucket missing default CMEK protection.
       FINDING_TYPE_ENFORCED_ENCRYPTION_VIOLATION: Finding is about objects
         within the bucket violating enforced encryption rules.
+      FINDING_TYPE_CSEK_RESTRICTION_VIOLATION: Finding is about a bucket with
+        no CSEK objects that lacks CSEK encryption restrictions.
+      FINDING_TYPE_PROJECT_DELETION_LIEN_VIOLATION: Finding is about a project
+        missing deletion lien protection.
+      FINDING_TYPE_USER_HMAC_KEY_RESTRICTION_VIOLATION: Finding is about a
+        project that does not restrict authentication with user-created HMAC
+        keys.
+      FINDING_TYPE_SECURE_HTTP_TRANSPORT_VIOLATION: Finding is about a project
+        that does not block unencrypted HTTP traffic.
+      FINDING_TYPE_LEGACY_TLS_RESTRICTION_VIOLATION: Finding is about a
+        project that does not restrict legacy TLS versions.
+      FINDING_TYPE_PUBLIC_ACCESS_PREVENTION_VIOLATION: Finding is about a non-
+        website bucket with public access prevention disabled.
     """
     FINDING_TYPE_UNSPECIFIED = 0
     FINDING_TYPE_COLDLINE_AND_ARCHIVAL_STORAGE_OPERATIONS_SPIKE = 1
@@ -1686,6 +2063,12 @@ class IntelligenceFinding(_messages.Message):
     FINDING_TYPE_BANDWIDTH_SPIKE = 14
     FINDING_TYPE_DEFAULT_CMEK_ENCRYPTION_VIOLATION = 15
     FINDING_TYPE_ENFORCED_ENCRYPTION_VIOLATION = 16
+    FINDING_TYPE_CSEK_RESTRICTION_VIOLATION = 17
+    FINDING_TYPE_PROJECT_DELETION_LIEN_VIOLATION = 18
+    FINDING_TYPE_USER_HMAC_KEY_RESTRICTION_VIOLATION = 19
+    FINDING_TYPE_SECURE_HTTP_TRANSPORT_VIOLATION = 20
+    FINDING_TYPE_LEGACY_TLS_RESTRICTION_VIOLATION = 21
+    FINDING_TYPE_PUBLIC_ACCESS_PREVENTION_VIOLATION = 22
 
   anomalousDeleteSpike = _messages.MessageField('AnomalousDeleteSpike', 1)
   associatedResources = _messages.StringField(2, repeated=True)
@@ -1695,24 +2078,30 @@ class IntelligenceFinding(_messages.Message):
   coldlineAndArchivalStorageOperationsSpike = _messages.MessageField('ColdlineAndArchivalStorageOperationsSpike', 6)
   createTime = _messages.StringField(7)
   crossRegionEgressSpike = _messages.MessageField('CrossRegionEgressSpike', 8)
-  defaultCmekEncryptionViolation = _messages.MessageField('DefaultCmekEncryptionViolation', 9)
-  description = _messages.StringField(10)
-  dormantBucket = _messages.MessageField('DormantBucket', 11)
-  enforcedEncryptionViolation = _messages.MessageField('EnforcedEncryptionViolation', 12)
-  excessiveNonCurrentVersion = _messages.MessageField('ExcessiveNonCurrentVersion', 13)
-  inefficientObjectSize = _messages.MessageField('InefficientObjectSize', 14)
-  inefficientOverwrite = _messages.MessageField('InefficientOverwrite', 15)
-  missingSoftDelete = _messages.MessageField('MissingSoftDelete', 16)
-  name = _messages.StringField(17)
-  observationPeriod = _messages.MessageField('Interval', 18)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 19)
-  staleTemporaryData = _messages.MessageField('StaleTemporaryData', 20)
-  storageGrowthAboveTrend = _messages.MessageField('StorageGrowthAboveTrend', 21)
-  targetResource = _messages.StringField(22)
-  throttledRequestsSpike = _messages.MessageField('ThrottledRequestSpike', 23)
-  type = _messages.EnumField('TypeValueValuesEnum', 24)
-  updateTime = _messages.StringField(25)
-  zeroByteObject = _messages.MessageField('ZeroByteObject', 26)
+  csekRestrictionViolation = _messages.MessageField('CsekRestrictionViolation', 9)
+  defaultCmekEncryptionViolation = _messages.MessageField('DefaultCmekEncryptionViolation', 10)
+  description = _messages.StringField(11)
+  dormantBucket = _messages.MessageField('DormantBucket', 12)
+  enforcedEncryptionViolation = _messages.MessageField('EnforcedEncryptionViolation', 13)
+  excessiveNonCurrentVersion = _messages.MessageField('ExcessiveNonCurrentVersion', 14)
+  inefficientObjectSize = _messages.MessageField('InefficientObjectSize', 15)
+  inefficientOverwrite = _messages.MessageField('InefficientOverwrite', 16)
+  legacyTlsRestrictionViolation = _messages.MessageField('LegacyTlsRestrictionViolation', 17)
+  missingSoftDelete = _messages.MessageField('MissingSoftDelete', 18)
+  name = _messages.StringField(19)
+  observationPeriod = _messages.MessageField('Interval', 20)
+  projectDeletionLienViolation = _messages.MessageField('ProjectDeletionLienViolation', 21)
+  publicAccessPreventionViolation = _messages.MessageField('PublicAccessPreventionViolation', 22)
+  secureHttpTransportViolation = _messages.MessageField('SecureHttpTransportViolation', 23)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 24)
+  staleTemporaryData = _messages.MessageField('StaleTemporaryData', 25)
+  storageGrowthAboveTrend = _messages.MessageField('StorageGrowthAboveTrend', 26)
+  targetResource = _messages.StringField(27)
+  throttledRequestsSpike = _messages.MessageField('ThrottledRequestSpike', 28)
+  type = _messages.EnumField('TypeValueValuesEnum', 29)
+  updateTime = _messages.StringField(30)
+  userHmacKeyRestrictionViolation = _messages.MessageField('UserHmacKeyRestrictionViolation', 31)
+  zeroByteObject = _messages.MessageField('ZeroByteObject', 32)
 
 
 class IntelligenceFindingAnomalousDeleteSpikePrefixContribution(_messages.Message):
@@ -2337,6 +2726,18 @@ class IpFilter(_messages.Message):
   vpcNetworkSources = _messages.MessageField('VpcNetworkSource', 5, repeated=True)
 
 
+class LegacyTlsRestrictionViolation(_messages.Message):
+  r"""Details about a project that does not restrict legacy TLS versions. This
+  corresponds to the `FINDING_TYPE_LEGACY_TLS_RESTRICTION_VIOLATION` finding
+  type.
+
+  Fields:
+    projectViolationDetails: Output only. Project level violation details.
+  """
+
+  projectViolationDetails = _messages.MessageField('ProjectSecurityControlViolation', 1)
+
+
 class Lifecycle(_messages.Message):
   r"""Lifecycle properties of a bucket. For more information, see [Object
   Lifecycle Management](https://cloud.google.com/storage/docs/lifecycle).
@@ -2446,6 +2847,19 @@ class ListOperationsResponse(_messages.Message):
   unreachable = _messages.StringField(3, repeated=True)
 
 
+class ListSmartBucketsResponse(_messages.Message):
+  r"""Response message for ListSmartBuckets.
+
+  Fields:
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page.
+    smartBuckets: The list of SmartBuckets.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  smartBuckets = _messages.MessageField('SmartBucket', 2, repeated=True)
+
+
 class ListSnapshotsResponse(_messages.Message):
   r"""Response message for ListSnapshots.
 
@@ -2456,6 +2870,19 @@ class ListSnapshotsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   snapshots = _messages.MessageField('Snapshot', 2, repeated=True)
+
+
+class ListVectorIndexesResponse(_messages.Message):
+  r"""Response message for ListVectorIndexes.
+
+  Fields:
+    nextPageToken: A token that can be sent as `page_token` to retrieve the
+      next page.
+    vectorIndexes: The list of VectorIndexes.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  vectorIndexes = _messages.MessageField('VectorIndex', 2, repeated=True)
 
 
 class LocationalContribution(_messages.Message):
@@ -2781,6 +3208,40 @@ class ObjectAccessControl(_messages.Message):
   role = _messages.StringField(9)
 
 
+class ObjectConditions(_messages.Message):
+  r"""Specifies the object conditions to match.
+
+  Fields:
+    includedObjectPrefixes: Optional. Objects matching any of the specified
+      prefixes are included. For example, `['prefix1/', 'prefix2/']` includes
+      all objects whose names start with `prefix1/` or `prefix2/`. The maximum
+      number of prefixes is 1000.
+  """
+
+  includedObjectPrefixes = _messages.StringField(1, repeated=True)
+
+
+class ObjectContextMapping(_messages.Message):
+  r"""Maps a field of the model's JSON output to a top-level object context
+  entry.
+
+  Fields:
+    contextKey: Required. The object context key that the value of the output
+      field is written to. Must follow the same naming requirements as
+      `object_context_key`.
+    contextValuePath: Required. The path of the field in the model's JSON
+      output, as defined in `output_schema`. Nested fields use dot notation,
+      for example `parent.child.field`. The field must be a string, number, or
+      boolean; non-string values are converted to strings.
+    overwrite: Optional. Whether to overwrite an existing object context entry
+      for `context_key`. Defaults to `true` if unset.
+  """
+
+  contextKey = _messages.StringField(1)
+  contextValuePath = _messages.StringField(2)
+  overwrite = _messages.BooleanField(3)
+
+
 class ObjectFullContext(_messages.Message):
   r"""A full representation of an object context.
 
@@ -2947,6 +3408,23 @@ class ObjectIndex(_messages.Message):
   updateTime = _messages.StringField(9)
 
 
+class ObjectManifest(_messages.Message):
+  r"""Describes a manifest file containing a list of objects.
+
+  Fields:
+    uri: Required. Specifies the manifest file location. Must be an absolute
+      Cloud Storage URI in the format `gs://bucket-name/object-name` or
+      `gs://bucket-name/object-name#generation`. The manifest content must be
+      CSV-formatted and stored in Cloud Storage, listing the objects to
+      process. The first row must be a header with the exact format
+      `bucket,object`, and each subsequent row must specify the bucket name
+      and object name (without the `gs://` prefix). For example: ```
+      bucket,object bucket_1,path/to/object_1 bucket_1,path/to/object_2 ```
+  """
+
+  uri = _messages.StringField(1)
+
+
 class ObjectRetention(_messages.Message):
   r"""Object Retention related properties of a bucket.
 
@@ -3110,6 +3588,29 @@ class PermissionErrors(_messages.Message):
   errorMessage = _messages.StringField(1)
 
 
+class ProjectDeletionLienViolation(_messages.Message):
+  r"""Details about a project missing deletion lien protection. This
+  corresponds to the `FINDING_TYPE_PROJECT_DELETION_LIEN_VIOLATION` finding
+  type.
+
+  Fields:
+    projectViolationDetails: Output only. Project level violation details.
+  """
+
+  projectViolationDetails = _messages.MessageField('ProjectSecurityControlViolation', 1)
+
+
+class ProjectSecurityControlViolation(_messages.Message):
+  r"""Details about a security control violation on a project.
+
+  Fields:
+    project: Output only. The name of the project. Format:
+      `projects/{project_number}`
+  """
+
+  project = _messages.StringField(1)
+
+
 class ProjectTeam(_messages.Message):
   r"""Represents the Viewers, Editors, or Owners of a given project.
 
@@ -3120,6 +3621,18 @@ class ProjectTeam(_messages.Message):
 
   projectNumber = _messages.StringField(1)
   team = _messages.StringField(2)
+
+
+class PublicAccessPreventionViolation(_messages.Message):
+  r"""Details about a non-website bucket with public access prevention
+  disabled. This corresponds to the
+  `FINDING_TYPE_PUBLIC_ACCESS_PREVENTION_VIOLATION` finding type.
+
+  Fields:
+    bucketViolationDetails: Output only. Bucket level violation details.
+  """
+
+  bucketViolationDetails = _messages.MessageField('BucketSecurityControlViolation', 1)
 
 
 class PublicNetworkSource(_messages.Message):
@@ -3187,20 +3700,20 @@ class ReplaceBucketEncryptionKeyRequest(_messages.Message):
   r"""Request message for ReplaceBucketEncryptionKey.
 
   Fields:
-    destKmsKey: Required. The id of the Cloud KMS key to use for replacement.
-      This cannot be the same as src_kms_key. e.g.
-      projects/P/locations/L/keyRing/R/cryptoKeys/K
+    destinationKmsKey: Required. The resource name of the destination Cloud
+      KMS CryptoKey to use for replacement. e.g.
+      projects/P/locations/L/keyRings/R/cryptoKeys/K
     requestId: Optional. A unique identifier for this request. A random UUID
       is recommended. This request is only idempotent if a `request_id` is
       provided.
-    srcKmsKey: Required. The id of the bucket Cloud KMS key version to be
-      replaced. e.g.
-      projects/P/locations/L/keyRing/R/cryptoKeys/K/cryptoKeyVersions/V
+    sourceKmsKeyVersion: The resource name of the Cloud KMS CryptoKeyVersion
+      to be replaced. e.g.
+      projects/P/locations/L/keyRings/R/cryptoKeys/K/cryptoKeyVersions/V
   """
 
-  destKmsKey = _messages.StringField(1)
+  destinationKmsKey = _messages.StringField(1)
   requestId = _messages.StringField(2)
-  srcKmsKey = _messages.StringField(3)
+  sourceKmsKeyVersion = _messages.StringField(3)
 
 
 class ReplicationStatus(_messages.Message):
@@ -3237,14 +3750,12 @@ class RetentionPolicy(_messages.Message):
 
 
 class RotateBucketEncryptionKeyRequest(_messages.Message):
-  r"""LINT.IfChange(RotateBucketEncryptionKeyRequest) Request message for
-
-  RotateBucketEncryptionKey.
+  r"""Request message for RotateBucketEncryptionKey.
 
   Fields:
-    kmsKeyVersion: Required. The id of the bucket Cloud KMS key version to be
-      rotated to the primary key version. e.g.
-      projects/P/locations/L/keyRing/R/cryptoKeys/K/cryptoKeyVersions/V
+    kmsKeyVersion: The resource name of the Cloud KMS CryptoKeyVersion to
+      rotate from. e.g.
+      projects/P/locations/L/keyRings/R/cryptoKeys/K/cryptoKeyVersions/V
     requestId: Optional. A unique identifier for this request. A random UUID
       is recommended. This request is only idempotent if a `request_id` is
       provided.
@@ -3293,6 +3804,71 @@ class SearchResultItem(_messages.Message):
   image = _messages.MessageField('Image', 1)
 
 
+class SecureHttpTransportViolation(_messages.Message):
+  r"""Details about a project that does not block unencrypted HTTP traffic.
+  This corresponds to the `FINDING_TYPE_SECURE_HTTP_TRANSPORT_VIOLATION`
+  finding type.
+
+  Fields:
+    projectViolationDetails: Output only. Project level violation details.
+  """
+
+  projectViolationDetails = _messages.MessageField('ProjectSecurityControlViolation', 1)
+
+
+class SmartBucket(_messages.Message):
+  r"""A SmartBucket is a container for VectorIndexes, which are containers for
+  VectorDocuments.
+
+  Messages:
+    LabelsValue: Optional. Labels applied to the SmartBucket.
+
+  Fields:
+    createTime: Output only. The time at which the SmartBucket was created.
+    description: Optional. User-provided description. The maximum length is
+      1024 characters.
+    etag: The etag for this resource.
+    kmsKeyName: Optional. The KMS key used to encrypt the SmartBucket.
+    labels: Optional. Labels applied to the SmartBucket.
+    name: Identifier. The resource name of the SmartBucket. Format:
+      `projects/{project}/locations/{location}/smartBuckets/{smart_bucket}`
+    updateTime: Output only. The time at which the SmartBucket was last
+      modified.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels applied to the SmartBucket.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  createTime = _messages.StringField(1)
+  description = _messages.StringField(2)
+  etag = _messages.StringField(3)
+  kmsKeyName = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  name = _messages.StringField(6)
+  updateTime = _messages.StringField(7)
+
+
 class Snapshot(_messages.Message):
   r"""A snapshot resource.
 
@@ -3325,7 +3901,8 @@ class SoftDeletePolicy(_messages.Message):
       If not set, hard delete pause is disabled.
     retentionDuration: The period of time that soft-deleted objects in the
       bucket must be retained and cannot be permanently deleted. The duration
-      must be greater than or equal to 7 days and less than 1 year.
+      must be greater than or equal to 3 days and less than or equal to 90
+      days.
   """
 
   effectiveTime = _messages.StringField(1)
@@ -4896,6 +5473,161 @@ class StorageProjectsLocationsOperationsListRequest(_messages.Message):
   returnPartialSuccess = _messages.BooleanField(5)
 
 
+class StorageProjectsLocationsSmartBucketsCreateRequest(_messages.Message):
+  r"""A StorageProjectsLocationsSmartBucketsCreateRequest object.
+
+  Fields:
+    parent: Required. The parent resource where this SmartBucket will be
+      created.
+    smartBucket: A SmartBucket resource to be passed as the request body.
+    smartBucketId: Required. The ID to use for the SmartBucket, which will
+      become the final component of the SmartBucket's resource name. This
+      value should be 4-63 characters, and valid characters are
+      `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  smartBucket = _messages.MessageField('SmartBucket', 2)
+  smartBucketId = _messages.StringField(3)
+
+
+class StorageProjectsLocationsSmartBucketsDeleteRequest(_messages.Message):
+  r"""A StorageProjectsLocationsSmartBucketsDeleteRequest object.
+
+  Fields:
+    etag: Optional. If provided, the entity won't be deleted unless the etag
+      matches.
+    name: Required. The name of the SmartBucket to delete.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+
+
+class StorageProjectsLocationsSmartBucketsGetRequest(_messages.Message):
+  r"""A StorageProjectsLocationsSmartBucketsGetRequest object.
+
+  Fields:
+    name: Required. The name of the SmartBucket to retrieve.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class StorageProjectsLocationsSmartBucketsListRequest(_messages.Message):
+  r"""A StorageProjectsLocationsSmartBucketsListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of results to return. If
+      unspecified, defaults to 100. The maximum value is 1000; values above
+      1000 will be coerced to 1000.
+    pageToken: Optional. A page token received from a previous
+      `ListSmartBuckets` call.
+    parent: Required. The parent whose SmartBuckets are to be listed. Wildcard
+      location '-' is not supported; a specific location must be specified.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class StorageProjectsLocationsSmartBucketsPatchRequest(_messages.Message):
+  r"""A StorageProjectsLocationsSmartBucketsPatchRequest object.
+
+  Fields:
+    name: Identifier. The resource name of the SmartBucket. Format:
+      `projects/{project}/locations/{location}/smartBuckets/{smart_bucket}`
+    smartBucket: A SmartBucket resource to be passed as the request body.
+    updateMask: Optional. The list of fields to update. If unspecified, all
+      mutable fields populated in the `smart_bucket` payload will be updated.
+  """
+
+  name = _messages.StringField(1, required=True)
+  smartBucket = _messages.MessageField('SmartBucket', 2)
+  updateMask = _messages.StringField(3)
+
+
+class StorageProjectsLocationsSmartBucketsVectorIndexesCreateRequest(_messages.Message):
+  r"""A StorageProjectsLocationsSmartBucketsVectorIndexesCreateRequest object.
+
+  Fields:
+    parent: Required. The parent resource where this VectorIndex will be
+      created.
+    vectorIndex: A VectorIndex resource to be passed as the request body.
+    vectorIndexId: Required. The ID to use for the VectorIndex, which will
+      become the final component of the VectorIndex's resource name. This
+      value should be 4-63 characters, and valid characters are
+      `^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$`.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  vectorIndex = _messages.MessageField('VectorIndex', 2)
+  vectorIndexId = _messages.StringField(3)
+
+
+class StorageProjectsLocationsSmartBucketsVectorIndexesDeleteRequest(_messages.Message):
+  r"""A StorageProjectsLocationsSmartBucketsVectorIndexesDeleteRequest object.
+
+  Fields:
+    etag: Optional. If provided, then the entity won't be deleted unless the
+      etag matches.
+    force: Optional. If true, also deletes all VectorDocuments contained
+      within this VectorIndex. Currently, this field *must* be set to true -
+      the *only* case currently supported is force-deleting all
+      VectorDocuments.
+    name: Required. The name of the VectorIndex to delete.
+  """
+
+  etag = _messages.StringField(1)
+  force = _messages.BooleanField(2)
+  name = _messages.StringField(3, required=True)
+
+
+class StorageProjectsLocationsSmartBucketsVectorIndexesGetRequest(_messages.Message):
+  r"""A StorageProjectsLocationsSmartBucketsVectorIndexesGetRequest object.
+
+  Fields:
+    name: Required. The name of the VectorIndex to retrieve.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class StorageProjectsLocationsSmartBucketsVectorIndexesListRequest(_messages.Message):
+  r"""A StorageProjectsLocationsSmartBucketsVectorIndexesListRequest object.
+
+  Fields:
+    pageSize: Optional. The maximum number of results to return. If
+      unspecified, defaults to 100. The maximum value is 1000; values above
+      1000 will be coerced to 1000.
+    pageToken: Optional. A page token received from a previous
+      `ListVectorIndexes` call.
+    parent: Required. The parent whose VectorIndexes are to be listed.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class StorageProjectsLocationsSmartBucketsVectorIndexesPatchRequest(_messages.Message):
+  r"""A StorageProjectsLocationsSmartBucketsVectorIndexesPatchRequest object.
+
+  Fields:
+    name: Identifier. The resource name of the VectorIndex. Format: `projects/
+      {project}/locations/{location}/smartBuckets/{smart_bucket}/vectorIndexes
+      /{vector_index}`
+    updateMask: Optional. The list of fields to update. If unspecified, all
+      mutable fields populated in the `vector_index` payload will be updated.
+    vectorIndex: A VectorIndex resource to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  updateMask = _messages.StringField(2)
+  vectorIndex = _messages.MessageField('VectorIndex', 3)
+
+
 class StorageProjectsLocationsUpdateIntelligenceConfigRequest(_messages.Message):
   r"""A StorageProjectsLocationsUpdateIntelligenceConfigRequest object.
 
@@ -5058,6 +5790,18 @@ class UniformBucketLevelAccess(_messages.Message):
   lockTime = _messages.StringField(2)
 
 
+class UserHmacKeyRestrictionViolation(_messages.Message):
+  r"""Details about a project that does not restrict authentication with user-
+  created HMAC keys. This corresponds to the
+  `FINDING_TYPE_USER_HMAC_KEY_RESTRICTION_VIOLATION` finding type.
+
+  Fields:
+    projectViolationDetails: Output only. Project level violation details.
+  """
+
+  projectViolationDetails = _messages.MessageField('ProjectSecurityControlViolation', 1)
+
+
 class ValueWithPercentage(_messages.Message):
   r"""Represents a value (such as a count or a size) and its percentage
   relative to a total.
@@ -5069,6 +5813,125 @@ class ValueWithPercentage(_messages.Message):
 
   percentage = _messages.FloatField(1)
   value = _messages.IntegerField(2)
+
+
+class VectorField(_messages.Message):
+  r"""Configuration for a vector field.
+
+  Enums:
+    DistanceMetricValueValuesEnum: Required. Immutable. The distance metric of
+      the VectorField. This cannot be modified after creation.
+
+  Fields:
+    dimensionCount: Required. Immutable. Number of dimensions of the
+      VectorField. This cannot be modified after creation.
+    distanceMetric: Required. Immutable. The distance metric of the
+      VectorField. This cannot be modified after creation.
+    id: Required. The name of the vector field.
+  """
+
+  class DistanceMetricValueValuesEnum(_messages.Enum):
+    r"""Required. Immutable. The distance metric of the VectorField. This
+    cannot be modified after creation.
+
+    Values:
+      DISTANCE_METRIC_UNSPECIFIED: Unspecified distance metric.
+      DOT_PRODUCT: Dot product distance metric.
+      COSINE: Cosine distance metric.
+      SQUARED_EUCLIDEAN: Squared Euclidean distance metric.
+    """
+    DISTANCE_METRIC_UNSPECIFIED = 0
+    DOT_PRODUCT = 1
+    COSINE = 2
+    SQUARED_EUCLIDEAN = 3
+
+  dimensionCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  distanceMetric = _messages.EnumField('DistanceMetricValueValuesEnum', 2)
+  id = _messages.StringField(3)
+
+
+class VectorIndex(_messages.Message):
+  r"""A VectorIndex within a SmartBucket.
+
+  Enums:
+    IdTypeValueValuesEnum: Required. Immutable. Data type of the identifiers
+      of the VectorDocuments stored in this VectorIndex. This field is
+      immutable and cannot be updated once set at the time of creation.
+
+  Messages:
+    LabelsValue: Optional. Labels applied to the VectorIndex.
+
+  Fields:
+    attributes: Optional. The Attributes applicable to VectorDocuments in this
+      VectorIndex. A VectorIndex may have a maximum of 100 Attributes.
+    createTime: Output only. The time at which the VectorIndex was created.
+    description: Optional. User-provided description. The maximum length is
+      1024 characters.
+    etag: The etag for this resource.
+    idType: Required. Immutable. Data type of the identifiers of the
+      VectorDocuments stored in this VectorIndex. This field is immutable and
+      cannot be updated once set at the time of creation.
+    labels: Optional. Labels applied to the VectorIndex.
+    name: Identifier. The resource name of the VectorIndex. Format: `projects/
+      {project}/locations/{location}/smartBuckets/{smart_bucket}/vectorIndexes
+      /{vector_index}`
+    updateTime: Output only. The time at which the VectorIndex was last
+      modified.
+    vectorFields: Required. The VectorFields applied to this VectorIndex. Only
+      a single VectorField per VectorIndex is supported at this time.
+  """
+
+  class IdTypeValueValuesEnum(_messages.Enum):
+    r"""Required. Immutable. Data type of the identifiers of the
+    VectorDocuments stored in this VectorIndex. This field is immutable and
+    cannot be updated once set at the time of creation.
+
+    Values:
+      ID_TYPE_UNSPECIFIED: Unspecified ID type.
+      STRING: String ID type.
+      INT32: 32-bit integer ID type.
+      INT64: 64-bit integer ID type.
+      UUID: UUID ID type.
+    """
+    ID_TYPE_UNSPECIFIED = 0
+    STRING = 1
+    INT32 = 2
+    INT64 = 3
+    UUID = 4
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Labels applied to the VectorIndex.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  attributes = _messages.MessageField('Attribute', 1, repeated=True)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  idType = _messages.EnumField('IdTypeValueValuesEnum', 5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  updateTime = _messages.StringField(8)
+  vectorFields = _messages.MessageField('VectorField', 9, repeated=True)
 
 
 class Versioning(_messages.Message):

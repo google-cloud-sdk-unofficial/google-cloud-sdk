@@ -1,4 +1,6 @@
-- help_text:
+- hints:
+    read_only: false
+  help_text:
     brief: Fetch the read token of a given gitRepositoryLink.
     description: |
       Fetch the read token of a given gitRepositoryLink.

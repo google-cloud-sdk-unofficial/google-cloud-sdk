@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import regional
 
 _RUN_API_NAMES = frozenset(
     ['run.googleapis.com', 'staging-run.sandbox.googleapis.com']
@@ -47,7 +48,7 @@ def _check_preconditions():
     return False
   endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
   if (
-      properties.VALUES.regional.endpoint_compatibility.Get()
+      regional.IsRegionalEndpointCompatible()
       and endpoint_mode == properties.constants.regional.REGIONAL
   ):
     # Service usage API does not support regional endpoints.

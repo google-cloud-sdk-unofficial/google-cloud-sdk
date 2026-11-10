@@ -16,7 +16,6 @@
 
 """Command for updating hubs."""
 
-
 from googlecloudsdk.api_lib.network_connectivity import networkconnectivity_api
 from googlecloudsdk.api_lib.network_connectivity import networkconnectivity_util
 from googlecloudsdk.api_lib.util import waiter
@@ -48,12 +47,6 @@ def UpdatedPscFields(args, export_psc_config):
       or args.IsSpecified('export_psc_global_google_apis')
   ):
     return None, None
-
-  # Handle the case where export_psc_config is None. This will happen if the
-  # user does not have the NCC_PSC_GAPI visiblity label: b/391865147#comment29.
-  # TODO: b/406009715 - Remove this once the API is GA.
-  if export_psc_config is None:
-    return args.export_psc, None
 
   # Check if this is the legacy case. We can ignore the other flags because the
   # mutex group ensures that the other flags are not set.
@@ -87,7 +80,7 @@ def UpdatedPscFields(args, export_psc_config):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a hub.
 
@@ -102,20 +95,34 @@ class Update(base.Command):
     flags.AddAsyncFlag(parser)
     labels_util.AddUpdateLabelsFlags(parser)
 
+  def _HubMessage(self, client):
+    """Returns the hub message class for this release track."""
+    return client.messages.Hub
+
+  def _UpdateHub(self, client, hub_ref, hub, update_mask):
+    """Calls the API to update the hub for this release track."""
+    return client.UpdateHub(hub_ref, hub, update_mask)
+
   def Run(self, args):
     client = networkconnectivity_api.HubsClient(
         release_track=self.ReleaseTrack()
     )
+    hub_message = self._HubMessage(client)
     hub_ref = args.CONCEPTS.hub.Parse()
     update_mask = []
     description = args.description
     if description is not None:
       update_mask.append('description')
 
-    # Fetch the hub so we can update the PSC fields.
+    # Fetch the hub so we can update the PSC fields. If the server doesn't
+    # return exportPscConfig, start from an empty one so that explicitly set
+    # flags are still sent.
     original_hub = client.Get(hub_ref)
+    export_psc_config = (
+        original_hub.exportPscConfig or hub_message.exportPscConfig.type()
+    )
     updated_export_psc, updated_export_psc_config = UpdatedPscFields(
-        args, original_hub.exportPscConfig
+        args, export_psc_config
     )
     # We use both the export_psc field and the new export_psc_config, so we need
     # to include both in the mask.
@@ -128,20 +135,20 @@ class Update(base.Command):
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
     if labels_diff.MayHaveUpdates():
       labels_update = labels_diff.Apply(
-          client.messages.GoogleCloudNetworkconnectivityV1betaHub.LabelsValue,
+          hub_message.LabelsValue,
           original_hub.labels,
       )
       if labels_update.needs_update:
         labels = labels_update.labels
         update_mask.append('labels')
 
-    hub = client.messages.GoogleCloudNetworkconnectivityV1betaHub(
+    hub = hub_message(
         description=description,
         exportPsc=updated_export_psc,
         exportPscConfig=updated_export_psc_config,
         labels=labels,
     )
-    op_ref = client.UpdateHubBeta(hub_ref, hub, update_mask)
+    op_ref = self._UpdateHub(client, hub_ref, hub, update_mask)
 
     log.status.Print('Update request issued for: [{}]'.format(hub_ref.Name()))
 
@@ -172,15 +179,41 @@ class Update(base.Command):
     return res
 
 
-Update.detailed_help = {
-    'EXAMPLES': """ \
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a hub.
+
+  Update the details of a hub.
+  """
+
+  def _HubMessage(self, client):
+    """Returns the hub message class for this release track."""
+    return client.messages.GoogleCloudNetworkconnectivityV1betaHub
+
+  def _UpdateHub(self, client, hub_ref, hub, update_mask):
+    """Calls the API to update the hub for this release track."""
+    return client.UpdateHubBeta(hub_ref, hub, update_mask)
+
+
+_EXAMPLES = """ \
   To update the description of a hub named ``my-hub'', run:
 
     $ {command} my-hub --description="The new description of my-hub".
-  """,
-    'API REFERENCE': """ \
-  This command uses the networkconnectivity/v1beta API. The full documentation
+  """
+
+_API_REFERENCE_FMT = """ \
+  This command uses the networkconnectivity/{} API. The full documentation
   for this API can be found at:
   https://cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest
-  """,
+  """
+
+Update.detailed_help = {
+    'EXAMPLES': _EXAMPLES,
+    'API REFERENCE': _API_REFERENCE_FMT.format('v1'),
+}
+
+UpdateBeta.detailed_help = {
+    'EXAMPLES': _EXAMPLES,
+    'API REFERENCE': _API_REFERENCE_FMT.format('v1beta'),
 }

@@ -41,6 +41,28 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_FLEETS = (
+      'projects.locations.fleets',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/fleets/'
+              '{fleetsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_FLEETS_ROLLOUTS = (
+      'projects.locations.fleets.rollouts',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/fleets/'
+              '{fleetsId}/rollouts/{rolloutsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_OPERATIONS = (
       'projects.locations.operations',
       '{+name}',
@@ -70,6 +92,28 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/pipelines/'
               '{pipelinesId}/routes/{routesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_POLICYSETS = (
+      'projects.locations.policySets',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/policySets/'
+              '{policySetsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_POLICYSETS_REVISIONS = (
+      'projects.locations.policySets.revisions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/policySets/'
+              '{policySetsId}/revisions/{revisionsId}',
       },
       ['name'],
       True

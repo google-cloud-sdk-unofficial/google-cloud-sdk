@@ -129,44 +129,6 @@ IP for the range. If no IP range is specified, Cloud Build uses `/24` as the
 default network IP range.
 """,
     )
-    if (
-        release_track == base.ReleaseTrack.ALPHA
-        or release_track == base.ReleaseTrack.BETA
-    ):
-      private_service_connect_flags = network_flags.add_argument_group(
-          'Network configuration for Private Service Connect interface:'
-      )
-      private_service_connect_flags.add_argument(
-          '--network-attachment',
-          help="""\
-  The network attachment that the worker network interface is peered to. The
-  network attachment is specified in resource URL format
-  projects/{project}/regions/{region}/networkAttachments/{name}.
-  The region of network attachment must be the same as the worker pool.
-  See https://cloud.google.com/vpc/docs/about-network-attachments for details.
-  """,
-      )
-      private_service_connect_flags.add_argument(
-          '--route-all-traffic',
-          action='store_true',
-          help="""\
-  Route all traffic through PSC interface. Enable this if you want full control
-  of traffic in the private pool. Configure Cloud NAT for the subnet of network
-  attachment if you need to access public Internet.
-
-  If unset, Only route private IPs, e.g. 10.0.0.0/8, 172.16.0.0/12,
-  and 192.168.0.0/16 through PSC interface.
-  """,
-      )
-      private_service_connect_flags.add_argument(
-          '--disable-public-ip-address',
-          action='store_true',
-          help="""\
-  If set, workers in the worker pool are created without an external IP address.
-
-  If the worker pool is within a VPC Service Control perimeter, use this flag.
-  """,
-      )
 
   worker_flags = flags.add_argument_group(
       'Configuration to be used for creating workers in the worker pool:'

@@ -1145,6 +1145,33 @@ class DataformV1beta1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def CreateLongRunning(self, request, global_params=None):
+      r"""Creates a new Workspace in a given Repository asynchronously.
+
+      Args:
+        request: (DataformProjectsLocationsRepositoriesWorkspacesCreateLongRunningRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('CreateLongRunning')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    CreateLongRunning.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/repositories/{repositoriesId}/workspaces:createLongRunning',
+        http_method='POST',
+        method_id='dataform.projects.locations.repositories.workspaces.createLongRunning',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['workspaceId'],
+        relative_path='v1beta1/{+parent}/workspaces:createLongRunning',
+        request_field='workspace',
+        request_type_name='DataformProjectsLocationsRepositoriesWorkspacesCreateLongRunningRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Delete(self, request, global_params=None):
       r"""Deletes a single Workspace.
 

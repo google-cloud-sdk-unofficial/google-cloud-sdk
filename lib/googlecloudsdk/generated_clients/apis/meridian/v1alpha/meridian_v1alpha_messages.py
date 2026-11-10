@@ -4437,9 +4437,8 @@ class Model(_messages.Message):
     displayName: Optional. User-friendly display name. Defaults to
       "{DatasetDisplayName}({version})".
     effectiveTrainingPeriod: Output only. The window this model trains on,
-      with open bounds resolved to concrete dataset dates. Always set, even
-      when `model_spec.training_period` is unset (it then covers the full
-      dataset).
+      with open bounds resolved to concrete dataset dates. When
+      `model_spec.training_period` is unset, it covers the full dataset.
     error: Output only. Status details, especially useful if the state is
       FAILED.
     isDefaultModel: Optional. Indicates if this is the currently designated
@@ -4463,6 +4462,7 @@ class Model(_messages.Message):
     modelingJobState: Output only. Deprecated: Use modeling_state instead.
       State of the modeling job.
     modelingState: Output only. The current state of the model.
+    mspBqDatasetId: Output only. The MSP dataset ID for the model.
     name: Identifier. The resource name. Format: projects/{project}/locations/
       {location}/workspaces/{workspace}/datasets/{dataset}/models/{model}
     notes: Optional. User-provided notes about this model version.
@@ -4471,6 +4471,8 @@ class Model(_messages.Message):
     updateTime: Output only. The time the model was last updated.
     version: Output only. The sequential version number, auto-assigned on
       creation (1, 2, 3...).
+    warnings: Output only. Non-blocking warnings produced when the model was
+      created. A warning doesn't block creating or training the model.
   """
 
   class ModelScenarioPlanningStateValueValuesEnum(_messages.Enum):
@@ -4566,12 +4568,14 @@ class Model(_messages.Message):
   modelSpec = _messages.MessageField('ModelSpec', 11)
   modelingJobState = _messages.EnumField('ModelingJobStateValueValuesEnum', 12)
   modelingState = _messages.EnumField('ModelingStateValueValuesEnum', 13)
-  name = _messages.StringField(14)
-  notes = _messages.StringField(15)
-  scenarioPlanningParams = _messages.MessageField('ScenarioPlanningParameters', 16)
-  tenantProjectModelId = _messages.StringField(17)
-  updateTime = _messages.StringField(18)
-  version = _messages.IntegerField(19, variant=_messages.Variant.INT32)
+  mspBqDatasetId = _messages.StringField(14)
+  name = _messages.StringField(15)
+  notes = _messages.StringField(16)
+  scenarioPlanningParams = _messages.MessageField('ScenarioPlanningParameters', 17)
+  tenantProjectModelId = _messages.StringField(18)
+  updateTime = _messages.StringField(19)
+  version = _messages.IntegerField(20, variant=_messages.Variant.INT32)
+  warnings = _messages.MessageField('ModelWarning', 21, repeated=True)
 
 
 class ModelArtifact(_messages.Message):
@@ -4806,6 +4810,38 @@ class ModelSpecTemplate(_messages.Message):
   Workspace.
   """
 
+
+
+class ModelWarning(_messages.Message):
+  r"""A non-blocking warning about a model. A warning doesn't block creating
+  or training the model.
+
+  Enums:
+    CodeValueValuesEnum: Output only. The warning code.
+
+  Fields:
+    code: Output only. The warning code.
+    message: Output only. Human-readable description of the warning, including
+      any relevant values (for example, the number of data points in the
+      training window and the recommended minimum). For display only; its
+      wording may change, so don't parse it. Use `code` to identify the
+      warning.
+  """
+
+  class CodeValueValuesEnum(_messages.Enum):
+    r"""Output only. The warning code.
+
+    Values:
+      CODE_UNSPECIFIED: Default value. Not used.
+      TRAINING_PERIOD_FEW_DATA_POINTS: The model's training window
+        (`Model.effective_training_period`) has fewer data points than
+        recommended.
+    """
+    CODE_UNSPECIFIED = 0
+    TRAINING_PERIOD_FEW_DATA_POINTS = 1
+
+  code = _messages.EnumField('CodeValueValuesEnum', 1)
+  message = _messages.StringField(2)
 
 
 class NonMediaBaselineValue(_messages.Message):

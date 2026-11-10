@@ -262,8 +262,10 @@ def AddRegionGroup(parser,
 def AddSpokeLocationsFlag(parser):
   """Add the --spoke-locations argument to the given parser."""
   spoke_locations_help_text = """ \
-        A comma separated list of locations. The locations can be set to 'global'
-        and/or Google Cloud supported regions. To see the names of regions, see
+        Comma-separated list of locations. The locations can be set to 'global'
+        and/or Google Cloud supported regions. When `--view=detailed` is
+        specified, `--spoke-locations` must be set to a single location, either
+        'global' or a region. To see the names of regions, see
         [Viewing a list of available regions](https://cloud.google.com/compute/docs/regions-zones/viewing-regions-zones#viewing_a_list_of_available_regions)."""
   parser.add_argument(
       '--spoke-locations',
@@ -277,13 +279,25 @@ def AddSpokeLocationsFlag(parser):
 def AddViewFlag(parser):
   """Add the --view argument to the given parser."""
   view_help_text = """ \
-       Enumeration to control which spoke fields are included in the response."""
+      Enumeration to control which spoke fields are included in the response."""
   parser.add_argument(
       '--view',
       required=False,
-      choices=['basic', 'detailed'],
+      choices={
+          'basic': (
+              'Includes basic spoke fields in the response. Supports listing'
+              ' spokes across one or more locations, or all locations if'
+              ' `--spoke-locations` is omitted.'
+          ),
+          'detailed': (
+              'Includes detailed spoke fields in the response. Supports both'
+              " 'global' and regional locations. Requires `--spoke-locations`"
+              " to be set to a single location, either 'global' or a region."
+          ),
+      },
       default='basic',
-      help=view_help_text)
+      help=view_help_text,
+  )
 
 
 def AddHubResourceArg(parser, desc):

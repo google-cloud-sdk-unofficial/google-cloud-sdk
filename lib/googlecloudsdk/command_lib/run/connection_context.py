@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import transport
 from googlecloudsdk.core.util import files
+from googlecloudsdk.core.util import regional
 import requests
 import six
 from six.moves.urllib import parse as urlparse
@@ -467,11 +468,8 @@ class RegionalConnectionContext(ConnectionInfo):
 
   @contextlib.contextmanager
   def Connect(self):
-    endpoint_compatibility = (
-        properties.VALUES.regional.endpoint_compatibility.Get()
-    )
     endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
-    if endpoint_compatibility and (
+    if regional.IsRegionalEndpointCompatible() and (
         endpoint_mode == properties.constants.regional.REGIONAL
         or endpoint_mode == properties.constants.regional.REGIONAL_PREFERRED
     ):

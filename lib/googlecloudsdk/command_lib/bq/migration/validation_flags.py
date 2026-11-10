@@ -221,7 +221,7 @@ def AddRunFlags(parser):
       required=True,
       help=(
           'Location of the BigQuery Migration Service validation workflows'
-          ' (for example, `us` or `europe-west1`).'
+          ' (for example, `eu` or `us-central1`).'
       ),
   )
   parser.add_argument(

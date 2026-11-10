@@ -1,4 +1,6 @@
 - release_tracks: [GA, ALPHA]
+  hints:
+    read_only: true
   command_type: LIST
   help_text:
     brief: Retrieve the Guest Attributes for a Cloud TPU VM.

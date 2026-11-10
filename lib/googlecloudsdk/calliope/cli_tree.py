@@ -455,7 +455,7 @@ class Constraint(Group):
 # The order of this tuple is important.
 # We should go from the narrowest / most specific base classes to the most
 # broad / general base classes.
-# Otherwise, the "isinstance" check below might return True for a more
+# Otherwise, the subclass check below might return True for a more
 # general base class when it should have returned True for a more specific
 # base class.
 _KNOWN_BASE_CLASSES = (
@@ -493,12 +493,10 @@ def _GetCommandBaseType(command):
   if not common_type or not isinstance(common_type, type):
     return default
 
+  ancestors = set(common_type.__mro__)
   for base_cls, name in _KNOWN_BASE_CLASSES:
-    try:
-      if issubclass(common_type, base_cls):
-        return name
-    except TypeError:
-      pass
+    if base_cls in ancestors:
+      return name
 
   return default
 

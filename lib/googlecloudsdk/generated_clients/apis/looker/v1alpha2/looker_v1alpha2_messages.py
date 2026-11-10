@@ -35,6 +35,20 @@ class AuthType(_messages.Message):
   workforceAuthEnabled = _messages.BooleanField(2)
 
 
+class AutoUpgrade(_messages.Message):
+  r"""Automatic upgrades to the next edition.
+
+  Fields:
+    enabled: Optional. Whether automatic upgrades are on.
+    thresholdPercent: Optional. The monthly billable events, as a percentage
+      of `monthly_event_quota`, above which the instance upgrades. Must be
+      greater than 100. If unset, the default of 200 applies.
+  """
+
+  enabled = _messages.BooleanField(1)
+  thresholdPercent = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
 class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
@@ -93,6 +107,120 @@ class ControlledEgressConfig(_messages.Message):
   egressFqdns = _messages.StringField(1, repeated=True)
   marketplaceEnabled = _messages.BooleanField(2)
   webProxyIps = _messages.StringField(3, repeated=True)
+
+
+class CostControl(_messages.Message):
+  r"""The cost control of a NextGen Pricing (NGP) instance: automatic upgrades
+  to the next edition, and a monthly cap on billable Looker events. An
+  instance starts with automatic upgrades off and no cap, unless they were set
+  in the Google Cloud console when it was created.
+
+  Enums:
+    ActiveEditionValueValuesEnum: Output only. The edition the instance is
+      billed for.
+
+  Fields:
+    activeEdition: Output only. The edition the instance is billed for.
+    autoUpgrade: Optional. Automatic upgrades to the next edition.
+    autoUpgradeThresholdEvents: Output only. The monthly billable events above
+      which the instance upgrades. Unset if automatic upgrades are off or the
+      instance is on the top edition.
+    effectiveHardCap: Output only. The cap that's enforced, in billable
+      events: `hard_cap`, raised to `monthly_event_quota` if it's lower. Unset
+      if there's no cap.
+    etag: Checksum for optimistic concurrency. Send it back on update to fail
+      with ABORTED if the cost control changed since it was read.
+    hardCap: Optional. The monthly cap on the instance's total billable Looker
+      events. Can't be set while automatic upgrades are on. If unset, there's
+      no cap.
+    monthlyEventQuota: Output only. The billable Looker events included in
+      `active_edition` each month.
+    name: Identifier. Format: `projects/{project}/locations/{location}/instanc
+      es/{instance}/costControl`.
+    updateTime: Output only. When the cost control last changed.
+  """
+
+  class ActiveEditionValueValuesEnum(_messages.Enum):
+    r"""Output only. The edition the instance is billed for.
+
+    Values:
+      PLATFORM_EDITION_UNSPECIFIED: Represents an unspecified platform
+        edition.
+      LOOKER_CORE_TRIAL: Represents the Looker Core Trial edition.
+      LOOKER_CORE_STANDARD: Represents the Looker Core Standard edition.
+      LOOKER_CORE_STANDARD_ANNUAL: Represents the Looker Core Standard Annual
+        edition.
+      LOOKER_CORE_ENTERPRISE_ANNUAL: Represents the Looker Core Enterprise
+        Annual edition.
+      LOOKER_CORE_EMBED_ANNUAL: Represents the Looker Core Embed Annual
+        edition.
+      LOOKER_CORE_NONPROD_STANDARD_ANNUAL: Represents the Looker Core Nonprod
+        Standard Annual edition.
+      LOOKER_CORE_NONPROD_ENTERPRISE_ANNUAL: Represents the Looker Core
+        Nonprod Enterprise Annual edition.
+      LOOKER_CORE_NONPROD_EMBED_ANNUAL: Represents the Looker Core Nonprod
+        Embed Annual edition.
+      LOOKER_CORE_TRIAL_STANDARD: Represents the Looker Core Trial Standard
+        edition.
+      LOOKER_CORE_TRIAL_ENTERPRISE: Represents the Looker Core Trial
+        Enterprise edition.
+      LOOKER_CORE_TRIAL_EMBED: Represents the Looker Core Trial Embed edition.
+      LOOKER_CORE_S_ANNUAL: Represents the Looker Core Standard Annual
+        edition.
+      LOOKER_CORE_M_ANNUAL: Represents the Looker Core Enterprise Annual
+        edition.
+      LOOKER_CORE_L_ANNUAL: Represents the Looker Core Enterprise Plus Annual
+        edition.
+      LOOKER_CORE_XL_ANNUAL: Represents the Looker Core Enterprise Ultra
+        Annual edition.
+      LOOKER_CORE_NONPROD_M_ANNUAL: Represents the Looker Core Nonprod
+        Enterprise Annual edition.
+      LOOKER_CORE_NONPROD_L_ANNUAL: Represents the Looker Core Nonprod
+        Enterprise Plus Annual edition.
+      LOOKER_CORE_NONPROD_XL_ANNUAL: Represents the Looker Core Nonprod
+        Enterprise Ultra Annual edition.
+      LOOKER_CORE_TRIAL_S_ANNUAL: Represents the Looker Core Trial Standard
+        Annual edition.
+      LOOKER_CORE_TRIAL_M_ANNUAL: Represents the Looker Core Trial Enterprise
+        Annual edition.
+      LOOKER_CORE_TRIAL_L_ANNUAL: Represents the Looker Core Trial Enterprise
+        Plus Annual edition.
+      LOOKER_CORE_TRIAL_XL_ANNUAL: Represents the Looker Core Trial Enterprise
+        Ultra Annual edition.
+    """
+    PLATFORM_EDITION_UNSPECIFIED = 0
+    LOOKER_CORE_TRIAL = 1
+    LOOKER_CORE_STANDARD = 2
+    LOOKER_CORE_STANDARD_ANNUAL = 3
+    LOOKER_CORE_ENTERPRISE_ANNUAL = 4
+    LOOKER_CORE_EMBED_ANNUAL = 5
+    LOOKER_CORE_NONPROD_STANDARD_ANNUAL = 6
+    LOOKER_CORE_NONPROD_ENTERPRISE_ANNUAL = 7
+    LOOKER_CORE_NONPROD_EMBED_ANNUAL = 8
+    LOOKER_CORE_TRIAL_STANDARD = 9
+    LOOKER_CORE_TRIAL_ENTERPRISE = 10
+    LOOKER_CORE_TRIAL_EMBED = 11
+    LOOKER_CORE_S_ANNUAL = 12
+    LOOKER_CORE_M_ANNUAL = 13
+    LOOKER_CORE_L_ANNUAL = 14
+    LOOKER_CORE_XL_ANNUAL = 15
+    LOOKER_CORE_NONPROD_M_ANNUAL = 16
+    LOOKER_CORE_NONPROD_L_ANNUAL = 17
+    LOOKER_CORE_NONPROD_XL_ANNUAL = 18
+    LOOKER_CORE_TRIAL_S_ANNUAL = 19
+    LOOKER_CORE_TRIAL_M_ANNUAL = 20
+    LOOKER_CORE_TRIAL_L_ANNUAL = 21
+    LOOKER_CORE_TRIAL_XL_ANNUAL = 22
+
+  activeEdition = _messages.EnumField('ActiveEditionValueValuesEnum', 1)
+  autoUpgrade = _messages.MessageField('AutoUpgrade', 2)
+  autoUpgradeThresholdEvents = _messages.IntegerField(3)
+  effectiveHardCap = _messages.IntegerField(4)
+  etag = _messages.StringField(5)
+  hardCap = _messages.MessageField('HardCap', 6)
+  monthlyEventQuota = _messages.IntegerField(7)
+  name = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
 
 
 class CustomDomain(_messages.Message):
@@ -372,6 +500,17 @@ class GeminiAiConfig(_messages.Message):
 
   promptLogging = _messages.BooleanField(1)
   trustedTester = _messages.BooleanField(2)
+
+
+class HardCap(_messages.Message):
+  r"""A monthly cap on the instance's total billable Looker events.
+
+  Fields:
+    events: Optional. The cap in billable events. Must be at least
+      `monthly_event_quota`.
+  """
+
+  events = _messages.IntegerField(1)
 
 
 class ImportInstanceRequest(_messages.Message):
@@ -995,6 +1134,17 @@ class LookerProjectsLocationsInstancesExportRequest(_messages.Message):
   name = _messages.StringField(2, required=True)
 
 
+class LookerProjectsLocationsInstancesGetCostControlRequest(_messages.Message):
+  r"""A LookerProjectsLocationsInstancesGetCostControlRequest object.
+
+  Fields:
+    name: Required. Format: `projects/{project}/locations/{location}/instances
+      /{instance}/costControl`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class LookerProjectsLocationsInstancesGetRequest(_messages.Message):
   r"""A LookerProjectsLocationsInstancesGetRequest object.
 
@@ -1110,6 +1260,29 @@ class LookerProjectsLocationsInstancesUndeleteRequest(_messages.Message):
 
   name = _messages.StringField(1, required=True)
   undeleteInstanceRequest = _messages.MessageField('UndeleteInstanceRequest', 2)
+
+
+class LookerProjectsLocationsInstancesUpdateCostControlRequest(_messages.Message):
+  r"""A LookerProjectsLocationsInstancesUpdateCostControlRequest object.
+
+  Fields:
+    costControl: A CostControl resource to be passed as the request body.
+    name: Identifier. Format: `projects/{project}/locations/{location}/instanc
+      es/{instance}/costControl`.
+    requestId: Optional. An optional request ID, so that a retried request
+      isn't reported as a conflict. A retry with the same ID as the last
+      applied update returns that update's result.
+    updateMask: Optional. The fields to update: `auto_upgrade.enabled`,
+      `auto_upgrade.threshold_percent` and `hard_cap`, or `*` for all of them.
+      If omitted, the populated fields of `cost_control` are updated, so
+      turning automatic upgrades off or clearing a field needs an explicit
+      mask. An empty mask changes nothing.
+  """
+
+  costControl = _messages.MessageField('CostControl', 1)
+  name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class LookerProjectsLocationsListRequest(_messages.Message):

@@ -536,15 +536,6 @@ class JsonClient(cloud_api.CloudApi):
     return operation
 
   @error_util.catch_http_error_raise_gcs_api_error()
-  def pause_anywhere_cache(self, bucket_name, anywhere_cache_id):
-    """See super class."""
-    request = self.messages.StorageAnywhereCachesPauseRequest(
-        bucket=bucket_name,
-        anywhereCacheId=anywhere_cache_id,
-    )
-    self.client.anywhereCaches.Pause(request)
-
-  @error_util.catch_http_error_raise_gcs_api_error()
   def resume_anywhere_cache(self, bucket_name, anywhere_cache_id):
     """See super class."""
     request = self.messages.StorageAnywhereCachesResumeRequest(
@@ -1660,6 +1651,25 @@ class JsonClient(cloud_api.CloudApi):
     return metadata_util.get_object_resource_from_metadata(metadata)
 
   @error_util.catch_http_error_raise_gcs_api_error()
+  def view_object_full_context(
+      self, bucket_name, object_name, context_key, generation=None
+  ):
+    """See super class."""
+    if generation is not None:
+      generation = int(generation)
+    metadata = self.client.objects.ViewFullContext(
+        self.messages.StorageObjectsViewFullContextRequest(
+            bucket=bucket_name,
+            object=object_name,
+            contextKey=context_key,
+            generation=generation,
+        )
+    )
+    return metadata_util.get_object_full_context_resource_from_metadata(
+        metadata, bucket_name, object_name, generation
+    )
+
+  @error_util.catch_http_error_raise_gcs_api_error()
   def create_managed_folder(
       self, bucket_name, managed_folder_name, rapid_cache_config=None
   ):
@@ -1780,6 +1790,16 @@ class JsonClient(cloud_api.CloudApi):
         bucket=bucket_name, folder=folder_name
     )
     self.client.folders.Delete(delete_folder_request)
+
+  @error_util.catch_http_error_raise_gcs_api_error()
+  def delete_folder_recursive(self, bucket_name, folder_name):
+    """See CloudApi class for function doc strings."""
+    delete_folder_recursive_request = (
+        self.messages.StorageFoldersDeleteRecursiveRequest(
+            bucket=bucket_name, folder=folder_name
+        )
+    )
+    return self.client.folders.DeleteRecursive(delete_folder_recursive_request)
 
   @error_util.catch_http_error_raise_gcs_api_error()
   def get_folder(self, bucket_name, folder_name):

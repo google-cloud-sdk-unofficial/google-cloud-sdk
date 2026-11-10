@@ -49,6 +49,7 @@ class Create(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddInitialConfigGroup(parser)
     flags.AddServiceAccount(parser)
+    flags.AddEnableVulnerabilityScanning(parser)
 
   def Run(self, args):
     # Get resource args to contruct base url
@@ -69,6 +70,7 @@ class Create(base.CreateCommand):
         args.license,
         args.readme,
         args.service_account,
+        args.enable_vulnerability_scanning,
     )
 
     log.CreatedResource(repository_ref.RelativeName())

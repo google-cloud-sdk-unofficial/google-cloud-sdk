@@ -740,6 +740,7 @@ class Update(base.UpdateCommand):
     cluster_node_count = None
     cluster_zone = cluster_ref.zone
     cluster_is_required = self.IsClusterRequired(args)
+    cluster = None
     try:
       # Attempt to get cluster for better prompts and to validate args.
       # Error is a warning but not fatal. Should only exit with a failure on
@@ -760,6 +761,19 @@ class Update(base.UpdateCommand):
               'Problem loading details of cluster to update:\n\n{}\n\n'
               'You can still attempt updates to the cluster.\n'
           ).format(console_attr.SafeText(error))
+      )
+
+    if (
+        args.enable_autoscaling is not None
+        and not args.node_pool
+        and cluster is not None
+        and not cluster.nodePools
+    ):
+      raise exceptions.InvalidArgumentException(
+          '--enable-autoscaling',
+          'Cluster [{0}] has no node pools to autoscale. To add a node pool'
+          ' with autoscaling, run `gcloud container node-pools create` with'
+          ' --enable-autoscaling.'.format(cluster.name),
       )
 
     if getattr(args, 'enable_pod_security_policy', None):

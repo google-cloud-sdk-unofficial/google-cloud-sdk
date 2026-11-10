@@ -30,7 +30,7 @@
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        The resource name of the auth provider.
         Format:
         projects/{project}/locations/{location}/authProviders/{auth_provider}
       is_positional: true
@@ -42,10 +42,10 @@
       required: false
       repeated: false
       help_text: |-
-        An optional request ID to identify requests. Specify a unique request ID
-        so that if you must retry your request, the server will know to ignore
-        the request if it has already been completed. The server will guarantee
-        that for at least 60 minutes after the first request.
+        An optional request ID to identify requests. Specify a unique
+        request ID so that if you must retry your request, the server will know to
+        ignore the request if it has already been completed. The server will
+        guarantee that for at least 60 minutes after the first request.
 
         The request ID must be a valid UUID with the exception that zero UUID is
         not supported (00000000-0000-0000-0000-000000000000).

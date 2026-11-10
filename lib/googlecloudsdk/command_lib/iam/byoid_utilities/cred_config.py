@@ -252,6 +252,11 @@ def create_credential_config(args, config_type):
         'token_url': token_endpoint_builder.token_url,
         'credential_source': generator.get_source(args),
     }
+    if getattr(args, 'actor_token_field_name', None):
+      output['actor_token_type'] = (
+          getattr(args, 'actor_token_type', None)
+          or 'urn:ietf:params:oauth:token-type:jwt'
+      )
 
     if config_type is ConfigType.WORKFORCE_POOLS:
       output['workforce_pool_user_project'] = args.workforce_pool_user_project
@@ -279,9 +284,9 @@ def create_credential_config(args, config_type):
     files.WriteFileContents(args.output_file, json.dumps(output, indent=2))
     log.CreatedResource(args.output_file, RESOURCE_TYPE)
 
-    # If the credential type is X.509, we need to create an additional
-    # certificate config file to store the certificate information.
-    if isinstance(generator, X509CredConfigGenerator):
+    # If a certificate path is provided, create an additional certificate config
+    # file to store the certificate information.
+    if is_cert:
       enterprise_certificate_config.create_config(
           enterprise_certificate_config.ConfigType.WORKLOAD,
           cert_path=args.credential_cert_path,
@@ -340,7 +345,12 @@ class CredConfigGenerator(six.with_metaclass(abc.ABCMeta, object)):
 
     return subject_token_type or default_token_type
 
-  def _get_format(self, credential_source_type, credential_source_field_name):
+  def _get_format(
+      self,
+      credential_source_type,
+      credential_source_field_name,
+      actor_token_field_name=None,
+  ):
     """Returns an optional dictionary indicating the format of the token.
 
     This is a shared method, that several different token types need access to.
@@ -349,11 +359,12 @@ class CredConfigGenerator(six.with_metaclass(abc.ABCMeta, object)):
       credential_source_type: The format of the token, either 'json' or 'text'.
       credential_source_field_name: The field name of a JSON object containing
         the text version of the token.
+      actor_token_field_name: The field name of a JSON object containing the
+        text version of the actor token.
 
     Raises:
       GeneratorError: if an invalid token format is specified, or no field name
       is specified for a json token.
-
     """
     if not credential_source_type:
       return None
@@ -361,21 +372,48 @@ class CredConfigGenerator(six.with_metaclass(abc.ABCMeta, object)):
     credential_source_type = credential_source_type.lower()
     if credential_source_type not in ('json', 'text'):
       raise GeneratorError(
-          '--credential-source-type must be either "json" or "text"')
+          '--credential-source-type must be either "json" or "text"'
+      )
 
     token_format = {'type': credential_source_type}
     if credential_source_type == 'json':
       if not credential_source_field_name:
         raise GeneratorError(
-            '--credential-source-field-name required for JSON formatted tokens')
+            '--credential-source-field-name required for JSON formatted tokens'
+        )
       token_format['subject_token_field_name'] = credential_source_field_name
+      if actor_token_field_name:
+        if actor_token_field_name == credential_source_field_name:
+          raise GeneratorError(
+              '--actor-token-field-name cannot be the same as'
+              ' --credential-source-field-name'
+          )
+        token_format['actor_token_field_name'] = actor_token_field_name
 
     return token_format
 
   def _format_already_defined(self, credential_source_type):
     if credential_source_type:
       raise GeneratorError(
-          '--credential-source-type is not supported with --azure or --aws')
+          '--credential-source-type is not supported with --azure or --aws'
+      )
+
+  def _get_certificate_config(
+      self, key_path, cert_config_path, trust_chain_path
+  ):
+    if key_path is None:
+      raise GeneratorError(
+          '--credential-cert-private-key-path must be specified if'
+          ' --credential-cert-path is provided.'
+      )
+    certificate_config = {}
+    if cert_config_path is not None:
+      certificate_config['certificate_config_location'] = cert_config_path
+    else:
+      certificate_config['use_default_certificate_config'] = True
+    if trust_chain_path is not None:
+      certificate_config['trust_chain_path'] = trust_chain_path
+    return certificate_config
 
   @abc.abstractmethod
   def get_source(self, args):
@@ -392,10 +430,29 @@ class FileCredConfigGenerator(CredConfigGenerator):
 
   def get_source(self, args):
     credential_source = {'file': self.credential_source_file}
-    token_format = self._get_format(args.credential_source_type,
-                                    args.credential_source_field_name)
+    credential_source_type = args.credential_source_type
+    actor_token_field_name = getattr(args, 'actor_token_field_name', None)
+    if (
+        self.config_type == ConfigType.WORKLOAD_IDENTITY_POOLS
+        and not credential_source_type
+        and (args.credential_source_field_name or actor_token_field_name)
+    ):
+      credential_source_type = 'json'
+    token_format = self._get_format(
+        credential_source_type,
+        args.credential_source_field_name,
+        actor_token_field_name,
+    )
     if token_format:
       credential_source['format'] = token_format
+    # Append certificate config if client cert path is specified alongside file
+    # source.
+    if getattr(args, 'credential_cert_path', None):
+      credential_source['certificate'] = self._get_certificate_config(
+          getattr(args, 'credential_cert_private_key_path', None),
+          getattr(args, 'credential_cert_configuration_output_file', None),
+          getattr(args, 'credential_cert_trust_chain_path', None),
+      )
     return credential_source
 
 
@@ -547,24 +604,11 @@ class X509CredConfigGenerator(CredConfigGenerator):
     return 'urn:ietf:params:oauth:token-type:mtls'
 
   def get_source(self, args):
-    certificate_config = {}
-
-    if self.key_path is None:
-      raise GeneratorError(
-          '--credential-cert-private-key-path must be specified if'
-          ' --credential-cert-path '
-          + 'is provided.'
-      )
-
-    if self.cert_config_path is not None:
-      certificate_config['certificate_config_location'] = self.cert_config_path
-    else:
-      certificate_config['use_default_certificate_config'] = True
-
-    if self.trust_chain_path is not None:
-      certificate_config['trust_chain_path'] = self.trust_chain_path
-
-    return {'certificate': certificate_config}
+    return {
+        'certificate': self._get_certificate_config(
+            self.key_path, self.cert_config_path, self.trust_chain_path
+        )
+    }
 
 
 class GeneratorError(Exception):

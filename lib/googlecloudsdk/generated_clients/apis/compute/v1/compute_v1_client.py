@@ -196,7 +196,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.acceleratorTypes.aggregatedList',
         ordered_params=['project'],
@@ -223,7 +223,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.acceleratorTypes.get',
         ordered_params=['project', 'zone', 'acceleratorType'],
@@ -251,7 +251,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.acceleratorTypes.list',
         ordered_params=['project', 'zone'],
@@ -291,7 +291,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.addresses.aggregatedList',
         ordered_params=['project'],
@@ -318,7 +318,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.addresses.delete',
         ordered_params=['project', 'region', 'address'],
@@ -345,7 +345,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.addresses.get',
         ordered_params=['project', 'region', 'address'],
@@ -373,7 +373,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.addresses.insert',
         ordered_params=['project', 'region'],
@@ -401,7 +401,7 @@ the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.addresses.list',
         ordered_params=['project', 'region'],
@@ -428,7 +428,7 @@ the specified region.
           config, request, global_params=global_params)
 
     Move.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.addresses.move',
         ordered_params=['project', 'region', 'address'],
@@ -456,7 +456,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.addresses.setLabels',
         ordered_params=['project', 'region', 'resource'],
@@ -483,7 +483,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.addresses.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -523,7 +523,7 @@ resources.
           config, request, global_params=global_params)
 
     CalendarMode.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.advice.calendarMode',
         ordered_params=['project', 'region'],
@@ -552,7 +552,7 @@ capacity.
           config, request, global_params=global_params)
 
     Capacity.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.advice.capacity',
         ordered_params=['project', 'region'],
@@ -579,7 +579,7 @@ capacity.
           config, request, global_params=global_params)
 
     CapacityHistory.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.advice.capacityHistory',
         ordered_params=['project', 'region'],
@@ -619,7 +619,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.autoscalers.aggregatedList',
         ordered_params=['project'],
@@ -646,7 +646,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.autoscalers.delete',
         ordered_params=['project', 'zone', 'autoscaler'],
@@ -673,7 +673,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.autoscalers.get',
         ordered_params=['project', 'zone', 'autoscaler'],
@@ -701,7 +701,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.autoscalers.insert',
         ordered_params=['project', 'zone'],
@@ -729,7 +729,7 @@ the specified zone.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.autoscalers.list',
         ordered_params=['project', 'zone'],
@@ -759,7 +759,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.autoscalers.patch',
         ordered_params=['project', 'zone'],
@@ -786,7 +786,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.autoscalers.testIamPermissions',
         ordered_params=['project', 'zone', 'resource'],
@@ -814,7 +814,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.autoscalers.update',
         ordered_params=['project', 'zone'],
@@ -852,7 +852,7 @@ bucket.
           config, request, global_params=global_params)
 
     AddSignedUrlKey.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendBuckets.addSignedUrlKey',
         ordered_params=['project', 'backendBucket'],
@@ -883,7 +883,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.backendBuckets.aggregatedList',
         ordered_params=['project'],
@@ -910,7 +910,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.backendBuckets.delete',
         ordered_params=['project', 'backendBucket'],
@@ -938,7 +938,7 @@ bucket.
           config, request, global_params=global_params)
 
     DeleteSignedUrlKey.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendBuckets.deleteSignedUrlKey',
         ordered_params=['project', 'backendBucket', 'keyName'],
@@ -965,7 +965,7 @@ bucket.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.backendBuckets.get',
         ordered_params=['project', 'backendBucket'],
@@ -993,7 +993,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.backendBuckets.getIamPolicy',
         ordered_params=['project', 'resource'],
@@ -1021,7 +1021,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendBuckets.insert',
         ordered_params=['project'],
@@ -1049,7 +1049,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.backendBuckets.list',
         ordered_params=['project'],
@@ -1076,7 +1076,7 @@ project.
           config, request, global_params=global_params)
 
     ListUsable.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.backendBuckets.listUsable',
         ordered_params=['project'],
@@ -1106,7 +1106,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.backendBuckets.patch',
         ordered_params=['project', 'backendBucket'],
@@ -1133,7 +1133,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     SetEdgeSecurityPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendBuckets.setEdgeSecurityPolicy',
         ordered_params=['project', 'backendBucket'],
@@ -1161,7 +1161,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendBuckets.setIamPolicy',
         ordered_params=['project', 'resource'],
@@ -1188,7 +1188,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendBuckets.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -1216,7 +1216,7 @@ request.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.backendBuckets.update',
         ordered_params=['project', 'backendBucket'],
@@ -1254,7 +1254,7 @@ service.
           config, request, global_params=global_params)
 
     AddSignedUrlKey.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendServices.addSignedUrlKey',
         ordered_params=['project', 'backendService'],
@@ -1285,7 +1285,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.backendServices.aggregatedList',
         ordered_params=['project'],
@@ -1312,7 +1312,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.backendServices.delete',
         ordered_params=['project', 'backendService'],
@@ -1340,7 +1340,7 @@ service.
           config, request, global_params=global_params)
 
     DeleteSignedUrlKey.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendServices.deleteSignedUrlKey',
         ordered_params=['project', 'backendService', 'keyName'],
@@ -1367,7 +1367,7 @@ service.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.backendServices.get',
         ordered_params=['project', 'backendService'],
@@ -1394,7 +1394,7 @@ service.
           config, request, global_params=global_params)
 
     GetEffectiveSecurityPolicies.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.backendServices.getEffectiveSecurityPolicies',
         ordered_params=['project', 'backendService'],
@@ -1428,7 +1428,7 @@ Example request body:
           config, request, global_params=global_params)
 
     GetHealth.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendServices.getHealth',
         ordered_params=['project', 'backendService'],
@@ -1456,7 +1456,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.backendServices.getIamPolicy',
         ordered_params=['project', 'resource'],
@@ -1485,7 +1485,7 @@ Backend services overview.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendServices.insert',
         ordered_params=['project'],
@@ -1513,7 +1513,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.backendServices.list',
         ordered_params=['project'],
@@ -1543,7 +1543,7 @@ Balancers are not included in the response.
           config, request, global_params=global_params)
 
     ListUsable.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.backendServices.listUsable',
         ordered_params=['project'],
@@ -1574,7 +1574,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.backendServices.patch',
         ordered_params=['project', 'backendService'],
@@ -1601,7 +1601,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     SetEdgeSecurityPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendServices.setEdgeSecurityPolicy',
         ordered_params=['project', 'backendService'],
@@ -1629,7 +1629,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendServices.setIamPolicy',
         ordered_params=['project', 'resource'],
@@ -1658,7 +1658,7 @@ Cloud Armor Overview
           config, request, global_params=global_params)
 
     SetSecurityPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendServices.setSecurityPolicy',
         ordered_params=['project', 'backendService'],
@@ -1685,7 +1685,7 @@ Cloud Armor Overview
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.backendServices.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -1714,7 +1714,7 @@ services overview.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.backendServices.update',
         ordered_params=['project', 'backendService'],
@@ -1751,7 +1751,7 @@ services overview.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.crossSiteNetworks.delete',
         ordered_params=['project', 'crossSiteNetwork'],
@@ -1778,7 +1778,7 @@ services overview.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.crossSiteNetworks.get',
         ordered_params=['project', 'crossSiteNetwork'],
@@ -1806,7 +1806,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.crossSiteNetworks.insert',
         ordered_params=['project'],
@@ -1833,7 +1833,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.crossSiteNetworks.list',
         ordered_params=['project'],
@@ -1863,7 +1863,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.crossSiteNetworks.patch',
         ordered_params=['project', 'crossSiteNetwork'],
@@ -1903,7 +1903,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.diskTypes.aggregatedList',
         ordered_params=['project'],
@@ -1930,7 +1930,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.diskTypes.get',
         ordered_params=['project', 'zone', 'diskType'],
@@ -1958,7 +1958,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.diskTypes.list',
         ordered_params=['project', 'zone'],
@@ -1997,7 +1997,7 @@ creation.
           config, request, global_params=global_params)
 
     AddResourcePolicies.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.addResourcePolicies',
         ordered_params=['project', 'zone', 'disk'],
@@ -2027,7 +2027,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.disks.aggregatedList',
         ordered_params=['project'],
@@ -2054,7 +2054,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     BulkInsert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.bulkInsert',
         ordered_params=['project', 'zone'],
@@ -2082,7 +2082,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     BulkSetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.bulkSetLabels',
         ordered_params=['project', 'zone'],
@@ -2112,7 +2112,7 @@ in a project different from the source disk project.
           config, request, global_params=global_params)
 
     CreateSnapshot.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.createSnapshot',
         ordered_params=['project', 'zone', 'disk'],
@@ -2143,7 +2143,7 @@ snapshots.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.disks.delete',
         ordered_params=['project', 'zone', 'disk'],
@@ -2170,7 +2170,7 @@ snapshots.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.disks.get',
         ordered_params=['project', 'zone', 'disk'],
@@ -2198,7 +2198,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.disks.getIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -2229,7 +2229,7 @@ the default size by specifying the sizeGb property.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.insert',
         ordered_params=['project', 'zone'],
@@ -2257,7 +2257,7 @@ the specified zone.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.disks.list',
         ordered_params=['project', 'zone'],
@@ -2284,7 +2284,7 @@ the specified zone.
           config, request, global_params=global_params)
 
     RemoveResourcePolicies.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.removeResourcePolicies',
         ordered_params=['project', 'zone', 'disk'],
@@ -2312,7 +2312,7 @@ You can only increase the size of the disk.
           config, request, global_params=global_params)
 
     Resize.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.resize',
         ordered_params=['project', 'zone', 'disk'],
@@ -2340,7 +2340,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.setIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -2368,7 +2368,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.setLabels',
         ordered_params=['project', 'zone', 'resource'],
@@ -2396,7 +2396,7 @@ Must be invoked on the primary disk.
           config, request, global_params=global_params)
 
     StartAsyncReplication.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.startAsyncReplication',
         ordered_params=['project', 'zone', 'disk'],
@@ -2424,7 +2424,7 @@ Can be invoked either on the primary or on the secondary disk.
           config, request, global_params=global_params)
 
     StopAsyncReplication.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.stopAsyncReplication',
         ordered_params=['project', 'zone', 'disk'],
@@ -2452,7 +2452,7 @@ Can be invoked either in the primary or secondary scope.
           config, request, global_params=global_params)
 
     StopGroupAsyncReplication.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.stopGroupAsyncReplication',
         ordered_params=['project', 'zone'],
@@ -2479,7 +2479,7 @@ Can be invoked either in the primary or secondary scope.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.testIamPermissions',
         ordered_params=['project', 'zone', 'resource'],
@@ -2508,7 +2508,7 @@ of update-mask.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.disks.update',
         ordered_params=['project', 'zone', 'disk'],
@@ -2536,7 +2536,7 @@ encryption key to the latest version for the specified persistent disk.
           config, request, global_params=global_params)
 
     UpdateKmsKey.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.disks.updateKmsKey',
         ordered_params=['project', 'zone', 'disk'],
@@ -2573,7 +2573,7 @@ encryption key to the latest version for the specified persistent disk.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.externalVpnGateways.delete',
         ordered_params=['project', 'externalVpnGateway'],
@@ -2601,7 +2601,7 @@ externalVpnGateways by making a list() request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.externalVpnGateways.get',
         ordered_params=['project', 'externalVpnGateway'],
@@ -2629,7 +2629,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.externalVpnGateways.insert',
         ordered_params=['project'],
@@ -2657,7 +2657,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.externalVpnGateways.list',
         ordered_params=['project'],
@@ -2686,7 +2686,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.externalVpnGateways.setLabels',
         ordered_params=['project', 'resource'],
@@ -2713,7 +2713,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.externalVpnGateways.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -2750,7 +2750,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     AddAssociation.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.firewallPolicies.addAssociation',
         ordered_params=['firewallPolicy'],
@@ -2777,7 +2777,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     AddRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.firewallPolicies.addRule',
         ordered_params=['firewallPolicy'],
@@ -2804,7 +2804,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     CloneRules.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.firewallPolicies.cloneRules',
         ordered_params=['firewallPolicy'],
@@ -2831,7 +2831,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.firewallPolicies.delete',
         ordered_params=['firewallPolicy'],
@@ -2858,7 +2858,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.firewallPolicies.get',
         ordered_params=['firewallPolicy'],
@@ -2885,7 +2885,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     GetAssociation.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.firewallPolicies.getAssociation',
         ordered_params=['firewallPolicy'],
@@ -2913,7 +2913,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.firewallPolicies.getIamPolicy',
         ordered_params=['resource'],
@@ -2940,7 +2940,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.firewallPolicies.getRule',
         ordered_params=['firewallPolicy'],
@@ -2968,7 +2968,7 @@ the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.firewallPolicies.insert',
         ordered_params=[],
@@ -2996,7 +2996,7 @@ folder or organization.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.firewallPolicies.list',
         ordered_params=[],
@@ -3023,7 +3023,7 @@ folder or organization.
           config, request, global_params=global_params)
 
     ListAssociations.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.firewallPolicies.listAssociations',
         ordered_params=[],
@@ -3050,7 +3050,7 @@ folder or organization.
           config, request, global_params=global_params)
 
     Move.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.firewallPolicies.move',
         ordered_params=['firewallPolicy'],
@@ -3077,7 +3077,7 @@ folder or organization.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.firewallPolicies.patch',
         ordered_params=['firewallPolicy'],
@@ -3104,7 +3104,7 @@ folder or organization.
           config, request, global_params=global_params)
 
     PatchRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.firewallPolicies.patchRule',
         ordered_params=['firewallPolicy'],
@@ -3131,7 +3131,7 @@ folder or organization.
           config, request, global_params=global_params)
 
     RemoveAssociation.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.firewallPolicies.removeAssociation',
         ordered_params=['firewallPolicy'],
@@ -3158,7 +3158,7 @@ folder or organization.
           config, request, global_params=global_params)
 
     RemoveRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.firewallPolicies.removeRule',
         ordered_params=['firewallPolicy'],
@@ -3186,7 +3186,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.firewallPolicies.setIamPolicy',
         ordered_params=['resource'],
@@ -3213,7 +3213,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.firewallPolicies.testIamPermissions',
         ordered_params=['resource'],
@@ -3250,7 +3250,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.firewalls.delete',
         ordered_params=['project', 'firewall'],
@@ -3277,7 +3277,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.firewalls.get',
         ordered_params=['project', 'firewall'],
@@ -3305,7 +3305,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.firewalls.insert',
         ordered_params=['project'],
@@ -3333,7 +3333,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.firewalls.list',
         ordered_params=['project'],
@@ -3363,7 +3363,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.firewalls.patch',
         ordered_params=['project', 'firewall'],
@@ -3390,7 +3390,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.firewalls.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -3420,7 +3420,7 @@ specified. To update individual fields, please use PATCH instead.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.firewalls.update',
         ordered_params=['project', 'firewall'],
@@ -3460,7 +3460,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.forwardingRules.aggregatedList',
         ordered_params=['project'],
@@ -3487,7 +3487,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.forwardingRules.delete',
         ordered_params=['project', 'region', 'forwardingRule'],
@@ -3514,7 +3514,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.forwardingRules.get',
         ordered_params=['project', 'region', 'forwardingRule'],
@@ -3542,7 +3542,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.forwardingRules.insert',
         ordered_params=['project', 'region'],
@@ -3570,7 +3570,7 @@ project and region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.forwardingRules.list',
         ordered_params=['project', 'region'],
@@ -3601,7 +3601,7 @@ patch the network_tier field.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.forwardingRules.patch',
         ordered_params=['project', 'region', 'forwardingRule'],
@@ -3630,7 +3630,7 @@ Labeling Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.forwardingRules.setLabels',
         ordered_params=['project', 'region', 'resource'],
@@ -3658,7 +3658,7 @@ same type as the old target.
           config, request, global_params=global_params)
 
     SetTarget.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.forwardingRules.setTarget',
         ordered_params=['project', 'region', 'forwardingRule'],
@@ -3698,7 +3698,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.futureReservations.aggregatedList',
         ordered_params=['project'],
@@ -3725,7 +3725,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Cancel.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.futureReservations.cancel',
         ordered_params=['project', 'zone', 'futureReservation'],
@@ -3752,7 +3752,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.futureReservations.delete',
         ordered_params=['project', 'zone', 'futureReservation'],
@@ -3779,7 +3779,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.futureReservations.get',
         ordered_params=['project', 'zone', 'futureReservation'],
@@ -3806,7 +3806,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.futureReservations.insert',
         ordered_params=['project', 'zone'],
@@ -3834,7 +3834,7 @@ specified project in specified zone.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.futureReservations.list',
         ordered_params=['project', 'zone'],
@@ -3861,7 +3861,7 @@ specified project in specified zone.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.futureReservations.update',
         ordered_params=['project', 'zone', 'futureReservation'],
@@ -3898,7 +3898,7 @@ specified project in specified zone.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.globalAddresses.delete',
         ordered_params=['project', 'address'],
@@ -3925,7 +3925,7 @@ specified project in specified zone.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalAddresses.get',
         ordered_params=['project', 'address'],
@@ -3953,7 +3953,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalAddresses.insert',
         ordered_params=['project'],
@@ -3980,7 +3980,7 @@ included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalAddresses.list',
         ordered_params=['project'],
@@ -4007,7 +4007,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Move.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalAddresses.move',
         ordered_params=['project', 'address'],
@@ -4035,7 +4035,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalAddresses.setLabels',
         ordered_params=['project', 'resource'],
@@ -4062,7 +4062,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalAddresses.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -4099,7 +4099,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.globalForwardingRules.delete',
         ordered_params=['project', 'forwardingRule'],
@@ -4127,7 +4127,7 @@ available forwarding rules by making a list() request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalForwardingRules.get',
         ordered_params=['project', 'forwardingRule'],
@@ -4155,7 +4155,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalForwardingRules.insert',
         ordered_params=['project'],
@@ -4183,7 +4183,7 @@ specified project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalForwardingRules.list',
         ordered_params=['project'],
@@ -4214,7 +4214,7 @@ patch the network_tier field.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.globalForwardingRules.patch',
         ordered_params=['project', 'forwardingRule'],
@@ -4243,7 +4243,7 @@ Labeling resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalForwardingRules.setLabels',
         ordered_params=['project', 'resource'],
@@ -4271,7 +4271,7 @@ should be of the same type as the old target.
           config, request, global_params=global_params)
 
     SetTarget.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalForwardingRules.setTarget',
         ordered_params=['project', 'forwardingRule'],
@@ -4308,7 +4308,7 @@ should be of the same type as the old target.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalFrontendSettings.get',
         ordered_params=['project'],
@@ -4335,7 +4335,7 @@ should be of the same type as the old target.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.globalFrontendSettings.patch',
         ordered_params=['project'],
@@ -4372,7 +4372,7 @@ should be of the same type as the old target.
           config, request, global_params=global_params)
 
     AttachNetworkEndpoints.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalNetworkEndpointGroups.attachNetworkEndpoints',
         ordered_params=['project', 'networkEndpointGroup'],
@@ -4400,7 +4400,7 @@ deleted if there are backend services referencing it.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.globalNetworkEndpointGroups.delete',
         ordered_params=['project', 'networkEndpointGroup'],
@@ -4427,7 +4427,7 @@ deleted if there are backend services referencing it.
           config, request, global_params=global_params)
 
     DetachNetworkEndpoints.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalNetworkEndpointGroups.detachNetworkEndpoints',
         ordered_params=['project', 'networkEndpointGroup'],
@@ -4454,7 +4454,7 @@ deleted if there are backend services referencing it.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalNetworkEndpointGroups.get',
         ordered_params=['project', 'networkEndpointGroup'],
@@ -4496,7 +4496,7 @@ Note: Use the following APIs to manage network endpoint groups:
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalNetworkEndpointGroups.insert',
         ordered_params=['project'],
@@ -4524,7 +4524,7 @@ specified project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalNetworkEndpointGroups.list',
         ordered_params=['project'],
@@ -4551,7 +4551,7 @@ specified project.
           config, request, global_params=global_params)
 
     ListNetworkEndpoints.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalNetworkEndpointGroups.listNetworkEndpoints',
         ordered_params=['project', 'networkEndpointGroup'],
@@ -4591,7 +4591,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalOperations.aggregatedList',
         ordered_params=['project'],
@@ -4618,7 +4618,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.globalOperations.delete',
         ordered_params=['project', 'operation'],
@@ -4645,7 +4645,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalOperations.get',
         ordered_params=['project', 'operation'],
@@ -4673,7 +4673,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalOperations.list',
         ordered_params=['project'],
@@ -4715,7 +4715,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     Wait.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalOperations.wait',
         ordered_params=['project', 'operation'],
@@ -4752,7 +4752,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.globalOrganizationOperations.delete',
         ordered_params=['operation'],
@@ -4780,7 +4780,7 @@ by making a `list()` request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalOrganizationOperations.get',
         ordered_params=['operation'],
@@ -4808,7 +4808,7 @@ organization.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalOrganizationOperations.list',
         ordered_params=[],
@@ -4845,7 +4845,7 @@ organization.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.globalPublicDelegatedPrefixes.delete',
         ordered_params=['project', 'publicDelegatedPrefix'],
@@ -4872,7 +4872,7 @@ organization.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalPublicDelegatedPrefixes.get',
         ordered_params=['project', 'publicDelegatedPrefix'],
@@ -4900,7 +4900,7 @@ parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalPublicDelegatedPrefixes.insert',
         ordered_params=['project'],
@@ -4927,7 +4927,7 @@ parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalPublicDelegatedPrefixes.list',
         ordered_params=['project'],
@@ -4957,7 +4957,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.globalPublicDelegatedPrefixes.patch',
         ordered_params=['project', 'publicDelegatedPrefix'],
@@ -4998,7 +4998,7 @@ To prevent failure, it's recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalVmExtensionPolicies.aggregatedList',
         ordered_params=['project'],
@@ -5030,7 +5030,7 @@ that triggers in the backend.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalVmExtensionPolicies.delete',
         ordered_params=['project', 'globalVmExtensionPolicy'],
@@ -5057,7 +5057,7 @@ that triggers in the backend.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalVmExtensionPolicies.get',
         ordered_params=['project', 'globalVmExtensionPolicy'],
@@ -5084,7 +5084,7 @@ that triggers in the backend.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.globalVmExtensionPolicies.insert',
         ordered_params=['project'],
@@ -5111,7 +5111,7 @@ that triggers in the backend.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.globalVmExtensionPolicies.list',
         ordered_params=['project'],
@@ -5138,7 +5138,7 @@ that triggers in the backend.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.globalVmExtensionPolicies.update',
         ordered_params=['project', 'globalVmExtensionPolicy'],
@@ -5179,7 +5179,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.healthChecks.aggregatedList',
         ordered_params=['project'],
@@ -5206,7 +5206,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.healthChecks.delete',
         ordered_params=['project', 'healthCheck'],
@@ -5233,7 +5233,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.healthChecks.get',
         ordered_params=['project', 'healthCheck'],
@@ -5261,7 +5261,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.healthChecks.insert',
         ordered_params=['project'],
@@ -5289,7 +5289,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.healthChecks.list',
         ordered_params=['project'],
@@ -5319,7 +5319,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.healthChecks.patch',
         ordered_params=['project', 'healthCheck'],
@@ -5346,7 +5346,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.healthChecks.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -5374,7 +5374,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.healthChecks.update',
         ordered_params=['project', 'healthCheck'],
@@ -5411,7 +5411,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.hosts.get',
         ordered_params=['project', 'zone', 'association', 'host'],
@@ -5438,7 +5438,7 @@ included in the request.
           config, request, global_params=global_params)
 
     GetVersion.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.hosts.getVersion',
         ordered_params=['project', 'zone', 'association', 'host'],
@@ -5465,7 +5465,7 @@ included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.hosts.list',
         ordered_params=['project', 'zone', 'association'],
@@ -5502,7 +5502,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.httpHealthChecks.delete',
         ordered_params=['project', 'httpHealthCheck'],
@@ -5529,7 +5529,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.httpHealthChecks.get',
         ordered_params=['project', 'httpHealthCheck'],
@@ -5557,7 +5557,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.httpHealthChecks.insert',
         ordered_params=['project'],
@@ -5585,7 +5585,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.httpHealthChecks.list',
         ordered_params=['project'],
@@ -5615,7 +5615,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.httpHealthChecks.patch',
         ordered_params=['project', 'httpHealthCheck'],
@@ -5642,7 +5642,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.httpHealthChecks.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -5670,7 +5670,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.httpHealthChecks.update',
         ordered_params=['project', 'httpHealthCheck'],
@@ -5707,7 +5707,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.httpsHealthChecks.delete',
         ordered_params=['project', 'httpsHealthCheck'],
@@ -5734,7 +5734,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.httpsHealthChecks.get',
         ordered_params=['project', 'httpsHealthCheck'],
@@ -5762,7 +5762,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.httpsHealthChecks.insert',
         ordered_params=['project'],
@@ -5790,7 +5790,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.httpsHealthChecks.list',
         ordered_params=['project'],
@@ -5820,7 +5820,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.httpsHealthChecks.patch',
         ordered_params=['project', 'httpsHealthCheck'],
@@ -5847,7 +5847,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.httpsHealthChecks.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -5875,7 +5875,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.httpsHealthChecks.update',
         ordered_params=['project', 'httpsHealthCheck'],
@@ -5913,7 +5913,7 @@ deprecated and is rolled out in the specified zone.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.imageFamilyViews.get',
         ordered_params=['project', 'zone', 'family'],
@@ -5951,7 +5951,7 @@ context.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.imageViews.get',
         ordered_params=['project', 'region', 'resourceId'],
@@ -5979,7 +5979,7 @@ context.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.imageViews.list',
         ordered_params=['project', 'region'],
@@ -6016,7 +6016,7 @@ context.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.images.delete',
         ordered_params=['project', 'image'],
@@ -6045,7 +6045,7 @@ If an empty request body is given, clears the deprecation status instead.
           config, request, global_params=global_params)
 
     Deprecate.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.images.deprecate',
         ordered_params=['project', 'image'],
@@ -6072,7 +6072,7 @@ If an empty request body is given, clears the deprecation status instead.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.images.get',
         ordered_params=['project', 'image'],
@@ -6101,7 +6101,7 @@ image families documentation.
           config, request, global_params=global_params)
 
     GetFromFamily.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.images.getFromFamily',
         ordered_params=['project', 'family'],
@@ -6129,7 +6129,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.images.getIamPolicy',
         ordered_params=['project', 'resource'],
@@ -6157,7 +6157,7 @@ in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.images.insert',
         ordered_params=['project'],
@@ -6190,7 +6190,7 @@ such as debian-cloud or windows-cloud.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.images.list',
         ordered_params=['project'],
@@ -6219,7 +6219,7 @@ deprecation status.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.images.patch',
         ordered_params=['project', 'image'],
@@ -6247,7 +6247,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.images.setIamPolicy',
         ordered_params=['project', 'resource'],
@@ -6275,7 +6275,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.images.setLabels',
         ordered_params=['project', 'resource'],
@@ -6302,7 +6302,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.images.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -6342,7 +6342,7 @@ queue.
           config, request, global_params=global_params)
 
     Cancel.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagerResizeRequests.cancel',
         ordered_params=['project', 'zone', 'instanceGroupManager', 'resizeRequest'],
@@ -6371,7 +6371,7 @@ were provisioned previously.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.instanceGroupManagerResizeRequests.delete',
         ordered_params=['project', 'zone', 'instanceGroupManager', 'resizeRequest'],
@@ -6398,7 +6398,7 @@ were provisioned previously.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceGroupManagerResizeRequests.get',
         ordered_params=['project', 'zone', 'instanceGroupManager', 'resizeRequest'],
@@ -6426,7 +6426,7 @@ or queues VM creation.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagerResizeRequests.insert',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6454,7 +6454,7 @@ managed instance group.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceGroupManagerResizeRequests.list',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6505,7 +6505,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     AbandonInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.abandonInstances',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6535,7 +6535,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceGroupManagers.aggregatedList',
         ordered_params=['project'],
@@ -6563,7 +6563,7 @@ This method can be used to apply new overrides and/or new versions.
           config, request, global_params=global_params)
 
     ApplyUpdatesToInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.applyUpdatesToInstances',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6593,7 +6593,7 @@ method.
           config, request, global_params=global_params)
 
     CreateInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.createInstances',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6623,7 +6623,7 @@ Deleting an instance group for more information.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.instanceGroupManagers.delete',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6664,7 +6664,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     DeleteInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.deleteInstances',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6692,7 +6692,7 @@ group.
           config, request, global_params=global_params)
 
     DeletePerInstanceConfigs.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.deletePerInstanceConfigs',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6719,7 +6719,7 @@ group.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceGroupManagers.get',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6756,7 +6756,7 @@ this limit.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.insert',
         ordered_params=['project', 'zone'],
@@ -6784,7 +6784,7 @@ specified project and zone.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceGroupManagers.list',
         ordered_params=['project', 'zone'],
@@ -6813,7 +6813,7 @@ parameters are not supported.
           config, request, global_params=global_params)
 
     ListErrors.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceGroupManagers.listErrors',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6848,7 +6848,7 @@ to `PAGINATED`.
           config, request, global_params=global_params)
 
     ListManagedInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.listManagedInstances',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6876,7 +6876,7 @@ instance group. The orderBy query parameter is not supported.
           config, request, global_params=global_params)
 
     ListPerInstanceConfigs.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.listPerInstanceConfigs',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6917,7 +6917,7 @@ a MIG.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.instanceGroupManagers.patch',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6946,7 +6946,7 @@ distinguish whether to perform insert or patch.
           config, request, global_params=global_params)
 
     PatchPerInstanceConfigs.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.patchPerInstanceConfigs',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -6985,7 +6985,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     RecreateInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.recreateInstances',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -7034,7 +7034,7 @@ draining duration has elapsed before the VM instance is removed or deleted.
           config, request, global_params=global_params)
 
     Resize.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.resize',
         ordered_params=['project', 'zone', 'instanceGroupManager', 'size'],
@@ -7076,7 +7076,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     ResumeInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.resumeInstances',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -7105,7 +7105,7 @@ unless you run recreateInstances, runapplyUpdatesToInstances, or set the group's
           config, request, global_params=global_params)
 
     SetInstanceTemplate.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.setInstanceTemplate',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -7137,7 +7137,7 @@ group.
           config, request, global_params=global_params)
 
     SetTargetPools.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.setTargetPools',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -7179,7 +7179,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     StartInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.startInstances',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -7230,7 +7230,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     StopInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.stopInstances',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -7281,7 +7281,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     SuspendInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.suspendInstances',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -7310,7 +7310,7 @@ distinguish whether to perform insert or patch.
           config, request, global_params=global_params)
 
     UpdatePerInstanceConfigs.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroupManagers.updatePerInstanceConfigs',
         ordered_params=['project', 'zone', 'instanceGroupManager'],
@@ -7350,7 +7350,7 @@ Adding instances for more information.
           config, request, global_params=global_params)
 
     AddInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroups.addInstances',
         ordered_params=['project', 'zone', 'instanceGroup'],
@@ -7380,7 +7380,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceGroups.aggregatedList',
         ordered_params=['project'],
@@ -7410,7 +7410,7 @@ Deleting an instance group for more information.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.instanceGroups.delete',
         ordered_params=['project', 'zone', 'instanceGroup'],
@@ -7442,7 +7442,7 @@ methods instead.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceGroups.get',
         ordered_params=['project', 'zone', 'instanceGroup'],
@@ -7470,7 +7470,7 @@ parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroups.insert',
         ordered_params=['project', 'zone'],
@@ -7502,7 +7502,7 @@ methods instead.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceGroups.list',
         ordered_params=['project', 'zone'],
@@ -7532,7 +7532,7 @@ expressions that use `eq` (equal) or `ne` (not equal) operators.
           config, request, global_params=global_params)
 
     ListInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroups.listInstances',
         ordered_params=['project', 'zone', 'instanceGroup'],
@@ -7565,7 +7565,7 @@ draining duration before the VM instance is removed or deleted.
           config, request, global_params=global_params)
 
     RemoveInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroups.removeInstances',
         ordered_params=['project', 'zone', 'instanceGroup'],
@@ -7592,7 +7592,7 @@ draining duration before the VM instance is removed or deleted.
           config, request, global_params=global_params)
 
     SetNamedPorts.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroups.setNamedPorts',
         ordered_params=['project', 'zone', 'instanceGroup'],
@@ -7619,7 +7619,7 @@ draining duration before the VM instance is removed or deleted.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceGroups.testIamPermissions',
         ordered_params=['project', 'zone', 'resource'],
@@ -7656,7 +7656,7 @@ draining duration before the VM instance is removed or deleted.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceSettings.get',
         ordered_params=['project', 'zone'],
@@ -7683,7 +7683,7 @@ draining duration before the VM instance is removed or deleted.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.instanceSettings.patch',
         ordered_params=['project', 'zone'],
@@ -7724,7 +7724,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceTemplates.aggregatedList',
         ordered_params=['project'],
@@ -7753,7 +7753,7 @@ that are already in use by a managed instance group.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.instanceTemplates.delete',
         ordered_params=['project', 'instanceTemplate'],
@@ -7780,7 +7780,7 @@ that are already in use by a managed instance group.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceTemplates.get',
         ordered_params=['project', 'instanceTemplate'],
@@ -7808,7 +7808,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceTemplates.getIamPolicy',
         ordered_params=['project', 'resource'],
@@ -7839,7 +7839,7 @@ template.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceTemplates.insert',
         ordered_params=['project'],
@@ -7867,7 +7867,7 @@ the specified project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instanceTemplates.list',
         ordered_params=['project'],
@@ -7895,7 +7895,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceTemplates.setIamPolicy',
         ordered_params=['project', 'resource'],
@@ -7922,7 +7922,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instanceTemplates.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -7959,7 +7959,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     AddAccessConfig.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.addAccessConfig',
         ordered_params=['project', 'zone', 'instance', 'networkInterface'],
@@ -7986,7 +7986,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     AddNetworkInterface.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.addNetworkInterface',
         ordered_params=['project', 'zone', 'instance'],
@@ -8015,7 +8015,7 @@ migrations.
           config, request, global_params=global_params)
 
     AddResourcePolicies.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.addResourcePolicies',
         ordered_params=['project', 'zone', 'instance'],
@@ -8049,7 +8049,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instances.aggregatedList',
         ordered_params=['project'],
@@ -8079,7 +8079,7 @@ persistent disk to your instance.
           config, request, global_params=global_params)
 
     AttachDisk.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.attachDisk',
         ordered_params=['project', 'zone', 'instance'],
@@ -8108,7 +8108,7 @@ creation of VMs.
           config, request, global_params=global_params)
 
     BulkInsert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.bulkInsert',
         ordered_params=['project', 'zone'],
@@ -8136,7 +8136,7 @@ an instance.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.instances.delete',
         ordered_params=['project', 'zone', 'instance'],
@@ -8163,7 +8163,7 @@ an instance.
           config, request, global_params=global_params)
 
     DeleteAccessConfig.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.deleteAccessConfig',
         ordered_params=['project', 'zone', 'instance', 'accessConfig', 'networkInterface'],
@@ -8194,7 +8194,7 @@ field;
           config, request, global_params=global_params)
 
     DeleteNetworkInterface.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.deleteNetworkInterface',
         ordered_params=['project', 'zone', 'instance', 'networkInterfaceName'],
@@ -8221,7 +8221,7 @@ field;
           config, request, global_params=global_params)
 
     DetachDisk.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.detachDisk',
         ordered_params=['project', 'zone', 'instance', 'deviceName'],
@@ -8248,7 +8248,7 @@ field;
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instances.get',
         ordered_params=['project', 'zone', 'instance'],
@@ -8275,7 +8275,7 @@ field;
           config, request, global_params=global_params)
 
     GetEffectiveFirewalls.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instances.getEffectiveFirewalls',
         ordered_params=['project', 'zone', 'instance', 'networkInterface'],
@@ -8302,7 +8302,7 @@ field;
           config, request, global_params=global_params)
 
     GetGuestAttributes.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instances.getGuestAttributes',
         ordered_params=['project', 'zone', 'instance'],
@@ -8330,7 +8330,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instances.getIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -8357,7 +8357,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetScreenshot.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instances.getScreenshot',
         ordered_params=['project', 'zone', 'instance'],
@@ -8384,7 +8384,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetSerialPortOutput.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instances.getSerialPortOutput',
         ordered_params=['project', 'zone', 'instance'],
@@ -8411,7 +8411,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetShieldedInstanceIdentity.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instances.getShieldedInstanceIdentity',
         ordered_params=['project', 'zone', 'instance'],
@@ -8439,7 +8439,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.insert',
         ordered_params=['project', 'zone'],
@@ -8467,7 +8467,7 @@ the specified zone.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instances.list',
         ordered_params=['project', 'zone'],
@@ -8498,7 +8498,7 @@ referrers to VM instances.
           config, request, global_params=global_params)
 
     ListReferrers.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instances.listReferrers',
         ordered_params=['project', 'zone', 'instance'],
@@ -8525,7 +8525,7 @@ referrers to VM instances.
           config, request, global_params=global_params)
 
     PerformMaintenance.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.performMaintenance',
         ordered_params=['project', 'zone', 'instance'],
@@ -8552,7 +8552,7 @@ referrers to VM instances.
           config, request, global_params=global_params)
 
     RemoveResourcePolicies.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.removeResourcePolicies',
         ordered_params=['project', 'zone', 'instance'],
@@ -8579,7 +8579,7 @@ referrers to VM instances.
           config, request, global_params=global_params)
 
     ReportHostAsFaulty.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.reportHostAsFaulty',
         ordered_params=['project', 'zone', 'instance'],
@@ -8608,7 +8608,7 @@ an instance.
           config, request, global_params=global_params)
 
     Reset.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.reset',
         ordered_params=['project', 'zone', 'instance'],
@@ -8636,7 +8636,7 @@ method.
           config, request, global_params=global_params)
 
     Resume.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.resume',
         ordered_params=['project', 'zone', 'instance'],
@@ -8663,7 +8663,7 @@ method.
           config, request, global_params=global_params)
 
     SendDiagnosticInterrupt.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.sendDiagnosticInterrupt',
         ordered_params=['project', 'zone', 'instance'],
@@ -8690,7 +8690,7 @@ method.
           config, request, global_params=global_params)
 
     SetDeletionProtection.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.setDeletionProtection',
         ordered_params=['project', 'zone', 'resource'],
@@ -8717,7 +8717,7 @@ method.
           config, request, global_params=global_params)
 
     SetDiskAutoDelete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.setDiskAutoDelete',
         ordered_params=['project', 'zone', 'instance', 'autoDelete', 'deviceName'],
@@ -8745,7 +8745,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.setIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -8773,7 +8773,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.setLabels',
         ordered_params=['project', 'zone', 'instance'],
@@ -8801,7 +8801,7 @@ values specified in the request.
           config, request, global_params=global_params)
 
     SetMachineResources.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.setMachineResources',
         ordered_params=['project', 'zone', 'instance'],
@@ -8829,7 +8829,7 @@ type specified in the request.
           config, request, global_params=global_params)
 
     SetMachineType.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.setMachineType',
         ordered_params=['project', 'zone', 'instance'],
@@ -8857,7 +8857,7 @@ in the request.
           config, request, global_params=global_params)
 
     SetMetadata.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.setMetadata',
         ordered_params=['project', 'zone', 'instance'],
@@ -8887,7 +8887,7 @@ Minimum CPU Platform.
           config, request, global_params=global_params)
 
     SetMinCpuPlatform.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.setMinCpuPlatform',
         ordered_params=['project', 'zone', 'instance'],
@@ -8914,7 +8914,7 @@ Minimum CPU Platform.
           config, request, global_params=global_params)
 
     SetName.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.setName',
         ordered_params=['project', 'zone', 'instance'],
@@ -8945,7 +8945,7 @@ VM host maintenance policy.
           config, request, global_params=global_params)
 
     SetScheduling.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.setScheduling',
         ordered_params=['project', 'zone', 'instance'],
@@ -8974,7 +8974,7 @@ Cloud Armor Overview
           config, request, global_params=global_params)
 
     SetSecurityPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.setSecurityPolicy',
         ordered_params=['project', 'zone', 'instance'],
@@ -9003,7 +9003,7 @@ the service account and access scopes for an instance.
           config, request, global_params=global_params)
 
     SetServiceAccount.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.setServiceAccount',
         ordered_params=['project', 'zone', 'instance'],
@@ -9033,7 +9033,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     SetShieldedInstanceIntegrityPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.instances.setShieldedInstanceIntegrityPolicy',
         ordered_params=['project', 'zone', 'instance'],
@@ -9061,7 +9061,7 @@ for the specified instance to the data included in the request.
           config, request, global_params=global_params)
 
     SetTags.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.setTags',
         ordered_params=['project', 'zone', 'instance'],
@@ -9089,7 +9089,7 @@ Simulate a host maintenance event.
           config, request, global_params=global_params)
 
     SimulateMaintenanceEvent.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.simulateMaintenanceEvent',
         ordered_params=['project', 'zone', 'instance'],
@@ -9118,7 +9118,7 @@ instance.
           config, request, global_params=global_params)
 
     Start.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.start',
         ordered_params=['project', 'zone', 'instance'],
@@ -9147,7 +9147,7 @@ instance.
           config, request, global_params=global_params)
 
     StartWithEncryptionKey.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.startWithEncryptionKey',
         ordered_params=['project', 'zone', 'instance'],
@@ -9179,7 +9179,7 @@ an instance.
           config, request, global_params=global_params)
 
     Stop.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.stop',
         ordered_params=['project', 'zone', 'instance'],
@@ -9213,7 +9213,7 @@ Suspending and resuming an instance.
           config, request, global_params=global_params)
 
     Suspend.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.suspend',
         ordered_params=['project', 'zone', 'instance'],
@@ -9240,7 +9240,7 @@ Suspending and resuming an instance.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.testIamPermissions',
         ordered_params=['project', 'zone', 'resource'],
@@ -9270,7 +9270,7 @@ properties.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.instances.update',
         ordered_params=['project', 'zone', 'instance'],
@@ -9300,7 +9300,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     UpdateAccessConfig.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instances.updateAccessConfig',
         ordered_params=['project', 'zone', 'instance', 'networkInterface'],
@@ -9330,7 +9330,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     UpdateDisplayDevice.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.instances.updateDisplayDevice',
         ordered_params=['project', 'zone', 'instance'],
@@ -9362,7 +9362,7 @@ This method follows PATCH semantics.
           config, request, global_params=global_params)
 
     UpdateNetworkInterface.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.instances.updateNetworkInterface',
         ordered_params=['project', 'zone', 'instance', 'networkInterface'],
@@ -9392,7 +9392,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     UpdateShieldedInstanceConfig.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.instances.updateShieldedInstanceConfig',
         ordered_params=['project', 'zone', 'instance'],
@@ -9429,7 +9429,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.instantSnapshotGroups.delete',
         ordered_params=['project', 'zone', 'instantSnapshotGroup'],
@@ -9456,7 +9456,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instantSnapshotGroups.get',
         ordered_params=['project', 'zone', 'instantSnapshotGroup'],
@@ -9484,7 +9484,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instantSnapshotGroups.getIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -9511,7 +9511,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instantSnapshotGroups.insert',
         ordered_params=['project', 'zone'],
@@ -9539,7 +9539,7 @@ the specified zone.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instantSnapshotGroups.list',
         ordered_params=['project', 'zone'],
@@ -9567,7 +9567,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instantSnapshotGroups.setIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -9594,7 +9594,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instantSnapshotGroups.testIamPermissions',
         ordered_params=['project', 'zone', 'resource'],
@@ -9634,7 +9634,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instantSnapshots.aggregatedList',
         ordered_params=['project'],
@@ -9668,7 +9668,7 @@ instantSnapshots.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.instantSnapshots.delete',
         ordered_params=['project', 'zone', 'instantSnapshot'],
@@ -9695,7 +9695,7 @@ instantSnapshots.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instantSnapshots.get',
         ordered_params=['project', 'zone', 'instantSnapshot'],
@@ -9723,7 +9723,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instantSnapshots.getIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -9750,7 +9750,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instantSnapshots.insert',
         ordered_params=['project', 'zone'],
@@ -9778,7 +9778,7 @@ the specified zone.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.instantSnapshots.list',
         ordered_params=['project', 'zone'],
@@ -9806,7 +9806,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instantSnapshots.setIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -9835,7 +9835,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instantSnapshots.setLabels',
         ordered_params=['project', 'zone', 'resource'],
@@ -9862,7 +9862,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.instantSnapshots.testIamPermissions',
         ordered_params=['project', 'zone', 'resource'],
@@ -9899,7 +9899,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.interconnectAttachmentGroups.delete',
         ordered_params=['project', 'interconnectAttachmentGroup'],
@@ -9927,7 +9927,7 @@ scope.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectAttachmentGroups.get',
         ordered_params=['project', 'interconnectAttachmentGroup'],
@@ -9955,7 +9955,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectAttachmentGroups.getIamPolicy',
         ordered_params=['project', 'resource'],
@@ -9983,7 +9983,7 @@ InterconnectAttachmentGroup resource.
           config, request, global_params=global_params)
 
     GetOperationalStatus.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectAttachmentGroups.getOperationalStatus',
         ordered_params=['project', 'interconnectAttachmentGroup'],
@@ -10011,7 +10011,7 @@ scope using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.interconnectAttachmentGroups.insert',
         ordered_params=['project'],
@@ -10038,7 +10038,7 @@ scope using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectAttachmentGroups.list',
         ordered_params=['project'],
@@ -10068,7 +10068,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.interconnectAttachmentGroups.patch',
         ordered_params=['project', 'interconnectAttachmentGroup'],
@@ -10096,7 +10096,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.interconnectAttachmentGroups.setIamPolicy',
         ordered_params=['project', 'resource'],
@@ -10123,7 +10123,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.interconnectAttachmentGroups.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -10163,7 +10163,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectAttachments.aggregatedList',
         ordered_params=['project'],
@@ -10190,7 +10190,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.interconnectAttachments.delete',
         ordered_params=['project', 'region', 'interconnectAttachment'],
@@ -10217,7 +10217,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectAttachments.get',
         ordered_params=['project', 'region', 'interconnectAttachment'],
@@ -10245,7 +10245,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.interconnectAttachments.insert',
         ordered_params=['project', 'region'],
@@ -10273,7 +10273,7 @@ the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectAttachments.list',
         ordered_params=['project', 'region'],
@@ -10303,7 +10303,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.interconnectAttachments.patch',
         ordered_params=['project', 'region', 'interconnectAttachment'],
@@ -10332,7 +10332,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.interconnectAttachments.setLabels',
         ordered_params=['project', 'region', 'resource'],
@@ -10370,7 +10370,7 @@ interconnect group.
           config, request, global_params=global_params)
 
     CreateMembers.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.interconnectGroups.createMembers',
         ordered_params=['project', 'interconnectGroup'],
@@ -10397,7 +10397,7 @@ interconnect group.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.interconnectGroups.delete',
         ordered_params=['project', 'interconnectGroup'],
@@ -10424,7 +10424,7 @@ interconnect group.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectGroups.get',
         ordered_params=['project', 'interconnectGroup'],
@@ -10452,7 +10452,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectGroups.getIamPolicy',
         ordered_params=['project', 'resource'],
@@ -10480,7 +10480,7 @@ InterconnectGroup.
           config, request, global_params=global_params)
 
     GetOperationalStatus.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectGroups.getOperationalStatus',
         ordered_params=['project', 'interconnectGroup'],
@@ -10508,7 +10508,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.interconnectGroups.insert',
         ordered_params=['project'],
@@ -10535,7 +10535,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectGroups.list',
         ordered_params=['project'],
@@ -10565,7 +10565,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.interconnectGroups.patch',
         ordered_params=['project', 'interconnectGroup'],
@@ -10593,7 +10593,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.interconnectGroups.setIamPolicy',
         ordered_params=['project', 'resource'],
@@ -10620,7 +10620,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.interconnectGroups.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -10658,7 +10658,7 @@ available interconnect locations by making a list() request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectLocations.get',
         ordered_params=['project', 'interconnectLocation'],
@@ -10686,7 +10686,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectLocations.list',
         ordered_params=['project'],
@@ -10724,7 +10724,7 @@ list of available interconnect remote locations by making alist() request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectRemoteLocations.get',
         ordered_params=['project', 'interconnectRemoteLocation'],
@@ -10752,7 +10752,7 @@ specified project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnectRemoteLocations.list',
         ordered_params=['project'],
@@ -10789,7 +10789,7 @@ specified project.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.interconnects.delete',
         ordered_params=['project', 'interconnect'],
@@ -10817,7 +10817,7 @@ by making a list() request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnects.get',
         ordered_params=['project', 'interconnect'],
@@ -10853,7 +10853,7 @@ API from functioning properly.
           config, request, global_params=global_params)
 
     GetDiagnostics.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnects.getDiagnostics',
         ordered_params=['project', 'interconnect'],
@@ -10881,7 +10881,7 @@ Interconnect.
           config, request, global_params=global_params)
 
     GetMacsecConfig.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnects.getMacsecConfig',
         ordered_params=['project', 'interconnect'],
@@ -10909,7 +10909,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.interconnects.insert',
         ordered_params=['project'],
@@ -10936,7 +10936,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.interconnects.list',
         ordered_params=['project'],
@@ -10966,7 +10966,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.interconnects.patch',
         ordered_params=['project', 'interconnect'],
@@ -10995,7 +10995,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.interconnects.setLabels',
         ordered_params=['project', 'resource'],
@@ -11022,7 +11022,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetName.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.interconnects.setName',
         ordered_params=['project', 'interconnect'],
@@ -11063,7 +11063,7 @@ images.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.licenseCodes.get',
         ordered_params=['project', 'licenseCode'],
@@ -11094,7 +11094,7 @@ images.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.licenseCodes.getIamPolicy',
         ordered_params=['project', 'resource'],
@@ -11125,7 +11125,7 @@ images.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.licenseCodes.setIamPolicy',
         ordered_params=['project', 'resource'],
@@ -11155,7 +11155,7 @@ images.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.licenseCodes.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -11195,7 +11195,7 @@ images.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.licenses.delete',
         ordered_params=['project', 'license'],
@@ -11225,7 +11225,7 @@ images.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.licenses.get',
         ordered_params=['project', 'license'],
@@ -11256,7 +11256,7 @@ images.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.licenses.getIamPolicy',
         ordered_params=['project', 'resource'],
@@ -11286,7 +11286,7 @@ images.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.licenses.insert',
         ordered_params=['project'],
@@ -11321,7 +11321,7 @@ images.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.licenses.list',
         ordered_params=['project'],
@@ -11352,7 +11352,7 @@ images.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.licenses.setIamPolicy',
         ordered_params=['project', 'resource'],
@@ -11382,7 +11382,7 @@ images.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.licenses.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -11412,7 +11412,7 @@ images.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.licenses.update',
         ordered_params=['project', 'license'],
@@ -11450,7 +11450,7 @@ and cannot be undone.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.machineImages.delete',
         ordered_params=['project', 'machineImage'],
@@ -11477,7 +11477,7 @@ and cannot be undone.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.machineImages.get',
         ordered_params=['project', 'machineImage'],
@@ -11505,7 +11505,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.machineImages.getIamPolicy',
         ordered_params=['project', 'resource'],
@@ -11536,7 +11536,7 @@ instance.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.machineImages.insert',
         ordered_params=['project'],
@@ -11564,7 +11564,7 @@ the specified project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.machineImages.list',
         ordered_params=['project'],
@@ -11592,7 +11592,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.machineImages.setIamPolicy',
         ordered_params=['project', 'resource'],
@@ -11620,7 +11620,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.machineImages.setLabels',
         ordered_params=['project', 'resource'],
@@ -11647,7 +11647,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.machineImages.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -11687,7 +11687,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.machineTypes.aggregatedList',
         ordered_params=['project'],
@@ -11714,7 +11714,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.machineTypes.get',
         ordered_params=['project', 'zone', 'machineType'],
@@ -11742,7 +11742,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.machineTypes.list',
         ordered_params=['project', 'zone'],
@@ -11779,7 +11779,7 @@ project.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.managedRulesets.get',
         ordered_params=['project', 'managedRuleset'],
@@ -11806,7 +11806,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.managedRulesets.list',
         ordered_params=['project'],
@@ -11847,7 +11847,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkAttachments.aggregatedList',
         ordered_params=['project'],
@@ -11874,7 +11874,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.networkAttachments.delete',
         ordered_params=['project', 'region', 'networkAttachment'],
@@ -11901,7 +11901,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkAttachments.get',
         ordered_params=['project', 'region', 'networkAttachment'],
@@ -11929,7 +11929,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkAttachments.getIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -11957,7 +11957,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkAttachments.insert',
         ordered_params=['project', 'region'],
@@ -11984,7 +11984,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkAttachments.list',
         ordered_params=['project', 'region'],
@@ -12014,7 +12014,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.networkAttachments.patch',
         ordered_params=['project', 'region', 'networkAttachment'],
@@ -12042,7 +12042,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkAttachments.setIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -12069,7 +12069,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkAttachments.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -12110,7 +12110,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkEdgeSecurityServices.aggregatedList',
         ordered_params=['project'],
@@ -12137,7 +12137,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.networkEdgeSecurityServices.delete',
         ordered_params=['project', 'region', 'networkEdgeSecurityService'],
@@ -12164,7 +12164,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkEdgeSecurityServices.get',
         ordered_params=['project', 'region', 'networkEdgeSecurityService'],
@@ -12192,7 +12192,7 @@ the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkEdgeSecurityServices.insert',
         ordered_params=['project', 'region'],
@@ -12219,7 +12219,7 @@ the request.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.networkEdgeSecurityServices.patch',
         ordered_params=['project', 'region', 'networkEdgeSecurityService'],
@@ -12259,7 +12259,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkEndpointGroups.aggregatedList',
         ordered_params=['project'],
@@ -12286,7 +12286,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AttachNetworkEndpoints.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkEndpointGroups.attachNetworkEndpoints',
         ordered_params=['project', 'zone', 'networkEndpointGroup'],
@@ -12316,7 +12316,7 @@ referencing it.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.networkEndpointGroups.delete',
         ordered_params=['project', 'zone', 'networkEndpointGroup'],
@@ -12344,7 +12344,7 @@ group.
           config, request, global_params=global_params)
 
     DetachNetworkEndpoints.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkEndpointGroups.detachNetworkEndpoints',
         ordered_params=['project', 'zone', 'networkEndpointGroup'],
@@ -12371,7 +12371,7 @@ group.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkEndpointGroups.get',
         ordered_params=['project', 'zone', 'networkEndpointGroup'],
@@ -12413,7 +12413,7 @@ Note: Use the following APIs to manage network endpoint groups:
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkEndpointGroups.insert',
         ordered_params=['project', 'zone'],
@@ -12441,7 +12441,7 @@ specified project and zone.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkEndpointGroups.list',
         ordered_params=['project', 'zone'],
@@ -12468,7 +12468,7 @@ specified project and zone.
           config, request, global_params=global_params)
 
     ListNetworkEndpoints.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkEndpointGroups.listNetworkEndpoints',
         ordered_params=['project', 'zone', 'networkEndpointGroup'],
@@ -12495,7 +12495,7 @@ specified project and zone.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkEndpointGroups.testIamPermissions',
         ordered_params=['project', 'zone', 'resource'],
@@ -12532,7 +12532,7 @@ specified project and zone.
           config, request, global_params=global_params)
 
     AddAssociation.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkFirewallPolicies.addAssociation',
         ordered_params=['project', 'firewallPolicy'],
@@ -12559,7 +12559,7 @@ specified project and zone.
           config, request, global_params=global_params)
 
     AddPacketMirroringRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkFirewallPolicies.addPacketMirroringRule',
         ordered_params=['project', 'firewallPolicy'],
@@ -12586,7 +12586,7 @@ specified project and zone.
           config, request, global_params=global_params)
 
     AddRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkFirewallPolicies.addRule',
         ordered_params=['project', 'firewallPolicy'],
@@ -12618,7 +12618,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkFirewallPolicies.aggregatedList',
         ordered_params=['project'],
@@ -12645,7 +12645,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     CloneRules.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkFirewallPolicies.cloneRules',
         ordered_params=['project', 'firewallPolicy'],
@@ -12672,7 +12672,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.networkFirewallPolicies.delete',
         ordered_params=['project', 'firewallPolicy'],
@@ -12699,7 +12699,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkFirewallPolicies.get',
         ordered_params=['project', 'firewallPolicy'],
@@ -12726,7 +12726,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     GetAssociation.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkFirewallPolicies.getAssociation',
         ordered_params=['project', 'firewallPolicy'],
@@ -12754,7 +12754,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkFirewallPolicies.getIamPolicy',
         ordered_params=['project', 'resource'],
@@ -12781,7 +12781,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetPacketMirroringRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkFirewallPolicies.getPacketMirroringRule',
         ordered_params=['project', 'firewallPolicy'],
@@ -12808,7 +12808,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkFirewallPolicies.getRule',
         ordered_params=['project', 'firewallPolicy'],
@@ -12836,7 +12836,7 @@ the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkFirewallPolicies.insert',
         ordered_params=['project'],
@@ -12863,7 +12863,7 @@ the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkFirewallPolicies.list',
         ordered_params=['project'],
@@ -12890,7 +12890,7 @@ the request.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.networkFirewallPolicies.patch',
         ordered_params=['project', 'firewallPolicy'],
@@ -12917,7 +12917,7 @@ the request.
           config, request, global_params=global_params)
 
     PatchPacketMirroringRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkFirewallPolicies.patchPacketMirroringRule',
         ordered_params=['project', 'firewallPolicy'],
@@ -12944,7 +12944,7 @@ the request.
           config, request, global_params=global_params)
 
     PatchRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkFirewallPolicies.patchRule',
         ordered_params=['project', 'firewallPolicy'],
@@ -12971,7 +12971,7 @@ the request.
           config, request, global_params=global_params)
 
     RemoveAssociation.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkFirewallPolicies.removeAssociation',
         ordered_params=['project', 'firewallPolicy'],
@@ -12998,7 +12998,7 @@ the request.
           config, request, global_params=global_params)
 
     RemovePacketMirroringRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkFirewallPolicies.removePacketMirroringRule',
         ordered_params=['project', 'firewallPolicy'],
@@ -13025,7 +13025,7 @@ the request.
           config, request, global_params=global_params)
 
     RemoveRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkFirewallPolicies.removeRule',
         ordered_params=['project', 'firewallPolicy'],
@@ -13053,7 +13053,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkFirewallPolicies.setIamPolicy',
         ordered_params=['project', 'resource'],
@@ -13080,7 +13080,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networkFirewallPolicies.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -13117,7 +13117,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkProfiles.get',
         ordered_params=['project', 'networkProfile'],
@@ -13145,7 +13145,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networkProfiles.list',
         ordered_params=['project'],
@@ -13182,7 +13182,7 @@ project.
           config, request, global_params=global_params)
 
     AddPeering.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networks.addPeering',
         ordered_params=['project', 'network'],
@@ -13211,7 +13211,7 @@ request to remove a peering from the specified network.
           config, request, global_params=global_params)
 
     CancelRequestRemovePeering.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networks.cancelRequestRemovePeering',
         ordered_params=['project', 'network'],
@@ -13238,7 +13238,7 @@ request to remove a peering from the specified network.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.networks.delete',
         ordered_params=['project', 'network'],
@@ -13265,7 +13265,7 @@ request to remove a peering from the specified network.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networks.get',
         ordered_params=['project', 'network'],
@@ -13292,7 +13292,7 @@ request to remove a peering from the specified network.
           config, request, global_params=global_params)
 
     GetEffectiveFirewalls.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networks.getEffectiveFirewalls',
         ordered_params=['project', 'network'],
@@ -13320,7 +13320,7 @@ in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networks.insert',
         ordered_params=['project'],
@@ -13347,7 +13347,7 @@ in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networks.list',
         ordered_params=['project'],
@@ -13374,7 +13374,7 @@ in the request.
           config, request, global_params=global_params)
 
     ListPeeringRoutes.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.networks.listPeeringRoutes',
         ordered_params=['project', 'network'],
@@ -13402,7 +13402,7 @@ Only routingConfig can be modified.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.networks.patch',
         ordered_params=['project', 'network'],
@@ -13429,7 +13429,7 @@ Only routingConfig can be modified.
           config, request, global_params=global_params)
 
     RemovePeering.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networks.removePeering',
         ordered_params=['project', 'network'],
@@ -13457,7 +13457,7 @@ for PeeringConnection with update_strategy=CONSENSUS.
           config, request, global_params=global_params)
 
     RequestRemovePeering.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networks.requestRemovePeering',
         ordered_params=['project', 'network'],
@@ -13484,7 +13484,7 @@ for PeeringConnection with update_strategy=CONSENSUS.
           config, request, global_params=global_params)
 
     SwitchToCustomMode.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.networks.switchToCustomMode',
         ordered_params=['project', 'network'],
@@ -13513,7 +13513,7 @@ and the NetworkPeering.import_custom_routes field.
           config, request, global_params=global_params)
 
     UpdatePeering.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.networks.updatePeering',
         ordered_params=['project', 'network'],
@@ -13550,7 +13550,7 @@ and the NetworkPeering.import_custom_routes field.
           config, request, global_params=global_params)
 
     AddNodes.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.nodeGroups.addNodes',
         ordered_params=['project', 'zone', 'nodeGroup'],
@@ -13581,7 +13581,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.nodeGroups.aggregatedList',
         ordered_params=['project'],
@@ -13608,7 +13608,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.nodeGroups.delete',
         ordered_params=['project', 'zone', 'nodeGroup'],
@@ -13635,7 +13635,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     DeleteNodes.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.nodeGroups.deleteNodes',
         ordered_params=['project', 'zone', 'nodeGroup'],
@@ -13665,7 +13665,7 @@ instead.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.nodeGroups.get',
         ordered_params=['project', 'zone', 'nodeGroup'],
@@ -13693,7 +13693,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.nodeGroups.getIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -13721,7 +13721,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.nodeGroups.insert',
         ordered_params=['project', 'zone', 'initialNodeCount'],
@@ -13749,7 +13749,7 @@ Note: use nodeGroups.listNodes for more details about each group.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.nodeGroups.list',
         ordered_params=['project', 'zone'],
@@ -13776,7 +13776,7 @@ Note: use nodeGroups.listNodes for more details about each group.
           config, request, global_params=global_params)
 
     ListNodes.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.nodeGroups.listNodes',
         ordered_params=['project', 'zone', 'nodeGroup'],
@@ -13803,7 +13803,7 @@ Note: use nodeGroups.listNodes for more details about each group.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.nodeGroups.patch',
         ordered_params=['project', 'zone', 'nodeGroup'],
@@ -13830,7 +13830,7 @@ Note: use nodeGroups.listNodes for more details about each group.
           config, request, global_params=global_params)
 
     PerformMaintenance.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.nodeGroups.performMaintenance',
         ordered_params=['project', 'zone', 'nodeGroup'],
@@ -13858,7 +13858,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.nodeGroups.setIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -13885,7 +13885,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetNodeTemplate.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.nodeGroups.setNodeTemplate',
         ordered_params=['project', 'zone', 'nodeGroup'],
@@ -13912,7 +13912,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SimulateMaintenanceEvent.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.nodeGroups.simulateMaintenanceEvent',
         ordered_params=['project', 'zone', 'nodeGroup'],
@@ -13939,7 +13939,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.nodeGroups.testIamPermissions',
         ordered_params=['project', 'zone', 'resource'],
@@ -13979,7 +13979,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.nodeTemplates.aggregatedList',
         ordered_params=['project'],
@@ -14006,7 +14006,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.nodeTemplates.delete',
         ordered_params=['project', 'region', 'nodeTemplate'],
@@ -14033,7 +14033,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.nodeTemplates.get',
         ordered_params=['project', 'region', 'nodeTemplate'],
@@ -14061,7 +14061,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.nodeTemplates.getIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -14089,7 +14089,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.nodeTemplates.insert',
         ordered_params=['project', 'region'],
@@ -14117,7 +14117,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.nodeTemplates.list',
         ordered_params=['project', 'region'],
@@ -14145,7 +14145,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.nodeTemplates.setIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -14172,7 +14172,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.nodeTemplates.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -14212,7 +14212,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.nodeTypes.aggregatedList',
         ordered_params=['project'],
@@ -14239,7 +14239,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.nodeTypes.get',
         ordered_params=['project', 'zone', 'nodeType'],
@@ -14267,7 +14267,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.nodeTypes.list',
         ordered_params=['project', 'zone'],
@@ -14313,7 +14313,7 @@ instead.
           config, request, global_params=global_params)
 
     AddAssociation.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.organizationSecurityPolicies.addAssociation',
         ordered_params=['securityPolicy'],
@@ -14344,7 +14344,7 @@ now disabled for most organizations. Use firewallPolicies.addRule instead.
           config, request, global_params=global_params)
 
     AddRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.organizationSecurityPolicies.addRule',
         ordered_params=['securityPolicy'],
@@ -14376,7 +14376,7 @@ instead.
           config, request, global_params=global_params)
 
     CopyRules.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.organizationSecurityPolicies.copyRules',
         ordered_params=['securityPolicy'],
@@ -14407,7 +14407,7 @@ now disabled for most organizations. Use firewallPolicies.delete instead.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.organizationSecurityPolicies.delete',
         ordered_params=['securityPolicy'],
@@ -14438,7 +14438,7 @@ disabled for most organizations. Use firewallPolicies.get instead.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.organizationSecurityPolicies.get',
         ordered_params=['securityPolicy'],
@@ -14470,7 +14470,7 @@ instead.
           config, request, global_params=global_params)
 
     GetAssociation.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.organizationSecurityPolicies.getAssociation',
         ordered_params=['securityPolicy'],
@@ -14501,7 +14501,7 @@ disabled for most organizations. Use firewallPolicies.getRule instead.
           config, request, global_params=global_params)
 
     GetRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.organizationSecurityPolicies.getRule',
         ordered_params=['securityPolicy'],
@@ -14533,7 +14533,7 @@ disabled for most organizations. Use firewallPolicies.insert instead.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.organizationSecurityPolicies.insert',
         ordered_params=[],
@@ -14565,7 +14565,7 @@ disabled for most organizations. Use firewallPolicies.list instead.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.organizationSecurityPolicies.list',
         ordered_params=[],
@@ -14597,7 +14597,7 @@ instead.
           config, request, global_params=global_params)
 
     ListAssociations.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.organizationSecurityPolicies.listAssociations',
         ordered_params=[],
@@ -14625,7 +14625,7 @@ expressions.
           config, request, global_params=global_params)
 
     ListPreconfiguredExpressionSets.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.organizationSecurityPolicies.listPreconfiguredExpressionSets',
         ordered_params=[],
@@ -14656,7 +14656,7 @@ now disabled for most organizations. Use firewallPolicies.move instead.
           config, request, global_params=global_params)
 
     Move.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.organizationSecurityPolicies.move',
         ordered_params=['securityPolicy'],
@@ -14687,7 +14687,7 @@ now disabled for most organizations. Use firewallPolicies.patch instead.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.organizationSecurityPolicies.patch',
         ordered_params=['securityPolicy'],
@@ -14719,7 +14719,7 @@ instead.
           config, request, global_params=global_params)
 
     PatchRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.organizationSecurityPolicies.patchRule',
         ordered_params=['securityPolicy'],
@@ -14751,7 +14751,7 @@ instead.
           config, request, global_params=global_params)
 
     RemoveAssociation.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.organizationSecurityPolicies.removeAssociation',
         ordered_params=['securityPolicy'],
@@ -14783,7 +14783,7 @@ instead.
           config, request, global_params=global_params)
 
     RemoveRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.organizationSecurityPolicies.removeRule',
         ordered_params=['securityPolicy'],
@@ -14823,7 +14823,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.packetMirrorings.aggregatedList',
         ordered_params=['project'],
@@ -14850,7 +14850,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.packetMirrorings.delete',
         ordered_params=['project', 'region', 'packetMirroring'],
@@ -14877,7 +14877,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.packetMirrorings.get',
         ordered_params=['project', 'region', 'packetMirroring'],
@@ -14905,7 +14905,7 @@ using the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.packetMirrorings.insert',
         ordered_params=['project', 'region'],
@@ -14933,7 +14933,7 @@ project and region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.packetMirrorings.list',
         ordered_params=['project', 'region'],
@@ -14963,7 +14963,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.packetMirrorings.patch',
         ordered_params=['project', 'region', 'packetMirroring'],
@@ -14990,7 +14990,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.packetMirrorings.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -15027,7 +15027,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.previewFeatures.get',
         ordered_params=['project', 'previewFeature'],
@@ -15054,7 +15054,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.previewFeatures.list',
         ordered_params=['project'],
@@ -15082,7 +15082,7 @@ a PreviewFeature.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.previewFeatures.update',
         ordered_params=['project', 'previewFeature'],
@@ -15126,7 +15126,7 @@ endpoint.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.projectViews.get',
         ordered_params=['project', 'region'],
@@ -15163,7 +15163,7 @@ endpoint.
           config, request, global_params=global_params)
 
     DisableXpnHost.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.projects.disableXpnHost',
         ordered_params=['project'],
@@ -15191,7 +15191,7 @@ this host project.
           config, request, global_params=global_params)
 
     DisableXpnResource.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.projects.disableXpnResource',
         ordered_params=['project'],
@@ -15218,7 +15218,7 @@ this host project.
           config, request, global_params=global_params)
 
     EnableXpnHost.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.projects.enableXpnHost',
         ordered_params=['project'],
@@ -15247,7 +15247,7 @@ project.
           config, request, global_params=global_params)
 
     EnableXpnResource.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.projects.enableXpnResource',
         ordered_params=['project'],
@@ -15282,7 +15282,7 @@ your request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.projects.get',
         ordered_params=['project'],
@@ -15310,7 +15310,7 @@ if no link exists.
           config, request, global_params=global_params)
 
     GetXpnHost.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.projects.getXpnHost',
         ordered_params=['project'],
@@ -15338,7 +15338,7 @@ project.
           config, request, global_params=global_params)
 
     GetXpnResources.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.projects.getXpnResources',
         ordered_params=['project'],
@@ -15365,7 +15365,7 @@ project.
           config, request, global_params=global_params)
 
     ListXpnHosts.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.projects.listXpnHosts',
         ordered_params=['project'],
@@ -15405,7 +15405,7 @@ to continue using the service without interruption.
           config, request, global_params=global_params)
 
     MoveDisk.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.projects.moveDisk',
         ordered_params=['project'],
@@ -15438,7 +15438,7 @@ zones](/compute/docs/instances/moving-instance-across-zones) instead.
           config, request, global_params=global_params)
 
     MoveInstance.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.projects.moveInstance',
         ordered_params=['project'],
@@ -15468,7 +15468,7 @@ to Cloud Armor Enterprise for more information.
           config, request, global_params=global_params)
 
     SetCloudArmorTier.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.projects.setCloudArmorTier',
         ordered_params=['project'],
@@ -15496,7 +15496,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     SetCommonInstanceMetadata.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.projects.setCommonInstanceMetadata',
         ordered_params=['project'],
@@ -15525,7 +15525,7 @@ the network tier field.
           config, request, global_params=global_params)
 
     SetDefaultNetworkTier.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.projects.setDefaultNetworkTier',
         ordered_params=['project'],
@@ -15554,7 +15554,7 @@ method, the usage export feature will be disabled.
           config, request, global_params=global_params)
 
     SetUsageExportBucket.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.projects.setUsageExportBucket',
         ordered_params=['project'],
@@ -15591,7 +15591,7 @@ method, the usage export feature will be disabled.
           config, request, global_params=global_params)
 
     Announce.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.publicAdvertisedPrefixes.announce',
         ordered_params=['project', 'publicAdvertisedPrefix'],
@@ -15618,7 +15618,7 @@ method, the usage export feature will be disabled.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.publicAdvertisedPrefixes.delete',
         ordered_params=['project', 'publicAdvertisedPrefix'],
@@ -15645,7 +15645,7 @@ method, the usage export feature will be disabled.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.publicAdvertisedPrefixes.get',
         ordered_params=['project', 'publicAdvertisedPrefix'],
@@ -15673,7 +15673,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.publicAdvertisedPrefixes.insert',
         ordered_params=['project'],
@@ -15700,7 +15700,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.publicAdvertisedPrefixes.list',
         ordered_params=['project'],
@@ -15730,7 +15730,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.publicAdvertisedPrefixes.patch',
         ordered_params=['project', 'publicAdvertisedPrefix'],
@@ -15757,7 +15757,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Withdraw.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.publicAdvertisedPrefixes.withdraw',
         ordered_params=['project', 'publicAdvertisedPrefix'],
@@ -15798,7 +15798,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.publicDelegatedPrefixes.aggregatedList',
         ordered_params=['project'],
@@ -15825,7 +15825,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Announce.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.publicDelegatedPrefixes.announce',
         ordered_params=['project', 'region', 'publicDelegatedPrefix'],
@@ -15852,7 +15852,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.publicDelegatedPrefixes.delete',
         ordered_params=['project', 'region', 'publicDelegatedPrefix'],
@@ -15879,7 +15879,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.publicDelegatedPrefixes.get',
         ordered_params=['project', 'region', 'publicDelegatedPrefix'],
@@ -15907,7 +15907,7 @@ region using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.publicDelegatedPrefixes.insert',
         ordered_params=['project', 'region'],
@@ -15934,7 +15934,7 @@ region using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.publicDelegatedPrefixes.list',
         ordered_params=['project', 'region'],
@@ -15964,7 +15964,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.publicDelegatedPrefixes.patch',
         ordered_params=['project', 'region', 'publicDelegatedPrefix'],
@@ -15991,7 +15991,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Withdraw.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.publicDelegatedPrefixes.withdraw',
         ordered_params=['project', 'region', 'publicDelegatedPrefix'],
@@ -16028,7 +16028,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionAutoscalers.delete',
         ordered_params=['project', 'region', 'autoscaler'],
@@ -16055,7 +16055,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionAutoscalers.get',
         ordered_params=['project', 'region', 'autoscaler'],
@@ -16083,7 +16083,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionAutoscalers.insert',
         ordered_params=['project', 'region'],
@@ -16111,7 +16111,7 @@ the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionAutoscalers.list',
         ordered_params=['project', 'region'],
@@ -16141,7 +16141,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionAutoscalers.patch',
         ordered_params=['project', 'region'],
@@ -16168,7 +16168,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionAutoscalers.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -16196,7 +16196,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.regionAutoscalers.update',
         ordered_params=['project', 'region'],
@@ -16233,7 +16233,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionBackendBuckets.delete',
         ordered_params=['project', 'region', 'backendBucket'],
@@ -16260,7 +16260,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionBackendBuckets.get',
         ordered_params=['project', 'region', 'backendBucket'],
@@ -16288,7 +16288,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionBackendBuckets.getIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -16316,7 +16316,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionBackendBuckets.insert',
         ordered_params=['project', 'region'],
@@ -16344,7 +16344,7 @@ project in the given region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionBackendBuckets.list',
         ordered_params=['project', 'region'],
@@ -16372,7 +16372,7 @@ the given region.
           config, request, global_params=global_params)
 
     ListUsable.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionBackendBuckets.listUsable',
         ordered_params=['project', 'region'],
@@ -16402,7 +16402,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionBackendBuckets.patch',
         ordered_params=['project', 'region', 'backendBucket'],
@@ -16430,7 +16430,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionBackendBuckets.setIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -16457,7 +16457,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionBackendBuckets.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -16494,7 +16494,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionBackendServices.delete',
         ordered_params=['project', 'region', 'backendService'],
@@ -16521,7 +16521,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionBackendServices.get',
         ordered_params=['project', 'region', 'backendService'],
@@ -16549,7 +16549,7 @@ regional BackendService.
           config, request, global_params=global_params)
 
     GetHealth.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionBackendServices.getHealth',
         ordered_params=['project', 'region', 'backendService'],
@@ -16577,7 +16577,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionBackendServices.getIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -16606,7 +16606,7 @@ Backend services overview.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionBackendServices.insert',
         ordered_params=['project', 'region'],
@@ -16634,7 +16634,7 @@ specified project in the given region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionBackendServices.list',
         ordered_params=['project', 'region'],
@@ -16664,7 +16664,7 @@ Network Load Balancers are not included in the response.
           config, request, global_params=global_params)
 
     ListUsable.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionBackendServices.listUsable',
         ordered_params=['project', 'region'],
@@ -16695,7 +16695,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionBackendServices.patch',
         ordered_params=['project', 'region', 'backendService'],
@@ -16723,7 +16723,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionBackendServices.setIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -16752,7 +16752,7 @@ Cloud Armor Overview
           config, request, global_params=global_params)
 
     SetSecurityPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionBackendServices.setSecurityPolicy',
         ordered_params=['project', 'region', 'backendService'],
@@ -16779,7 +16779,7 @@ Cloud Armor Overview
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionBackendServices.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -16809,7 +16809,7 @@ Backend services overview.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.regionBackendServices.update',
         ordered_params=['project', 'region', 'backendService'],
@@ -16849,7 +16849,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionCommitments.aggregatedList',
         ordered_params=['project'],
@@ -16876,7 +16876,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionCommitments.get',
         ordered_params=['project', 'region', 'commitment'],
@@ -16904,7 +16904,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionCommitments.insert',
         ordered_params=['project', 'region'],
@@ -16932,7 +16932,7 @@ the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionCommitments.list',
         ordered_params=['project', 'region'],
@@ -16961,7 +16961,7 @@ update-mask. Only the following fields can be updated: auto_renew and plan.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionCommitments.update',
         ordered_params=['project', 'region', 'commitment'],
@@ -17002,7 +17002,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionCompositeHealthChecks.aggregatedList',
         ordered_params=['project'],
@@ -17029,7 +17029,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionCompositeHealthChecks.delete',
         ordered_params=['project', 'region', 'compositeHealthCheck'],
@@ -17056,7 +17056,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionCompositeHealthChecks.get',
         ordered_params=['project', 'region', 'compositeHealthCheck'],
@@ -17084,7 +17084,7 @@ regional CompositeHealthCheck.
           config, request, global_params=global_params)
 
     GetHealth.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionCompositeHealthChecks.getHealth',
         ordered_params=['project', 'region', 'compositeHealthCheck'],
@@ -17112,7 +17112,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionCompositeHealthChecks.insert',
         ordered_params=['project', 'region'],
@@ -17139,7 +17139,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionCompositeHealthChecks.list',
         ordered_params=['project', 'region'],
@@ -17169,7 +17169,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionCompositeHealthChecks.patch',
         ordered_params=['project', 'region', 'compositeHealthCheck'],
@@ -17196,7 +17196,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionCompositeHealthChecks.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -17233,7 +17233,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionDiskTypes.get',
         ordered_params=['project', 'region', 'diskType'],
@@ -17260,7 +17260,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionDiskTypes.list',
         ordered_params=['project', 'region'],
@@ -17299,7 +17299,7 @@ creation.
           config, request, global_params=global_params)
 
     AddResourcePolicies.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionDisks.addResourcePolicies',
         ordered_params=['project', 'region', 'disk'],
@@ -17326,7 +17326,7 @@ creation.
           config, request, global_params=global_params)
 
     BulkInsert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionDisks.bulkInsert',
         ordered_params=['project', 'region'],
@@ -17356,7 +17356,7 @@ in a project different from the source disk project.
           config, request, global_params=global_params)
 
     CreateSnapshot.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionDisks.createSnapshot',
         ordered_params=['project', 'region', 'disk'],
@@ -17387,7 +17387,7 @@ snapshots.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionDisks.delete',
         ordered_params=['project', 'region', 'disk'],
@@ -17414,7 +17414,7 @@ snapshots.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionDisks.get',
         ordered_params=['project', 'region', 'disk'],
@@ -17442,7 +17442,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionDisks.getIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -17470,7 +17470,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionDisks.insert',
         ordered_params=['project', 'region'],
@@ -17498,7 +17498,7 @@ the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionDisks.list',
         ordered_params=['project', 'region'],
@@ -17525,7 +17525,7 @@ the specified region.
           config, request, global_params=global_params)
 
     RemoveResourcePolicies.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionDisks.removeResourcePolicies',
         ordered_params=['project', 'region', 'disk'],
@@ -17552,7 +17552,7 @@ the specified region.
           config, request, global_params=global_params)
 
     Resize.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionDisks.resize',
         ordered_params=['project', 'region', 'disk'],
@@ -17580,7 +17580,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionDisks.setIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -17607,7 +17607,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionDisks.setLabels',
         ordered_params=['project', 'region', 'resource'],
@@ -17635,7 +17635,7 @@ Must be invoked on the primary disk.
           config, request, global_params=global_params)
 
     StartAsyncReplication.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionDisks.startAsyncReplication',
         ordered_params=['project', 'region', 'disk'],
@@ -17663,7 +17663,7 @@ Can be invoked either on the primary or on the secondary disk.
           config, request, global_params=global_params)
 
     StopAsyncReplication.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionDisks.stopAsyncReplication',
         ordered_params=['project', 'region', 'disk'],
@@ -17691,7 +17691,7 @@ Can be invoked either in the primary or secondary scope.
           config, request, global_params=global_params)
 
     StopGroupAsyncReplication.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionDisks.stopGroupAsyncReplication',
         ordered_params=['project', 'region'],
@@ -17718,7 +17718,7 @@ Can be invoked either in the primary or secondary scope.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionDisks.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -17746,7 +17746,7 @@ performed only on selected fields included as part of update-mask.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionDisks.update',
         ordered_params=['project', 'region', 'disk'],
@@ -17774,7 +17774,7 @@ encryption key to the latest version for the specified persistent disk.
           config, request, global_params=global_params)
 
     UpdateKmsKey.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionDisks.updateKmsKey',
         ordered_params=['project', 'region', 'disk'],
@@ -17815,7 +17815,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionHealthAggregationPolicies.aggregatedList',
         ordered_params=['project'],
@@ -17842,7 +17842,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionHealthAggregationPolicies.delete',
         ordered_params=['project', 'region', 'healthAggregationPolicy'],
@@ -17869,7 +17869,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionHealthAggregationPolicies.get',
         ordered_params=['project', 'region', 'healthAggregationPolicy'],
@@ -17897,7 +17897,7 @@ region using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionHealthAggregationPolicies.insert',
         ordered_params=['project', 'region'],
@@ -17924,7 +17924,7 @@ region using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionHealthAggregationPolicies.list',
         ordered_params=['project', 'region'],
@@ -17954,7 +17954,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionHealthAggregationPolicies.patch',
         ordered_params=['project', 'region', 'healthAggregationPolicy'],
@@ -17981,7 +17981,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionHealthAggregationPolicies.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -18022,7 +18022,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionHealthCheckServices.aggregatedList',
         ordered_params=['project'],
@@ -18049,7 +18049,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionHealthCheckServices.delete',
         ordered_params=['project', 'region', 'healthCheckService'],
@@ -18076,7 +18076,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionHealthCheckServices.get',
         ordered_params=['project', 'region', 'healthCheckService'],
@@ -18104,7 +18104,7 @@ specified project and region using the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionHealthCheckServices.insert',
         ordered_params=['project', 'region'],
@@ -18132,7 +18132,7 @@ configured for the specified project in the given region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionHealthCheckServices.list',
         ordered_params=['project', 'region'],
@@ -18162,7 +18162,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionHealthCheckServices.patch',
         ordered_params=['project', 'region', 'healthCheckService'],
@@ -18189,7 +18189,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionHealthCheckServices.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -18226,7 +18226,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionHealthChecks.delete',
         ordered_params=['project', 'region', 'healthCheck'],
@@ -18253,7 +18253,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionHealthChecks.get',
         ordered_params=['project', 'region', 'healthCheck'],
@@ -18281,7 +18281,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionHealthChecks.insert',
         ordered_params=['project', 'region'],
@@ -18309,7 +18309,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionHealthChecks.list',
         ordered_params=['project', 'region'],
@@ -18339,7 +18339,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionHealthChecks.patch',
         ordered_params=['project', 'region', 'healthCheck'],
@@ -18366,7 +18366,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionHealthChecks.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -18394,7 +18394,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.regionHealthChecks.update',
         ordered_params=['project', 'region', 'healthCheck'],
@@ -18435,7 +18435,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionHealthSources.aggregatedList',
         ordered_params=['project'],
@@ -18462,7 +18462,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionHealthSources.delete',
         ordered_params=['project', 'region', 'healthSource'],
@@ -18489,7 +18489,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionHealthSources.get',
         ordered_params=['project', 'region', 'healthSource'],
@@ -18517,7 +18517,7 @@ regional HealthSource.
           config, request, global_params=global_params)
 
     GetHealth.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionHealthSources.getHealth',
         ordered_params=['project', 'region', 'healthSource'],
@@ -18545,7 +18545,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionHealthSources.insert',
         ordered_params=['project', 'region'],
@@ -18572,7 +18572,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionHealthSources.list',
         ordered_params=['project', 'region'],
@@ -18602,7 +18602,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionHealthSources.patch',
         ordered_params=['project', 'region', 'healthSource'],
@@ -18629,7 +18629,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionHealthSources.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -18669,7 +18669,7 @@ state.
           config, request, global_params=global_params)
 
     Cancel.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagerResizeRequests.cancel',
         ordered_params=['project', 'region', 'instanceGroupManager', 'resizeRequest'],
@@ -18698,7 +18698,7 @@ were provisioned previously.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionInstanceGroupManagerResizeRequests.delete',
         ordered_params=['project', 'region', 'instanceGroupManager', 'resizeRequest'],
@@ -18725,7 +18725,7 @@ were provisioned previously.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstanceGroupManagerResizeRequests.get',
         ordered_params=['project', 'region', 'instanceGroupManager', 'resizeRequest'],
@@ -18753,7 +18753,7 @@ or queues VM creation.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagerResizeRequests.insert',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -18781,7 +18781,7 @@ managed instance group.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstanceGroupManagerResizeRequests.list',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -18832,7 +18832,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     AbandonInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.abandonInstances',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -18859,7 +18859,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     ApplyUpdatesToInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.applyUpdatesToInstances',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -18891,7 +18891,7 @@ method.
           config, request, global_params=global_params)
 
     CreateInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.createInstances',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -18919,7 +18919,7 @@ in that group.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionInstanceGroupManagers.delete',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -18960,7 +18960,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     DeleteInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.deleteInstances',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -18988,7 +18988,7 @@ group.
           config, request, global_params=global_params)
 
     DeletePerInstanceConfigs.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.deletePerInstanceConfigs',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19015,7 +19015,7 @@ group.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstanceGroupManagers.get',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19050,7 +19050,7 @@ A regional managed instance group can contain up to 2000 instances.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.insert',
         ordered_params=['project', 'region'],
@@ -19078,7 +19078,7 @@ within the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstanceGroupManagers.list',
         ordered_params=['project', 'region'],
@@ -19106,7 +19106,7 @@ managed instance group. The filter andorderBy query parameters are not supported
           config, request, global_params=global_params)
 
     ListErrors.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstanceGroupManagers.listErrors',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19138,7 +19138,7 @@ to `PAGINATED`.
           config, request, global_params=global_params)
 
     ListManagedInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.listManagedInstances',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19166,7 +19166,7 @@ instance group. The orderBy query parameter is not supported.
           config, request, global_params=global_params)
 
     ListPerInstanceConfigs.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.listPerInstanceConfigs',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19207,7 +19207,7 @@ a MIG.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionInstanceGroupManagers.patch',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19236,7 +19236,7 @@ distinguish whether to perform insert or patch.
           config, request, global_params=global_params)
 
     PatchPerInstanceConfigs.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.patchPerInstanceConfigs',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19275,7 +19275,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     RecreateInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.recreateInstances',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19314,7 +19314,7 @@ draining duration has elapsed before the VM instance is removed or deleted.
           config, request, global_params=global_params)
 
     Resize.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.resize',
         ordered_params=['project', 'region', 'instanceGroupManager', 'size'],
@@ -19356,7 +19356,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     ResumeInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.resumeInstances',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19384,7 +19384,7 @@ instances in this group. Existing instances are not affected.
           config, request, global_params=global_params)
 
     SetInstanceTemplate.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.setInstanceTemplate',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19412,7 +19412,7 @@ assigned. Existing instances in the group are not affected.
           config, request, global_params=global_params)
 
     SetTargetPools.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.setTargetPools',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19454,7 +19454,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     StartInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.startInstances',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19505,7 +19505,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     StopInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.stopInstances',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19556,7 +19556,7 @@ You can specify a maximum of 1000 instances with this method per request.
           config, request, global_params=global_params)
 
     SuspendInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.suspendInstances',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19585,7 +19585,7 @@ distinguish whether to perform insert or patch.
           config, request, global_params=global_params)
 
     UpdatePerInstanceConfigs.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroupManagers.updatePerInstanceConfigs',
         ordered_params=['project', 'region', 'instanceGroupManager'],
@@ -19622,7 +19622,7 @@ distinguish whether to perform insert or patch.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstanceGroups.get',
         ordered_params=['project', 'region', 'instanceGroup'],
@@ -19650,7 +19650,7 @@ the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstanceGroups.list',
         ordered_params=['project', 'region'],
@@ -19680,7 +19680,7 @@ The orderBy query parameter is not supported.
           config, request, global_params=global_params)
 
     ListInstances.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroups.listInstances',
         ordered_params=['project', 'region', 'instanceGroup'],
@@ -19707,7 +19707,7 @@ The orderBy query parameter is not supported.
           config, request, global_params=global_params)
 
     SetNamedPorts.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroups.setNamedPorts',
         ordered_params=['project', 'region', 'instanceGroup'],
@@ -19734,7 +19734,7 @@ The orderBy query parameter is not supported.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceGroups.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -19772,7 +19772,7 @@ permanent and cannot be undone.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionInstanceTemplates.delete',
         ordered_params=['project', 'region', 'instanceTemplate'],
@@ -19799,7 +19799,7 @@ permanent and cannot be undone.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstanceTemplates.get',
         ordered_params=['project', 'region', 'instanceTemplate'],
@@ -19827,7 +19827,7 @@ global instance template whose URL is included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstanceTemplates.insert',
         ordered_params=['project', 'region'],
@@ -19855,7 +19855,7 @@ specified project and region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstanceTemplates.list',
         ordered_params=['project', 'region'],
@@ -19893,7 +19893,7 @@ instances to create.
           config, request, global_params=global_params)
 
     BulkInsert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstances.bulkInsert',
         ordered_params=['project', 'region'],
@@ -19930,7 +19930,7 @@ instances to create.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionInstantSnapshotGroups.delete',
         ordered_params=['project', 'region', 'instantSnapshotGroup'],
@@ -19958,7 +19958,7 @@ region.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstantSnapshotGroups.get',
         ordered_params=['project', 'region', 'instantSnapshotGroup'],
@@ -19986,7 +19986,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstantSnapshotGroups.getIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -20013,7 +20013,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstantSnapshotGroups.insert',
         ordered_params=['project', 'region'],
@@ -20041,7 +20041,7 @@ the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstantSnapshotGroups.list',
         ordered_params=['project', 'region'],
@@ -20069,7 +20069,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstantSnapshotGroups.setIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -20096,7 +20096,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstantSnapshotGroups.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -20140,7 +20140,7 @@ instantSnapshots.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionInstantSnapshots.delete',
         ordered_params=['project', 'region', 'instantSnapshot'],
@@ -20167,7 +20167,7 @@ instantSnapshots.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstantSnapshots.get',
         ordered_params=['project', 'region', 'instantSnapshot'],
@@ -20195,7 +20195,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstantSnapshots.getIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -20222,7 +20222,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstantSnapshots.insert',
         ordered_params=['project', 'region'],
@@ -20250,7 +20250,7 @@ the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionInstantSnapshots.list',
         ordered_params=['project', 'region'],
@@ -20278,7 +20278,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstantSnapshots.setIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -20307,7 +20307,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstantSnapshots.setLabels',
         ordered_params=['project', 'region', 'resource'],
@@ -20334,7 +20334,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionInstantSnapshots.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -20371,7 +20371,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     AttachNetworkEndpoints.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkEndpointGroups.attachNetworkEndpoints',
         ordered_params=['project', 'region', 'networkEndpointGroup'],
@@ -20399,7 +20399,7 @@ deleted if it is configured as a backend of a backend service.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionNetworkEndpointGroups.delete',
         ordered_params=['project', 'region', 'networkEndpointGroup'],
@@ -20426,7 +20426,7 @@ deleted if it is configured as a backend of a backend service.
           config, request, global_params=global_params)
 
     DetachNetworkEndpoints.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkEndpointGroups.detachNetworkEndpoints',
         ordered_params=['project', 'region', 'networkEndpointGroup'],
@@ -20453,7 +20453,7 @@ deleted if it is configured as a backend of a backend service.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionNetworkEndpointGroups.get',
         ordered_params=['project', 'region', 'networkEndpointGroup'],
@@ -20495,7 +20495,7 @@ Note: Use the following APIs to manage network endpoint groups:
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkEndpointGroups.insert',
         ordered_params=['project', 'region'],
@@ -20523,7 +20523,7 @@ specified project in the given region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionNetworkEndpointGroups.list',
         ordered_params=['project', 'region'],
@@ -20550,7 +20550,7 @@ specified project in the given region.
           config, request, global_params=global_params)
 
     ListNetworkEndpoints.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkEndpointGroups.listNetworkEndpoints',
         ordered_params=['project', 'region', 'networkEndpointGroup'],
@@ -20587,7 +20587,7 @@ specified project in the given region.
           config, request, global_params=global_params)
 
     AddAssociation.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkFirewallPolicies.addAssociation',
         ordered_params=['project', 'region', 'firewallPolicy'],
@@ -20614,7 +20614,7 @@ specified project in the given region.
           config, request, global_params=global_params)
 
     AddRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkFirewallPolicies.addRule',
         ordered_params=['project', 'region', 'firewallPolicy'],
@@ -20641,7 +20641,7 @@ specified project in the given region.
           config, request, global_params=global_params)
 
     CloneRules.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkFirewallPolicies.cloneRules',
         ordered_params=['project', 'region', 'firewallPolicy'],
@@ -20668,7 +20668,7 @@ specified project in the given region.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionNetworkFirewallPolicies.delete',
         ordered_params=['project', 'region', 'firewallPolicy'],
@@ -20695,7 +20695,7 @@ specified project in the given region.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionNetworkFirewallPolicies.get',
         ordered_params=['project', 'region', 'firewallPolicy'],
@@ -20722,7 +20722,7 @@ specified project in the given region.
           config, request, global_params=global_params)
 
     GetAssociation.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionNetworkFirewallPolicies.getAssociation',
         ordered_params=['project', 'region', 'firewallPolicy'],
@@ -20749,7 +20749,7 @@ specified project in the given region.
           config, request, global_params=global_params)
 
     GetEffectiveFirewalls.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionNetworkFirewallPolicies.getEffectiveFirewalls',
         ordered_params=['project', 'region', 'network'],
@@ -20777,7 +20777,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionNetworkFirewallPolicies.getIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -20804,7 +20804,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionNetworkFirewallPolicies.getRule',
         ordered_params=['project', 'region', 'firewallPolicy'],
@@ -20831,7 +20831,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkFirewallPolicies.insert',
         ordered_params=['project', 'region'],
@@ -20859,7 +20859,7 @@ for the specified project in the given region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionNetworkFirewallPolicies.list',
         ordered_params=['project', 'region'],
@@ -20886,7 +20886,7 @@ for the specified project in the given region.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionNetworkFirewallPolicies.patch',
         ordered_params=['project', 'region', 'firewallPolicy'],
@@ -20913,7 +20913,7 @@ for the specified project in the given region.
           config, request, global_params=global_params)
 
     PatchAssociation.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkFirewallPolicies.patchAssociation',
         ordered_params=['project', 'region', 'firewallPolicy'],
@@ -20940,7 +20940,7 @@ for the specified project in the given region.
           config, request, global_params=global_params)
 
     PatchRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkFirewallPolicies.patchRule',
         ordered_params=['project', 'region', 'firewallPolicy'],
@@ -20967,7 +20967,7 @@ for the specified project in the given region.
           config, request, global_params=global_params)
 
     RemoveAssociation.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkFirewallPolicies.removeAssociation',
         ordered_params=['project', 'region', 'firewallPolicy'],
@@ -20994,7 +20994,7 @@ for the specified project in the given region.
           config, request, global_params=global_params)
 
     RemoveRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkFirewallPolicies.removeRule',
         ordered_params=['project', 'region', 'firewallPolicy'],
@@ -21022,7 +21022,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkFirewallPolicies.setIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -21049,7 +21049,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNetworkFirewallPolicies.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -21087,7 +21087,7 @@ regional and global, available to the specified project.
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionNotificationEndpoints.aggregatedList',
         ordered_params=['project'],
@@ -21114,7 +21114,7 @@ regional and global, available to the specified project.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionNotificationEndpoints.delete',
         ordered_params=['project', 'region', 'notificationEndpoint'],
@@ -21141,7 +21141,7 @@ regional and global, available to the specified project.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionNotificationEndpoints.get',
         ordered_params=['project', 'region', 'notificationEndpoint'],
@@ -21169,7 +21169,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNotificationEndpoints.insert',
         ordered_params=['project', 'region'],
@@ -21196,7 +21196,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionNotificationEndpoints.list',
         ordered_params=['project', 'region'],
@@ -21223,7 +21223,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionNotificationEndpoints.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -21260,7 +21260,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionOperations.delete',
         ordered_params=['project', 'region', 'operation'],
@@ -21287,7 +21287,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionOperations.get',
         ordered_params=['project', 'region', 'operation'],
@@ -21315,7 +21315,7 @@ the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionOperations.list',
         ordered_params=['project', 'region'],
@@ -21357,7 +21357,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     Wait.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionOperations.wait',
         ordered_params=['project', 'region', 'operation'],
@@ -21394,7 +21394,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     AddRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionSecurityPolicies.addRule',
         ordered_params=['project', 'region', 'securityPolicy'],
@@ -21421,7 +21421,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionSecurityPolicies.delete',
         ordered_params=['project', 'region', 'securityPolicy'],
@@ -21448,7 +21448,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionSecurityPolicies.get',
         ordered_params=['project', 'region', 'securityPolicy'],
@@ -21475,7 +21475,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     GetRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionSecurityPolicies.getRule',
         ordered_params=['project', 'region', 'securityPolicy'],
@@ -21503,7 +21503,7 @@ the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionSecurityPolicies.insert',
         ordered_params=['project', 'region'],
@@ -21531,7 +21531,7 @@ and region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionSecurityPolicies.list',
         ordered_params=['project', 'region'],
@@ -21562,7 +21562,7 @@ instead.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionSecurityPolicies.patch',
         ordered_params=['project', 'region', 'securityPolicy'],
@@ -21590,7 +21590,7 @@ leave the fields empty and specify them in the updateMask.
           config, request, global_params=global_params)
 
     PatchRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionSecurityPolicies.patchRule',
         ordered_params=['project', 'region', 'securityPolicy'],
@@ -21617,7 +21617,7 @@ leave the fields empty and specify them in the updateMask.
           config, request, global_params=global_params)
 
     RemoveRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionSecurityPolicies.removeRule',
         ordered_params=['project', 'region', 'securityPolicy'],
@@ -21646,7 +21646,7 @@ documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionSecurityPolicies.setLabels',
         ordered_params=['project', 'region', 'resource'],
@@ -21683,7 +21683,7 @@ documentation.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionSnapshotSettings.get',
         ordered_params=['project', 'region'],
@@ -21710,7 +21710,7 @@ documentation.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionSnapshotSettings.patch',
         ordered_params=['project', 'region'],
@@ -21754,7 +21754,7 @@ snapshots.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionSnapshots.delete',
         ordered_params=['project', 'region', 'snapshot'],
@@ -21781,7 +21781,7 @@ snapshots.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionSnapshots.get',
         ordered_params=['project', 'region', 'snapshot'],
@@ -21809,7 +21809,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionSnapshots.getIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -21837,7 +21837,7 @@ in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionSnapshots.insert',
         ordered_params=['project', 'region'],
@@ -21865,7 +21865,7 @@ the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionSnapshots.list',
         ordered_params=['project', 'region'],
@@ -21893,7 +21893,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionSnapshots.setIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -21922,7 +21922,7 @@ documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionSnapshots.setLabels',
         ordered_params=['project', 'region', 'resource'],
@@ -21949,7 +21949,7 @@ documentation.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionSnapshots.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -21977,7 +21977,7 @@ encryption key to the latest version for the specified snapshot.
           config, request, global_params=global_params)
 
     UpdateKmsKey.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionSnapshots.updateKmsKey',
         ordered_params=['project', 'region', 'snapshot'],
@@ -22014,7 +22014,7 @@ encryption key to the latest version for the specified snapshot.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionSslCertificates.delete',
         ordered_params=['project', 'region', 'sslCertificate'],
@@ -22043,7 +22043,7 @@ request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionSslCertificates.get',
         ordered_params=['project', 'region', 'sslCertificate'],
@@ -22071,7 +22071,7 @@ the data included in the request
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionSslCertificates.insert',
         ordered_params=['project', 'region'],
@@ -22099,7 +22099,7 @@ project in the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionSslCertificates.list',
         ordered_params=['project', 'region'],
@@ -22138,7 +22138,7 @@ resources.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionSslPolicies.delete',
         ordered_params=['project', 'region', 'sslPolicy'],
@@ -22165,7 +22165,7 @@ resources.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionSslPolicies.get',
         ordered_params=['project', 'region', 'sslPolicy'],
@@ -22175,6 +22175,34 @@ resources.
         request_field='',
         request_type_name='ComputeRegionSslPoliciesGetRequest',
         response_type_name='SslPolicy',
+        supports_download=False,
+    )
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. May be empty if no such.
+policy or resource exists.
+
+      Args:
+        request: (ComputeRegionSslPoliciesGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-11-01',
+        http_method='GET',
+        method_id='compute.regionSslPolicies.getIamPolicy',
+        ordered_params=['project', 'region', 'resource'],
+        path_params=['project', 'region', 'resource'],
+        query_params=['optionsRequestedPolicyVersion'],
+        relative_path='projects/{project}/regions/{region}/sslPolicies/{resource}/getIamPolicy',
+        request_field='',
+        request_type_name='ComputeRegionSslPoliciesGetIamPolicyRequest',
+        response_type_name='Policy',
         supports_download=False,
     )
 
@@ -22193,7 +22221,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionSslPolicies.insert',
         ordered_params=['project', 'region'],
@@ -22221,7 +22249,7 @@ project and region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionSslPolicies.list',
         ordered_params=['project', 'region'],
@@ -22249,7 +22277,7 @@ custom profile.
           config, request, global_params=global_params)
 
     ListAvailableFeatures.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionSslPolicies.listAvailableFeatures',
         ordered_params=['project', 'region'],
@@ -22276,7 +22304,7 @@ custom profile.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionSslPolicies.patch',
         ordered_params=['project', 'region', 'sslPolicy'],
@@ -22286,6 +22314,61 @@ custom profile.
         request_field='sslPolicyResource',
         request_type_name='ComputeRegionSslPoliciesPatchRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource.
+Replaces any existing policy.
+
+      Args:
+        request: (ComputeRegionSslPoliciesSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-11-01',
+        http_method='POST',
+        method_id='compute.regionSslPolicies.setIamPolicy',
+        ordered_params=['project', 'region', 'resource'],
+        path_params=['project', 'region', 'resource'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/sslPolicies/{resource}/setIamPolicy',
+        request_field='regionSetPolicyRequest',
+        request_type_name='ComputeRegionSslPoliciesSetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource.
+
+      Args:
+        request: (ComputeRegionSslPoliciesTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-11-01',
+        http_method='POST',
+        method_id='compute.regionSslPolicies.testIamPermissions',
+        ordered_params=['project', 'region', 'resource'],
+        path_params=['project', 'region', 'resource'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/sslPolicies/{resource}/testIamPermissions',
+        request_field='testPermissionsRequest',
+        request_type_name='ComputeRegionSslPoliciesTestIamPermissionsRequest',
+        response_type_name='TestPermissionsResponse',
         supports_download=False,
     )
 
@@ -22313,7 +22396,7 @@ custom profile.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionTargetHttpProxies.delete',
         ordered_params=['project', 'region', 'targetHttpProxy'],
@@ -22340,7 +22423,7 @@ custom profile.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionTargetHttpProxies.get',
         ordered_params=['project', 'region', 'targetHttpProxy'],
@@ -22368,7 +22451,7 @@ using the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionTargetHttpProxies.insert',
         ordered_params=['project', 'region'],
@@ -22396,7 +22479,7 @@ to the specified project in the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionTargetHttpProxies.list',
         ordered_params=['project', 'region'],
@@ -22423,7 +22506,7 @@ to the specified project in the specified region.
           config, request, global_params=global_params)
 
     SetUrlMap.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionTargetHttpProxies.setUrlMap',
         ordered_params=['project', 'region', 'targetHttpProxy'],
@@ -22460,7 +22543,7 @@ to the specified project in the specified region.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionTargetHttpsProxies.delete',
         ordered_params=['project', 'region', 'targetHttpsProxy'],
@@ -22487,7 +22570,7 @@ to the specified project in the specified region.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionTargetHttpsProxies.get',
         ordered_params=['project', 'region', 'targetHttpsProxy'],
@@ -22515,7 +22598,7 @@ using the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionTargetHttpsProxies.insert',
         ordered_params=['project', 'region'],
@@ -22543,7 +22626,7 @@ to the specified project in the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionTargetHttpsProxies.list',
         ordered_params=['project', 'region'],
@@ -22573,7 +22656,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionTargetHttpsProxies.patch',
         ordered_params=['project', 'region', 'targetHttpsProxy'],
@@ -22600,7 +22683,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     SetSslCertificates.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionTargetHttpsProxies.setSslCertificates',
         ordered_params=['project', 'region', 'targetHttpsProxy'],
@@ -22627,7 +22710,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     SetUrlMap.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionTargetHttpsProxies.setUrlMap',
         ordered_params=['project', 'region', 'targetHttpsProxy'],
@@ -22664,7 +22747,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionTargetTcpProxies.delete',
         ordered_params=['project', 'region', 'targetTcpProxy'],
@@ -22691,7 +22774,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionTargetTcpProxies.get',
         ordered_params=['project', 'region', 'targetTcpProxy'],
@@ -22719,7 +22802,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionTargetTcpProxies.insert',
         ordered_params=['project', 'region'],
@@ -22747,7 +22830,7 @@ available to the specified project in a given region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionTargetTcpProxies.list',
         ordered_params=['project', 'region'],
@@ -22784,7 +22867,7 @@ available to the specified project in a given region.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.regionUrlMaps.delete',
         ordered_params=['project', 'region', 'urlMap'],
@@ -22811,7 +22894,7 @@ available to the specified project in a given region.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionUrlMaps.get',
         ordered_params=['project', 'region', 'urlMap'],
@@ -22839,7 +22922,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionUrlMaps.insert',
         ordered_params=['project', 'region'],
@@ -22867,7 +22950,7 @@ project in the specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionUrlMaps.list',
         ordered_params=['project', 'region'],
@@ -22897,7 +22980,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.regionUrlMaps.patch',
         ordered_params=['project', 'region', 'urlMap'],
@@ -22925,7 +23008,7 @@ request.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.regionUrlMaps.update',
         ordered_params=['project', 'region', 'urlMap'],
@@ -22954,7 +23037,7 @@ UrlMap.
           config, request, global_params=global_params)
 
     Validate.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.regionUrlMaps.validate',
         ordered_params=['project', 'region', 'urlMap'],
@@ -22992,7 +23075,7 @@ the specified project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regionZones.list',
         ordered_params=['project', 'region'],
@@ -23046,7 +23129,7 @@ behaviour for this method.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regions.get',
         ordered_params=['project', 'region'],
@@ -23091,7 +23174,7 @@ behaviour for this method.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.regions.list',
         ordered_params=['project'],
@@ -23128,7 +23211,7 @@ behaviour for this method.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.reliabilityRisks.get',
         ordered_params=['project', 'reliabilityRisk'],
@@ -23155,7 +23238,7 @@ behaviour for this method.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.reliabilityRisks.list',
         ordered_params=['project'],
@@ -23192,7 +23275,7 @@ behaviour for this method.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.reservationBlocks.get',
         ordered_params=['project', 'zone', 'reservation', 'reservationBlock'],
@@ -23220,7 +23303,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.reservationBlocks.getIamPolicy',
         ordered_params=['project', 'zone', 'parentResource', 'resource'],
@@ -23247,7 +23330,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.reservationBlocks.list',
         ordered_params=['project', 'zone', 'reservation'],
@@ -23274,7 +23357,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     PerformMaintenance.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.reservationBlocks.performMaintenance',
         ordered_params=['project', 'zone', 'reservation', 'reservationBlock'],
@@ -23302,7 +23385,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.reservationBlocks.setIamPolicy',
         ordered_params=['project', 'zone', 'parentResource', 'resource'],
@@ -23329,7 +23412,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.reservationBlocks.testIamPermissions',
         ordered_params=['project', 'zone', 'parentResource', 'resource'],
@@ -23366,7 +23449,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlocksId}/reservationSlots/{reservationSlot}',
         http_method='GET',
         method_id='compute.reservationSlots.get',
@@ -23394,7 +23477,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     GetHealth.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlocksId}/reservationSlots/{reservationSlot}/getHealth',
         http_method='POST',
         method_id='compute.reservationSlots.getHealth',
@@ -23422,7 +23505,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     GetVersion.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlocksId}/reservationSlots/{reservationSlot}/getVersion',
         http_method='POST',
         method_id='compute.reservationSlots.getVersion',
@@ -23450,7 +23533,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlocksId}/reservationSlots',
         http_method='GET',
         method_id='compute.reservationSlots.list',
@@ -23478,7 +23561,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlocksId}/reservationSlots/{reservationSlot}',
         http_method='POST',
         method_id='compute.reservationSlots.update',
@@ -23516,7 +23599,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlock}',
         http_method='GET',
         method_id='compute.reservationSubBlocks.get',
@@ -23545,7 +23628,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{resource}/getIamPolicy',
         http_method='GET',
         method_id='compute.reservationSubBlocks.getIamPolicy',
@@ -23573,7 +23656,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetVersion.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlock}/getVersion',
         http_method='POST',
         method_id='compute.reservationSubBlocks.getVersion',
@@ -23601,7 +23684,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks',
         http_method='GET',
         method_id='compute.reservationSubBlocks.list',
@@ -23629,7 +23712,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     PerformMaintenance.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlock}/performMaintenance',
         http_method='POST',
         method_id='compute.reservationSubBlocks.performMaintenance',
@@ -23657,7 +23740,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     ReportFaulty.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlock}/reportFaulty',
         http_method='POST',
         method_id='compute.reservationSubBlocks.reportFaulty',
@@ -23686,7 +23769,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{resource}/setIamPolicy',
         http_method='POST',
         method_id='compute.reservationSubBlocks.setIamPolicy',
@@ -23714,7 +23797,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{resource}/testIamPermissions',
         http_method='POST',
         method_id='compute.reservationSubBlocks.testIamPermissions',
@@ -23755,7 +23838,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.reservations.aggregatedList',
         ordered_params=['project'],
@@ -23782,7 +23865,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.reservations.delete',
         ordered_params=['project', 'zone', 'reservation'],
@@ -23809,7 +23892,7 @@ To prevent failure, it is recommended that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.reservations.get',
         ordered_params=['project', 'zone', 'reservation'],
@@ -23837,7 +23920,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.reservations.getIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -23865,7 +23948,7 @@ resources.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.reservations.insert',
         ordered_params=['project', 'zone'],
@@ -23893,7 +23976,7 @@ specified project in specified zone.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.reservations.list',
         ordered_params=['project', 'zone'],
@@ -23920,7 +24003,7 @@ specified project in specified zone.
           config, request, global_params=global_params)
 
     PerformMaintenance.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.reservations.performMaintenance',
         ordered_params=['project', 'zone', 'reservation'],
@@ -23949,7 +24032,7 @@ reservations.
           config, request, global_params=global_params)
 
     Resize.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.reservations.resize',
         ordered_params=['project', 'zone', 'reservation'],
@@ -23977,7 +24060,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.reservations.setIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -24004,7 +24087,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.reservations.testIamPermissions',
         ordered_params=['project', 'zone', 'resource'],
@@ -24031,7 +24114,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.reservations.update',
         ordered_params=['project', 'zone', 'reservation'],
@@ -24071,7 +24154,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.resourcePolicies.aggregatedList',
         ordered_params=['project'],
@@ -24098,7 +24181,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.resourcePolicies.delete',
         ordered_params=['project', 'region', 'resourcePolicy'],
@@ -24125,7 +24208,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.resourcePolicies.get',
         ordered_params=['project', 'region', 'resourcePolicy'],
@@ -24153,7 +24236,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.resourcePolicies.getIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -24180,7 +24263,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.resourcePolicies.insert',
         ordered_params=['project', 'region'],
@@ -24208,7 +24291,7 @@ specified project in specified region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.resourcePolicies.list',
         ordered_params=['project', 'region'],
@@ -24235,7 +24318,7 @@ specified project in specified region.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.resourcePolicies.patch',
         ordered_params=['project', 'region', 'resourcePolicy'],
@@ -24263,7 +24346,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.resourcePolicies.setIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -24290,7 +24373,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.resourcePolicies.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -24327,7 +24410,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.rolloutPlans.delete',
         ordered_params=['project', 'rolloutPlan'],
@@ -24354,7 +24437,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.rolloutPlans.get',
         ordered_params=['project', 'rolloutPlan'],
@@ -24381,7 +24464,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.rolloutPlans.insert',
         ordered_params=['project'],
@@ -24408,7 +24491,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.rolloutPlans.list',
         ordered_params=['project'],
@@ -24445,7 +24528,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Advance.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.rollouts.advance',
         ordered_params=['project', 'rollout'],
@@ -24472,7 +24555,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Cancel.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.rollouts.cancel',
         ordered_params=['project', 'rollout'],
@@ -24499,7 +24582,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.rollouts.delete',
         ordered_params=['project', 'rollout'],
@@ -24526,7 +24609,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.rollouts.get',
         ordered_params=['project', 'rollout'],
@@ -24553,7 +24636,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.rollouts.list',
         ordered_params=['project'],
@@ -24580,7 +24663,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Pause.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.rollouts.pause',
         ordered_params=['project', 'rollout'],
@@ -24607,7 +24690,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Resume.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.rollouts.resume',
         ordered_params=['project', 'rollout'],
@@ -24647,7 +24730,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.routers.aggregatedList',
         ordered_params=['project'],
@@ -24674,7 +24757,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.routers.delete',
         ordered_params=['project', 'region', 'router'],
@@ -24701,7 +24784,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     DeleteNamedSet.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.routers.deleteNamedSet',
         ordered_params=['project', 'region', 'router'],
@@ -24728,7 +24811,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     DeleteRoutePolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.routers.deleteRoutePolicy',
         ordered_params=['project', 'region', 'router'],
@@ -24755,7 +24838,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.routers.get',
         ordered_params=['project', 'region', 'router'],
@@ -24782,7 +24865,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     GetNamedSet.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.routers.getNamedSet',
         ordered_params=['project', 'region', 'router'],
@@ -24809,7 +24892,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     GetNatIpInfo.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.routers.getNatIpInfo',
         ordered_params=['project', 'region', 'router'],
@@ -24836,7 +24919,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     GetNatMappingInfo.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.routers.getNatMappingInfo',
         ordered_params=['project', 'region', 'router'],
@@ -24863,7 +24946,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     GetRoutePolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.routers.getRoutePolicy',
         ordered_params=['project', 'region', 'router'],
@@ -24890,7 +24973,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     GetRouterStatus.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.routers.getRouterStatus',
         ordered_params=['project', 'region', 'router'],
@@ -24918,7 +25001,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.routers.insert',
         ordered_params=['project', 'region'],
@@ -24945,7 +25028,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.routers.list',
         ordered_params=['project', 'region'],
@@ -24972,7 +25055,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     ListBgpRoutes.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.routers.listBgpRoutes',
         ordered_params=['project', 'region', 'router'],
@@ -25000,7 +25083,7 @@ specified project.
           config, request, global_params=global_params)
 
     ListNamedSets.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.routers.listNamedSets',
         ordered_params=['project', 'region', 'router'],
@@ -25028,7 +25111,7 @@ specified project.
           config, request, global_params=global_params)
 
     ListRoutePolicies.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.routers.listRoutePolicies',
         ordered_params=['project', 'region', 'router'],
@@ -25058,7 +25141,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.routers.patch',
         ordered_params=['project', 'region', 'router'],
@@ -25085,7 +25168,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     PatchNamedSet.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.routers.patchNamedSet',
         ordered_params=['project', 'region', 'router'],
@@ -25112,7 +25195,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     PatchRoutePolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.routers.patchRoutePolicy',
         ordered_params=['project', 'region', 'router'],
@@ -25140,7 +25223,7 @@ Calling this method does NOT create or update the router.
           config, request, global_params=global_params)
 
     Preview.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.routers.preview',
         ordered_params=['project', 'region', 'router'],
@@ -25170,7 +25253,7 @@ representation enclosed in the request message payload.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.routers.update',
         ordered_params=['project', 'region', 'router'],
@@ -25197,7 +25280,7 @@ representation enclosed in the request message payload.
           config, request, global_params=global_params)
 
     UpdateNamedSet.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.routers.updateNamedSet',
         ordered_params=['project', 'region', 'router'],
@@ -25224,7 +25307,7 @@ representation enclosed in the request message payload.
           config, request, global_params=global_params)
 
     UpdateRoutePolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.routers.updateRoutePolicy',
         ordered_params=['project', 'region', 'router'],
@@ -25261,7 +25344,7 @@ representation enclosed in the request message payload.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.routes.delete',
         ordered_params=['project', 'route'],
@@ -25288,7 +25371,7 @@ representation enclosed in the request message payload.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.routes.get',
         ordered_params=['project', 'route'],
@@ -25316,7 +25399,7 @@ in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.routes.insert',
         ordered_params=['project'],
@@ -25343,7 +25426,7 @@ in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.routes.list',
         ordered_params=['project'],
@@ -25370,7 +25453,7 @@ in the request.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.routes.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -25407,7 +25490,7 @@ in the request.
           config, request, global_params=global_params)
 
     AddRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.securityPolicies.addRule',
         ordered_params=['project', 'securityPolicy'],
@@ -25438,7 +25521,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.securityPolicies.aggregatedList',
         ordered_params=['project'],
@@ -25465,7 +25548,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.securityPolicies.delete',
         ordered_params=['project', 'securityPolicy'],
@@ -25492,7 +25575,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.securityPolicies.get',
         ordered_params=['project', 'securityPolicy'],
@@ -25519,7 +25602,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     GetRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.securityPolicies.getRule',
         ordered_params=['project', 'securityPolicy'],
@@ -25547,7 +25630,7 @@ the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.securityPolicies.insert',
         ordered_params=['project'],
@@ -25574,7 +25657,7 @@ the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.securityPolicies.list',
         ordered_params=['project'],
@@ -25602,7 +25685,7 @@ expressions.
           config, request, global_params=global_params)
 
     ListPreconfiguredExpressionSets.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.securityPolicies.listPreconfiguredExpressionSets',
         ordered_params=['project'],
@@ -25633,7 +25716,7 @@ instead.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.securityPolicies.patch',
         ordered_params=['project', 'securityPolicy'],
@@ -25661,7 +25744,7 @@ leave the fields empty and specify them in the updateMask.
           config, request, global_params=global_params)
 
     PatchRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.securityPolicies.patchRule',
         ordered_params=['project', 'securityPolicy'],
@@ -25688,7 +25771,7 @@ leave the fields empty and specify them in the updateMask.
           config, request, global_params=global_params)
 
     RemoveRule.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.securityPolicies.removeRule',
         ordered_params=['project', 'securityPolicy'],
@@ -25717,7 +25800,7 @@ documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.securityPolicies.setLabels',
         ordered_params=['project', 'resource'],
@@ -25758,7 +25841,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.serviceAttachments.aggregatedList',
         ordered_params=['project'],
@@ -25785,7 +25868,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.serviceAttachments.delete',
         ordered_params=['project', 'region', 'serviceAttachment'],
@@ -25812,7 +25895,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.serviceAttachments.get',
         ordered_params=['project', 'region', 'serviceAttachment'],
@@ -25840,7 +25923,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.serviceAttachments.getIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -25868,7 +25951,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.serviceAttachments.insert',
         ordered_params=['project', 'region'],
@@ -25895,7 +25978,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.serviceAttachments.list',
         ordered_params=['project', 'region'],
@@ -25925,7 +26008,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.serviceAttachments.patch',
         ordered_params=['project', 'region', 'serviceAttachment'],
@@ -25953,7 +26036,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.serviceAttachments.setIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -25980,7 +26063,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.serviceAttachments.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -26017,7 +26100,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.snapshotSettings.get',
         ordered_params=['project'],
@@ -26044,7 +26127,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.snapshotSettings.patch',
         ordered_params=['project'],
@@ -26088,7 +26171,7 @@ snapshots.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.snapshots.delete',
         ordered_params=['project', 'snapshot'],
@@ -26115,7 +26198,7 @@ snapshots.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.snapshots.get',
         ordered_params=['project', 'snapshot'],
@@ -26143,7 +26226,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.snapshots.getIamPolicy',
         ordered_params=['project', 'resource'],
@@ -26174,7 +26257,7 @@ project different from the source disk project.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.snapshots.insert',
         ordered_params=['project'],
@@ -26202,7 +26285,7 @@ the specified project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.snapshots.list',
         ordered_params=['project'],
@@ -26230,7 +26313,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.snapshots.setIamPolicy',
         ordered_params=['project', 'resource'],
@@ -26258,7 +26341,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.snapshots.setLabels',
         ordered_params=['project', 'resource'],
@@ -26285,7 +26368,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.snapshots.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -26313,7 +26396,7 @@ encryption key to the latest version for the specified snapshot.
           config, request, global_params=global_params)
 
     UpdateKmsKey.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.snapshots.updateKmsKey',
         ordered_params=['project', 'snapshot'],
@@ -26354,7 +26437,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.sslCertificates.aggregatedList',
         ordered_params=['project'],
@@ -26381,7 +26464,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.sslCertificates.delete',
         ordered_params=['project', 'sslCertificate'],
@@ -26408,7 +26491,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.sslCertificates.get',
         ordered_params=['project', 'sslCertificate'],
@@ -26436,7 +26519,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.sslCertificates.insert',
         ordered_params=['project'],
@@ -26464,7 +26547,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.sslCertificates.list',
         ordered_params=['project'],
@@ -26505,7 +26588,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.sslPolicies.aggregatedList',
         ordered_params=['project'],
@@ -26534,7 +26617,7 @@ resources.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.sslPolicies.delete',
         ordered_params=['project', 'sslPolicy'],
@@ -26561,7 +26644,7 @@ resources.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.sslPolicies.get',
         ordered_params=['project', 'sslPolicy'],
@@ -26571,6 +26654,34 @@ resources.
         request_field='',
         request_type_name='ComputeSslPoliciesGetRequest',
         response_type_name='SslPolicy',
+        supports_download=False,
+    )
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. May be empty if no such.
+policy or resource exists.
+
+      Args:
+        request: (ComputeSslPoliciesGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-11-01',
+        http_method='GET',
+        method_id='compute.sslPolicies.getIamPolicy',
+        ordered_params=['project', 'resource'],
+        path_params=['project', 'resource'],
+        query_params=['optionsRequestedPolicyVersion'],
+        relative_path='projects/{project}/global/sslPolicies/{resource}/getIamPolicy',
+        request_field='',
+        request_type_name='ComputeSslPoliciesGetIamPolicyRequest',
+        response_type_name='Policy',
         supports_download=False,
     )
 
@@ -26588,7 +26699,7 @@ resources.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.sslPolicies.insert',
         ordered_params=['project'],
@@ -26616,7 +26727,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.sslPolicies.list',
         ordered_params=['project'],
@@ -26644,7 +26755,7 @@ custom profile.
           config, request, global_params=global_params)
 
     ListAvailableFeatures.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.sslPolicies.listAvailableFeatures',
         ordered_params=['project'],
@@ -26671,7 +26782,7 @@ custom profile.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.sslPolicies.patch',
         ordered_params=['project', 'sslPolicy'],
@@ -26681,6 +26792,61 @@ custom profile.
         request_field='sslPolicyResource',
         request_type_name='ComputeSslPoliciesPatchRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource.
+Replaces any existing policy.
+
+      Args:
+        request: (ComputeSslPoliciesSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-11-01',
+        http_method='POST',
+        method_id='compute.sslPolicies.setIamPolicy',
+        ordered_params=['project', 'resource'],
+        path_params=['project', 'resource'],
+        query_params=[],
+        relative_path='projects/{project}/global/sslPolicies/{resource}/setIamPolicy',
+        request_field='globalSetPolicyRequest',
+        request_type_name='ComputeSslPoliciesSetIamPolicyRequest',
+        response_type_name='Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource.
+
+      Args:
+        request: (ComputeSslPoliciesTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        api_version_param='2026-11-01',
+        http_method='POST',
+        method_id='compute.sslPolicies.testIamPermissions',
+        ordered_params=['project', 'resource'],
+        path_params=['project', 'resource'],
+        query_params=[],
+        relative_path='projects/{project}/global/sslPolicies/{resource}/testIamPermissions',
+        request_field='testPermissionsRequest',
+        request_type_name='ComputeSslPoliciesTestIamPermissionsRequest',
+        response_type_name='TestPermissionsResponse',
         supports_download=False,
     )
 
@@ -26711,7 +26877,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.storagePoolTypes.aggregatedList',
         ordered_params=['project'],
@@ -26738,7 +26904,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.storagePoolTypes.get',
         ordered_params=['project', 'zone', 'storagePoolType'],
@@ -26766,7 +26932,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.storagePoolTypes.list',
         ordered_params=['project', 'zone'],
@@ -26806,7 +26972,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.storagePools.aggregatedList',
         ordered_params=['project'],
@@ -26837,7 +27003,7 @@ snapshots.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.storagePools.delete',
         ordered_params=['project', 'zone', 'storagePool'],
@@ -26865,7 +27031,7 @@ storage pools by making a list() request.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.storagePools.get',
         ordered_params=['project', 'zone', 'storagePool'],
@@ -26893,7 +27059,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.storagePools.getIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -26921,7 +27087,7 @@ in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.storagePools.insert',
         ordered_params=['project', 'zone'],
@@ -26949,7 +27115,7 @@ the specified zone.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.storagePools.list',
         ordered_params=['project', 'zone'],
@@ -26976,7 +27142,7 @@ the specified zone.
           config, request, global_params=global_params)
 
     ListDisks.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.storagePools.listDisks',
         ordered_params=['project', 'zone', 'storagePool'],
@@ -27004,7 +27170,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.storagePools.setIamPolicy',
         ordered_params=['project', 'zone', 'resource'],
@@ -27031,7 +27197,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.storagePools.testIamPermissions',
         ordered_params=['project', 'zone', 'resource'],
@@ -27062,7 +27228,7 @@ pool_provisioned_throughput.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.storagePools.update',
         ordered_params=['project', 'zone', 'storagePool'],
@@ -27102,7 +27268,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.subnetworks.aggregatedList',
         ordered_params=['project'],
@@ -27129,7 +27295,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.subnetworks.delete',
         ordered_params=['project', 'region', 'subnetwork'],
@@ -27156,7 +27322,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     ExpandIpCidrRange.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.subnetworks.expandIpCidrRange',
         ordered_params=['project', 'region', 'subnetwork'],
@@ -27183,7 +27349,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.subnetworks.get',
         ordered_params=['project', 'region', 'subnetwork'],
@@ -27211,7 +27377,7 @@ policy or resource exists.
           config, request, global_params=global_params)
 
     GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.subnetworks.getIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -27239,7 +27405,7 @@ included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.subnetworks.insert',
         ordered_params=['project', 'region'],
@@ -27267,7 +27433,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.subnetworks.list',
         ordered_params=['project', 'region'],
@@ -27294,7 +27460,7 @@ project.
           config, request, global_params=global_params)
 
     ListUsable.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.subnetworks.listUsable',
         ordered_params=['project'],
@@ -27325,7 +27491,7 @@ subnetwork resource being patched.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.subnetworks.patch',
         ordered_params=['project', 'region', 'subnetwork'],
@@ -27353,7 +27519,7 @@ Replaces any existing policy.
           config, request, global_params=global_params)
 
     SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.subnetworks.setIamPolicy',
         ordered_params=['project', 'region', 'resource'],
@@ -27381,7 +27547,7 @@ external IP addresses through Private Google Access.
           config, request, global_params=global_params)
 
     SetPrivateIpGoogleAccess.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.subnetworks.setPrivateIpGoogleAccess',
         ordered_params=['project', 'region', 'subnetwork'],
@@ -27408,7 +27574,7 @@ external IP addresses through Private Google Access.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.subnetworks.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -27445,7 +27611,7 @@ external IP addresses through Private Google Access.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.targetGrpcProxies.delete',
         ordered_params=['project', 'targetGrpcProxy'],
@@ -27472,7 +27638,7 @@ external IP addresses through Private Google Access.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetGrpcProxies.get',
         ordered_params=['project', 'targetGrpcProxy'],
@@ -27500,7 +27666,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetGrpcProxies.insert',
         ordered_params=['project'],
@@ -27527,7 +27693,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetGrpcProxies.list',
         ordered_params=['project'],
@@ -27557,7 +27723,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.targetGrpcProxies.patch',
         ordered_params=['project', 'targetGrpcProxy'],
@@ -27598,7 +27764,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetHttpProxies.aggregatedList',
         ordered_params=['project'],
@@ -27625,7 +27791,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.targetHttpProxies.delete',
         ordered_params=['project', 'targetHttpProxy'],
@@ -27652,7 +27818,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetHttpProxies.get',
         ordered_params=['project', 'targetHttpProxy'],
@@ -27680,7 +27846,7 @@ project using the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetHttpProxies.insert',
         ordered_params=['project'],
@@ -27708,7 +27874,7 @@ to the specified project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetHttpProxies.list',
         ordered_params=['project'],
@@ -27738,7 +27904,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.targetHttpProxies.patch',
         ordered_params=['project', 'targetHttpProxy'],
@@ -27765,7 +27931,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     SetUrlMap.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetHttpProxies.setUrlMap',
         ordered_params=['project', 'targetHttpProxy'],
@@ -27806,7 +27972,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetHttpsProxies.aggregatedList',
         ordered_params=['project'],
@@ -27833,7 +27999,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.targetHttpsProxies.delete',
         ordered_params=['project', 'targetHttpsProxy'],
@@ -27860,7 +28026,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetHttpsProxies.get',
         ordered_params=['project', 'targetHttpsProxy'],
@@ -27888,7 +28054,7 @@ project using the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetHttpsProxies.insert',
         ordered_params=['project'],
@@ -27916,7 +28082,7 @@ available to the specified project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetHttpsProxies.list',
         ordered_params=['project'],
@@ -27946,7 +28112,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.targetHttpsProxies.patch',
         ordered_params=['project', 'targetHttpsProxy'],
@@ -27973,7 +28139,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     SetCertificateMap.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetHttpsProxies.setCertificateMap',
         ordered_params=['project', 'targetHttpsProxy'],
@@ -28000,7 +28166,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     SetQuicOverride.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetHttpsProxies.setQuicOverride',
         ordered_params=['project', 'targetHttpsProxy'],
@@ -28027,7 +28193,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     SetSslCertificates.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetHttpsProxies.setSslCertificates',
         ordered_params=['project', 'targetHttpsProxy'],
@@ -28057,7 +28223,7 @@ connection between the load balancer and the backends.
           config, request, global_params=global_params)
 
     SetSslPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetHttpsProxies.setSslPolicy',
         ordered_params=['project', 'targetHttpsProxy'],
@@ -28084,7 +28250,7 @@ connection between the load balancer and the backends.
           config, request, global_params=global_params)
 
     SetUrlMap.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetHttpsProxies.setUrlMap',
         ordered_params=['project', 'targetHttpsProxy'],
@@ -28124,7 +28290,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetInstances.aggregatedList',
         ordered_params=['project'],
@@ -28151,7 +28317,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.targetInstances.delete',
         ordered_params=['project', 'zone', 'targetInstance'],
@@ -28178,7 +28344,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetInstances.get',
         ordered_params=['project', 'zone', 'targetInstance'],
@@ -28206,7 +28372,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetInstances.insert',
         ordered_params=['project', 'zone'],
@@ -28234,7 +28400,7 @@ project and zone.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetInstances.list',
         ordered_params=['project', 'zone'],
@@ -28263,7 +28429,7 @@ Cloud Armor Overview
           config, request, global_params=global_params)
 
     SetSecurityPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetInstances.setSecurityPolicy',
         ordered_params=['project', 'zone', 'targetInstance'],
@@ -28290,7 +28456,7 @@ Cloud Armor Overview
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetInstances.testIamPermissions',
         ordered_params=['project', 'zone', 'resource'],
@@ -28327,7 +28493,7 @@ Cloud Armor Overview
           config, request, global_params=global_params)
 
     AddHealthCheck.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetPools.addHealthCheck',
         ordered_params=['project', 'region', 'targetPool'],
@@ -28354,7 +28520,7 @@ Cloud Armor Overview
           config, request, global_params=global_params)
 
     AddInstance.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetPools.addInstance',
         ordered_params=['project', 'region', 'targetPool'],
@@ -28384,7 +28550,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetPools.aggregatedList',
         ordered_params=['project'],
@@ -28411,7 +28577,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.targetPools.delete',
         ordered_params=['project', 'region', 'targetPool'],
@@ -28438,7 +28604,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetPools.get',
         ordered_params=['project', 'region', 'targetPool'],
@@ -28466,7 +28632,7 @@ instance that is referenced by the given target pool.
           config, request, global_params=global_params)
 
     GetHealth.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetPools.getHealth',
         ordered_params=['project', 'region', 'targetPool'],
@@ -28494,7 +28660,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetPools.insert',
         ordered_params=['project', 'region'],
@@ -28522,7 +28688,7 @@ project and region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetPools.list',
         ordered_params=['project', 'region'],
@@ -28549,7 +28715,7 @@ project and region.
           config, request, global_params=global_params)
 
     RemoveHealthCheck.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetPools.removeHealthCheck',
         ordered_params=['project', 'region', 'targetPool'],
@@ -28576,7 +28742,7 @@ project and region.
           config, request, global_params=global_params)
 
     RemoveInstance.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetPools.removeInstance',
         ordered_params=['project', 'region', 'targetPool'],
@@ -28603,7 +28769,7 @@ project and region.
           config, request, global_params=global_params)
 
     SetBackup.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetPools.setBackup',
         ordered_params=['project', 'region', 'targetPool'],
@@ -28632,7 +28798,7 @@ Cloud Armor Overview
           config, request, global_params=global_params)
 
     SetSecurityPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetPools.setSecurityPolicy',
         ordered_params=['project', 'region', 'targetPool'],
@@ -28659,7 +28825,7 @@ Cloud Armor Overview
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetPools.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -28696,7 +28862,7 @@ Cloud Armor Overview
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.targetSslProxies.delete',
         ordered_params=['project', 'targetSslProxy'],
@@ -28723,7 +28889,7 @@ Cloud Armor Overview
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetSslProxies.get',
         ordered_params=['project', 'targetSslProxy'],
@@ -28751,7 +28917,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetSslProxies.insert',
         ordered_params=['project'],
@@ -28779,7 +28945,7 @@ available to the specified project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetSslProxies.list',
         ordered_params=['project'],
@@ -28806,7 +28972,7 @@ available to the specified project.
           config, request, global_params=global_params)
 
     SetBackendService.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetSslProxies.setBackendService',
         ordered_params=['project', 'targetSslProxy'],
@@ -28833,7 +28999,7 @@ available to the specified project.
           config, request, global_params=global_params)
 
     SetCertificateMap.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetSslProxies.setCertificateMap',
         ordered_params=['project', 'targetSslProxy'],
@@ -28860,7 +29026,7 @@ available to the specified project.
           config, request, global_params=global_params)
 
     SetProxyHeader.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetSslProxies.setProxyHeader',
         ordered_params=['project', 'targetSslProxy'],
@@ -28887,7 +29053,7 @@ available to the specified project.
           config, request, global_params=global_params)
 
     SetSslCertificates.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetSslProxies.setSslCertificates',
         ordered_params=['project', 'targetSslProxy'],
@@ -28917,7 +29083,7 @@ connection between the load balancer and the backends.
           config, request, global_params=global_params)
 
     SetSslPolicy.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetSslProxies.setSslPolicy',
         ordered_params=['project', 'targetSslProxy'],
@@ -28944,7 +29110,7 @@ connection between the load balancer and the backends.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetSslProxies.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -28985,7 +29151,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetTcpProxies.aggregatedList',
         ordered_params=['project'],
@@ -29012,7 +29178,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.targetTcpProxies.delete',
         ordered_params=['project', 'targetTcpProxy'],
@@ -29039,7 +29205,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetTcpProxies.get',
         ordered_params=['project', 'targetTcpProxy'],
@@ -29067,7 +29233,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetTcpProxies.insert',
         ordered_params=['project'],
@@ -29095,7 +29261,7 @@ available to the specified project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetTcpProxies.list',
         ordered_params=['project'],
@@ -29122,7 +29288,7 @@ available to the specified project.
           config, request, global_params=global_params)
 
     SetBackendService.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetTcpProxies.setBackendService',
         ordered_params=['project', 'targetTcpProxy'],
@@ -29149,7 +29315,7 @@ available to the specified project.
           config, request, global_params=global_params)
 
     SetProxyHeader.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetTcpProxies.setProxyHeader',
         ordered_params=['project', 'targetTcpProxy'],
@@ -29176,7 +29342,7 @@ available to the specified project.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetTcpProxies.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -29216,7 +29382,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetVpnGateways.aggregatedList',
         ordered_params=['project'],
@@ -29243,7 +29409,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.targetVpnGateways.delete',
         ordered_params=['project', 'region', 'targetVpnGateway'],
@@ -29270,7 +29436,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetVpnGateways.get',
         ordered_params=['project', 'region', 'targetVpnGateway'],
@@ -29298,7 +29464,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetVpnGateways.insert',
         ordered_params=['project', 'region'],
@@ -29326,7 +29492,7 @@ project and region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.targetVpnGateways.list',
         ordered_params=['project', 'region'],
@@ -29354,7 +29520,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.targetVpnGateways.setLabels',
         ordered_params=['project', 'region', 'resource'],
@@ -29395,7 +29561,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.urlMaps.aggregatedList',
         ordered_params=['project'],
@@ -29422,7 +29588,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.urlMaps.delete',
         ordered_params=['project', 'urlMap'],
@@ -29449,7 +29615,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.urlMaps.get',
         ordered_params=['project', 'urlMap'],
@@ -29477,7 +29643,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.urlMaps.insert',
         ordered_params=['project'],
@@ -29508,7 +29674,7 @@ content](/cdn/docs/invalidating-cached-content).
           config, request, global_params=global_params)
 
     InvalidateCache.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.urlMaps.invalidateCache',
         ordered_params=['project', 'urlMap'],
@@ -29536,7 +29702,7 @@ project.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.urlMaps.list',
         ordered_params=['project'],
@@ -29566,7 +29732,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.urlMaps.patch',
         ordered_params=['project', 'urlMap'],
@@ -29593,7 +29759,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.urlMaps.testIamPermissions',
         ordered_params=['project', 'resource'],
@@ -29621,7 +29787,7 @@ request.
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PUT',
         method_id='compute.urlMaps.update',
         ordered_params=['project', 'urlMap'],
@@ -29650,7 +29816,7 @@ UrlMap.
           config, request, global_params=global_params)
 
     Validate.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.urlMaps.validate',
         ordered_params=['project', 'urlMap'],
@@ -29690,7 +29856,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.vpnGateways.aggregatedList',
         ordered_params=['project'],
@@ -29717,7 +29883,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.vpnGateways.delete',
         ordered_params=['project', 'region', 'vpnGateway'],
@@ -29744,7 +29910,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.vpnGateways.get',
         ordered_params=['project', 'region', 'vpnGateway'],
@@ -29771,7 +29937,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     GetStatus.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.vpnGateways.getStatus',
         ordered_params=['project', 'region', 'vpnGateway'],
@@ -29799,7 +29965,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.vpnGateways.insert',
         ordered_params=['project', 'region'],
@@ -29827,7 +29993,7 @@ project and region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.vpnGateways.list',
         ordered_params=['project', 'region'],
@@ -29855,7 +30021,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.vpnGateways.setLabels',
         ordered_params=['project', 'region', 'resource'],
@@ -29882,7 +30048,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.vpnGateways.testIamPermissions',
         ordered_params=['project', 'region', 'resource'],
@@ -29922,7 +30088,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.vpnTunnels.aggregatedList',
         ordered_params=['project'],
@@ -29949,7 +30115,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.vpnTunnels.delete',
         ordered_params=['project', 'region', 'vpnTunnel'],
@@ -29976,7 +30142,7 @@ To prevent failure, Google recommends that you set the
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.vpnTunnels.get',
         ordered_params=['project', 'region', 'vpnTunnel'],
@@ -30004,7 +30170,7 @@ the data included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.vpnTunnels.insert',
         ordered_params=['project', 'region'],
@@ -30032,7 +30198,7 @@ project and region.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.vpnTunnels.list',
         ordered_params=['project', 'region'],
@@ -30060,7 +30226,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     SetLabels.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.vpnTunnels.setLabels',
         ordered_params=['project', 'region', 'resource'],
@@ -30097,7 +30263,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.wireGroups.delete',
         ordered_params=['project', 'crossSiteNetwork', 'wireGroup'],
@@ -30124,7 +30290,7 @@ Resources documentation.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.wireGroups.get',
         ordered_params=['project', 'crossSiteNetwork', 'wireGroup'],
@@ -30152,7 +30318,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.wireGroups.insert',
         ordered_params=['project', 'crossSiteNetwork'],
@@ -30179,7 +30345,7 @@ using the parameters that are included in the request.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.wireGroups.list',
         ordered_params=['project', 'crossSiteNetwork'],
@@ -30209,7 +30375,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Patch.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.wireGroups.patch',
         ordered_params=['project', 'crossSiteNetwork', 'wireGroup'],
@@ -30246,7 +30412,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.zoneOperations.delete',
         ordered_params=['project', 'zone', 'operation'],
@@ -30273,7 +30439,7 @@ patch format and processing rules.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.zoneOperations.get',
         ordered_params=['project', 'zone', 'operation'],
@@ -30301,7 +30467,7 @@ the specified zone.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.zoneOperations.list',
         ordered_params=['project', 'zone'],
@@ -30342,7 +30508,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     Wait.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.zoneOperations.wait',
         ordered_params=['project', 'zone', 'operation'],
@@ -30379,7 +30545,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     Delete.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='DELETE',
         method_id='compute.zoneVmExtensionPolicies.delete',
         ordered_params=['project', 'zone', 'vmExtensionPolicy'],
@@ -30406,7 +30572,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.zoneVmExtensionPolicies.get',
         ordered_params=['project', 'zone', 'vmExtensionPolicy'],
@@ -30433,7 +30599,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     Insert.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='POST',
         method_id='compute.zoneVmExtensionPolicies.insert',
         ordered_params=['project', 'zone'],
@@ -30460,7 +30626,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.zoneVmExtensionPolicies.list',
         ordered_params=['project', 'zone'],
@@ -30487,7 +30653,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     Update.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='PATCH',
         method_id='compute.zoneVmExtensionPolicies.update',
         ordered_params=['project', 'zone', 'vmExtensionPolicy'],
@@ -30524,7 +30690,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.zones.get',
         ordered_params=['project', 'zone'],
@@ -30551,7 +30717,7 @@ This method is called on a best-effort basis. Specifically:
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
-        api_version_param='2026-09-01',
+        api_version_param='2026-11-01',
         http_method='GET',
         method_id='compute.zones.list',
         ordered_params=['project'],

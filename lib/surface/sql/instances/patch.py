@@ -460,7 +460,7 @@ def AddBetaArgs(parser):
   replication_lag_group = parser.add_mutually_exclusive_group()
   flags.AddReplicationLagMaxSecondsForRecreate(replication_lag_group)
   flags.AddNoReplicationLagMaxSecondsForRecreate(replication_lag_group)
-  flags.AddEnableAcceleratedReplicaMode(parser)
+  flags.AddEnableAcceleratedReplication(parser)
   unc_mappings_group = parser.add_mutually_exclusive_group(hidden=True)
   flags.AddUncMappings(unc_mappings_group)
   flags.AddClearUncMappings(unc_mappings_group)
@@ -699,12 +699,12 @@ def RunBasePatchCommand(args, release_track):
             ' arguments excluding gcloud wide flags'
         )
 
-  if args.IsKnownAndSpecified('enable_accelerated_replica_mode'):
+  if args.IsKnownAndSpecified('enable_accelerated_replication'):
     if not api_util.InstancesV1Beta4.IsMysqlDatabaseVersion(
         original_instance_resource.databaseVersion
     ):
       raise exceptions.ArgumentError(
-          '--enable-accelerated-replica-mode is only supported for MySQL.'
+          '--enable-accelerated-replication is only supported for MySQL.'
       )
 
   patch_instance = command_util.InstancesV1Beta4.ConstructPatchInstanceFromArgs(

@@ -14,10 +14,8 @@
 # limitations under the License.
 """Implements command to describe a translation."""
 
-from googlecloudsdk.api_lib.bq import util as api_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import properties
-from googlecloudsdk.core import resources
+from googlecloudsdk.command_lib.bq.migration import translation_utils as utils
 
 
 @base.RegionalEndpointsSupported
@@ -48,26 +46,4 @@ class Describe(base.DescribeCommand):
     )
 
   def Run(self, args):
-    project = properties.VALUES.core.project.Get(required=True)
-    location = args.location
-    translation_id = args.translation_id
-
-    client = api_util.GetMigrationApiClient(location=location)
-    migration_service = client.projects_locations_workflows
-
-    workflow_ref = resources.REGISTRY.Parse(
-        translation_id,
-        params={
-            'projectsId': project,
-            'locationsId': location,
-        },
-        collection='bigquerymigration.projects.locations.workflows',
-    )
-
-    messages = client.MESSAGES_MODULE
-    request = messages.BigquerymigrationProjectsLocationsWorkflowsGetRequest(
-        name=workflow_ref.RelativeName(),
-    )
-
-    response = migration_service.Get(request)
-    return response
+    return utils.get_workflow(args.translation_id, args.location)

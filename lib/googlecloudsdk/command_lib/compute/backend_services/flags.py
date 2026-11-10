@@ -814,7 +814,13 @@ def GetHealthCheckUris(args, resource_resolver, resource_parser):
 
 
 SERVICE_LB_POLICY_HELP = """\
-The name or URI of the service load balancing policy to apply to this backend service, specified as a single string identifier rather than a complex configuration object or list. This policy can only be configured if the load balancing scheme is `EXTERNAL_MANAGED`, `INTERNAL_MANAGED`, or `INTERNAL_SELF_MANAGED`. The policy is exclusively available for global backend services and will be rejected if applied to a regional resource.
+The name or URI of the service load balancing policy to apply to this backend
+service, specified as a single string identifier rather than a complex
+configuration object or list. This policy can only be configured if the load
+balancing scheme is `EXTERNAL_MANAGED`, `INTERNAL_MANAGED`, or
+`INTERNAL_SELF_MANAGED`. If used with a global backend service, must reference a
+global policy. If used with a regional backend service, must reference a
+regional policy.
 """
 
 

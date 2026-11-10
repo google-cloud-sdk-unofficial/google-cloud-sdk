@@ -59,9 +59,11 @@ from googlecloudsdk.command_lib.run.sourcedeploys import sources
 from googlecloudsdk.command_lib.util.args import map_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.resource import resource_printer
+from googlecloudsdk.core.util import regional
 
 _GPU_BUILD_MACHINE_TYPE = 'E2_HIGHCPU_8'
 
@@ -988,13 +990,26 @@ class Deploy(base.Command):
     )
 
     containers = self._ValidateAndGetContainers(args)
-    # Gate Unified Build to Alpha only
-    enable_unified_build = self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+    # Unified build is Alpha only and opt-in through the hidden
+    # --run-build flag.
+    enable_unified_build = (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        and any(getattr(c, 'run_build', False) for c in containers.values())
+    )
     source_containers, legacy_build_container, local_build_container = (
         self._ValidateAndGetSourceContainer(
             containers, enable_unified_build=enable_unified_build
         )
     )
+    if enable_unified_build and any(
+        validators.IsSourceBuild(c)
+        and os.path.exists(os.path.join(c.source, 'project.toml'))
+        for c in source_containers.values()
+    ):
+      log.warning(
+          'project.toml is not supported with --run-build and will be ignored.'
+          ' Remove --run-build to build with project.toml.'
+      )
 
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
@@ -1006,7 +1021,7 @@ class Deploy(base.Command):
             'The --domain flag is only supported for Cloud Run (fully managed).'
         )
       endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
-      if endpoint_mode in (
+      if regional.IsRegionalEndpointCompatible() and endpoint_mode in (
           properties.constants.regional.REGIONAL,
           properties.constants.regional.REGIONAL_PREFERRED,
       ):

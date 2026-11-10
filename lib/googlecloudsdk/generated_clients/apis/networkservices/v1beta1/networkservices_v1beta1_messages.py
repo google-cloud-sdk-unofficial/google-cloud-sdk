@@ -415,20 +415,20 @@ class AuthzExtension(_messages.Message):
       following format: `projects/{project}/locations/{location}/authzExtensio
       ns/{authz_extension}`.
     service: Required. The reference to the service that runs the extension.
-      To configure a callout extension: For global AuthzExtension, `service`
-      must be a fully-qualified reference to a [backend service](https://cloud
+      To configure a callout extension: For a global AuthzExtension, `service`
+      must be a fully qualified reference to a [backend service](https://cloud
       .google.com/compute/docs/reference/rest/v1/backendServices) in the
       format: `https://www.googleapis.com/compute/v1/projects/{project}/global
-      /backendServices/{backendService}`. For regional AuthzExtension,
-      `service` must be a fully-qualified reference to one of the following: *
-      a [backend service](https://cloud.google.com/compute/docs/reference/rest
+      /backendServices/{backendService}`. For a regional AuthzExtension,
+      `service` must be a fully qualified reference to one of the following: *
+      A [backend service](https://cloud.google.com/compute/docs/reference/rest
       /v1/backendServices) in the format: `https://www.googleapis.com/compute/
       v1/projects/{project}/regions/{region}/backendServices/{backendService}`
-      . * a fully qualified domain name that can be resolved by the Google
-      Cloud DNS. * `iap.googleapis.com` and it can only be referenced by an
-      AuthzPolicy with the policyProfile set to REQUEST_AUTHZ. *
+      . * A fully qualified domain name that can be resolved by Cloud DNS. *
+      `iap.googleapis.com` and can be referenced only by an `AuthzPolicy` with
+      the `policyProfile` set to `REQUEST_AUTHZ`. *
       `modelarmor..rep.googleapis.com` and it can only be referenced by an
-      AuthzPolicy with the policyProfile set to CONTENT_AUTHZ.
+      `AuthzPolicy` with the `policyProfile` set to `CONTENT_AUTHZ`.
     timeout: Required. Specifies the timeout for each individual message on
       the stream. The timeout must be between 10-10000 milliseconds.
     updateTime: Output only. The timestamp when the resource was updated.
@@ -915,9 +915,9 @@ class ExpressLink(_messages.Message):
       requests to destination services. Each match is independent with the OR
       semantic, i.e. we consider it matched if ANY one of the matches is
       satisfied. If an ExpressLink has only one Cloud Run service, Match is
-      optional. If not specified, the default hostname `-..run.app` or the
-      short name can be used. If an ExpressLink has multiple Cloud Run
-      services, at least one Match with valid hostname is required.
+      optional. If not specified, only the default hostname `-..run.app` can
+      be used. If an ExpressLink has multiple Cloud Run services, at least one
+      Match with valid hostname is required.
     name: Identifier. Name of the ExpressLink resource. It matches pattern
       `projects/*/locations/*/expressLinks/`.
     pscEndpointInfo: Output only. Private Service Connect (PSC) endpoint
@@ -1283,8 +1283,8 @@ class ExtensionBinding(_messages.Message):
       server's etag. If the provided etag does not match the server's etag,
       the request will fail with a 409 ABORTED error.
     failOpen: Optional. Determines the behavior of the extension binding when
-      the call to the extension fails or times out. Default value is `FALSE`.
-      When set to `TRUE`, failures of the extension are silently ignored.
+      the call to the extension fails or times out. Default value is `false`.
+      When set to `true`, failures of the extension are silently ignored.
     labels: Optional. Set of labels associated with the `ExtensionBinding`
       resource. The format must comply with [the following
       requirements](https://cloud.google.com/compute/docs/labeling-
@@ -1299,7 +1299,7 @@ class ExtensionBinding(_messages.Message):
       nsion_binding}`.
     priority: Optional. This field is not supported.
     producerExtension: Required. The name of the extension that this binding
-      should attach to target resources. Format: For Google-provided
+      should attach to target resources. Format: * For Google-provided
       extensions, specify the service endpoint, for example `modelarmor.us-
       central1.rep.googleapis.com`.
     producerMetadata: Optional. Additional metadata that should be passed to
@@ -1417,7 +1417,7 @@ class ExtensionBindingMatchConditionStringMatch(_messages.Message):
       here. An empty substring is not allowed. Examples: * `abc` matches the
       value `xyz.abc.def`.
     exact: Optional. The input string must match exactly the string specified
-      here. Examples: * `abc` only matches the value `abc`.
+      here. Examples: * `abc` matches only the value `abc`.
     ignoreCase: Optional. If true, the `exact`, `prefix`, `suffix`, or
       `contains` match is case insensitive. For example, the matcher `data`
       matches both `Data` and `data` when set to true.
@@ -1447,9 +1447,9 @@ class ExtensionBindingMatchConditionTo(_messages.Message):
       matches when any host matches and any path matches. At least one of
       `destination` or `not_destination` must be specified.
     notDestination: Optional. Describes the negated properties of the request
-      destination. Extension will not be invoked on requests that match the
-      criteria specified in this field. At least one of destination or
-      not_destination must be specified.
+      destination. The extension will not be invoked on requests that match
+      the criteria specified in this field. At least one of `destination` or
+      `not_destination` must be specified.
   """
 
   destination = _messages.MessageField('ExtensionBindingMatchConditionToDestination', 1)
@@ -1462,19 +1462,19 @@ class ExtensionBindingMatchConditionToDestination(_messages.Message):
   Fields:
     headerSet: Optional. A set of HTTP headers to match against. If not
       specified, requests with any headers are matched.
-    hosts: Optional. A list of HTTP Hosts to match against. Limited to 10
+    hosts: Optional. A list of HTTP hosts to match against. Limited to 10
       hosts. If not specified, any host is allowed. If specified, a match
       occurs if any of the hosts matches the host value in the request.
     paths: Optional. A list of paths to match against. Limited to 10 paths. If
       not specified, any path is allowed. Note that this path match includes
-      the query parameters. For gRPC services, this should be a fully-
-      qualified name of the form /package.service/method.
+      the query parameters. For gRPC services, this should be a fully
+      qualified name of the form `/package.service/method`.
     resources: Optional. A list of non-empty strings whose value is matched
-      against the resource to which a request is sent (e.g., an Agent in
-      AiApplication). If not specified, any resource is allowed. If specified,
-      a match occurs if any of the resources matches the resource value in the
-      request. Limited to 5 resources. When matching against resources in the
-      AgentRegistry, use the URNs of the registry resources.
+      against the resource to which a request is sent (for example, an `Agent`
+      in `AiApplication`). If not specified, any resource is allowed. If
+      specified, a match occurs if any of the resources matches the resource
+      value in the request. Limited to 5 resources. When matching against
+      resources in the Agent Registry, use the URNs of the registry resources.
   """
 
   headerSet = _messages.MessageField('ExtensionBindingMatchConditionToDestinationHeaderSet', 1)
@@ -1555,9 +1555,9 @@ class ExtensionChain(_messages.Message):
   Fields:
     extensions: Required. A set of extensions to execute for the matching
       request. At least one extension is required. Up to 3 extensions can be
-      defined for each extension chain for `LbTrafficExtension` resource.
-      `LbRouteExtension`, `LbEdgeExtension`, and `LbTcpExtension` chains are
-      limited to 1 extension per extension chain.
+      defined for each extension chain for `LbTrafficExtension` and
+      `CdnEdgeExtension` resources. `LbRouteExtension`, `LbEdgeExtension`, and
+      `LbTcpExtension` chains are limited to 1 extension per extension chain.
     matchCondition: Required. Conditions under which this chain is invoked for
       a request.
     name: Required. The name for this extension chain. The name is logged as
@@ -1704,7 +1704,7 @@ class ExtensionChainExtension(_messages.Message):
       resources, and only when the `service` field of the extension points to
       a `BackendService`.
     service: Required. The reference to the service that runs the extension.
-      To configure a callout extension, `service` must be a fully-qualified
+      To configure a callout extension, `service` must be a fully qualified
       reference to a [backend service](https://cloud.google.com/compute/docs/r
       eference/rest/v1/backendServices) in the format: `https://www.googleapis
       .com/compute/v1/projects/{project}/regions/{region}/backendServices/{bac
@@ -1717,8 +1717,8 @@ class ExtensionChainExtension(_messages.Message):
       `projects/{project}/locations/{location}/wasmPlugins/{plugin}` or `//net
       workservices.googleapis.com/projects/{project}/locations/{location}/wasm
       Plugins/{wasmPlugin}`. Plugin extensions are currently supported for the
-      `LbTrafficExtension`, the `LbRouteExtension`, and the `LbEdgeExtension`
-      resources.
+      `LbTrafficExtension`, the `LbRouteExtension`, the `LbEdgeExtension`, and
+      the `CdnEdgeExtension` resources.
     supportedEvents: Optional. A set of events during request or response
       processing for which this extension is called. For the
       `LbTrafficExtension` resource, this field is required. For the
@@ -1811,9 +1811,9 @@ class ExtensionChainExtension(_messages.Message):
       RESPONSE_BODY: If included in `supported_events`, the extension is
         called when the HTTP response body arrives.
       REQUEST_TRAILERS: If included in `supported_events`, the extension is
-        called when the HTTP request trailers arrives.
+        called when the HTTP request trailers arrive.
       RESPONSE_TRAILERS: If included in `supported_events`, the extension is
-        called when the HTTP response trailers arrives.
+        called when the HTTP response trailers arrive.
     """
     EVENT_TYPE_UNSPECIFIED = 0
     REQUEST_HEADERS = 1
@@ -4436,6 +4436,56 @@ class LoggingConfig(_messages.Message):
   logSeverity = _messages.EnumField('LogSeverityValueValuesEnum', 1)
 
 
+class LoggingConfiguration(_messages.Message):
+  r"""Configuration for logging collection.
+
+  Enums:
+    OptionalModeValueValuesEnum: Optional. Configures whether all, none, or a
+      subset of optional fields should be added to the reported logs. This
+      field can only be specified if logging is enabled.
+
+  Fields:
+    enable: Optional. Indicates whether logging is enabled or disabled. Set to
+      true to explicitly enable, or false to explicitly disable.
+    loggingHttpRequestHeaders: Optional. The list of HTTP request headers to
+      be logged. This field can only be specified if logging is enabled.
+    loggingHttpResponseHeaders: Optional. The list of HTTP response headers to
+      be logged. This field can only be specified if logging is enabled.
+    optionalFields: Optional. Contains a list of optional fields to include in
+      the logs. This field can only be specified if logging is enabled and
+      `optional_mode` is set to `CUSTOM`.
+    optionalMode: Optional. Configures whether all, none, or a subset of
+      optional fields should be added to the reported logs. This field can
+      only be specified if logging is enabled.
+    sampleRate: Optional. Specifies the logging sampling rate. The sampling
+      rate is a float number in the interval [0, 1]. This field can only be
+      specified if logging is enabled.
+  """
+
+  class OptionalModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Configures whether all, none, or a subset of optional fields
+    should be added to the reported logs. This field can only be specified if
+    logging is enabled.
+
+    Values:
+      OPTIONAL_MODE_UNSPECIFIED: Unspecified optional mode.
+      INCLUDE_ALL_OPTIONAL: Include all optional fields.
+      EXCLUDE_ALL_OPTIONAL: Exclude all optional fields.
+      CUSTOM: Include a custom subset of optional fields.
+    """
+    OPTIONAL_MODE_UNSPECIFIED = 0
+    INCLUDE_ALL_OPTIONAL = 1
+    EXCLUDE_ALL_OPTIONAL = 2
+    CUSTOM = 3
+
+  enable = _messages.BooleanField(1)
+  loggingHttpRequestHeaders = _messages.StringField(2, repeated=True)
+  loggingHttpResponseHeaders = _messages.StringField(3, repeated=True)
+  optionalFields = _messages.StringField(4, repeated=True)
+  optionalMode = _messages.EnumField('OptionalModeValueValuesEnum', 5)
+  sampleRate = _messages.FloatField(6, variant=_messages.Variant.FLOAT)
+
+
 class Mesh(_messages.Message):
   r"""Mesh represents a logical configuration grouping for workload to
   workload communication within a service mesh. Routes that point to mesh
@@ -4959,11 +5009,6 @@ class MulticastGroupConsumerActivation(_messages.Message):
       consumer association that is in the same zone as this multicast group
       consumer activation. Use the following format:
       `projects/*/locations/*/multicastConsumerAssociations/*`.
-    multicastGroup: Optional. The resource name of the multicast group created
-      by the admin in the same zone as this multicast group consumer
-      activation. Use the following format:
-      `projects/*/locations/*/multicastGroups/*`. This field is deprecated.
-      Use multicast_group_range_activation instead.
     multicastGroupRangeActivation: Required. The resource name of the
       multicast group range activation created by the admin in the same zone
       as this multicast group consumer activation. Use the following format:
@@ -5027,13 +5072,12 @@ class MulticastGroupConsumerActivation(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 3)
   logConfig = _messages.MessageField('MulticastLogConfig', 4)
   multicastConsumerAssociation = _messages.StringField(5)
-  multicastGroup = _messages.StringField(6)
-  multicastGroupRangeActivation = _messages.StringField(7)
-  name = _messages.StringField(8)
-  resourceState = _messages.EnumField('ResourceStateValueValuesEnum', 9)
-  state = _messages.MessageField('MulticastResourceState', 10)
-  uniqueId = _messages.StringField(11)
-  updateTime = _messages.StringField(12)
+  multicastGroupRangeActivation = _messages.StringField(6)
+  name = _messages.StringField(7)
+  resourceState = _messages.EnumField('ResourceStateValueValuesEnum', 8)
+  state = _messages.MessageField('MulticastResourceState', 9)
+  uniqueId = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
 
 
 class MulticastGroupProducerActivation(_messages.Message):
@@ -5048,11 +5092,6 @@ class MulticastGroupProducerActivation(_messages.Message):
     description: Optional. An optional text description of the multicast group
       producer activation.
     labels: Optional. Labels as key-value pairs.
-    multicastGroup: Optional. The resource name of the multicast group created
-      by the admin in the same zone as this multicast group producer
-      activation. Use the following format:
-      `projects/*/locations/*/multicastGroups/*`. This field is deprecated.
-      Use multicast_group_range_activation instead.
     multicastGroupRangeActivation: Required. The resource name of the
       multicast group range activation created by the admin in the same zone
       as this multicast group producer activation. Use the following format:
@@ -5101,13 +5140,12 @@ class MulticastGroupProducerActivation(_messages.Message):
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
   labels = _messages.MessageField('LabelsValue', 3)
-  multicastGroup = _messages.StringField(4)
-  multicastGroupRangeActivation = _messages.StringField(5)
-  multicastProducerAssociation = _messages.StringField(6)
-  name = _messages.StringField(7)
-  state = _messages.MessageField('MulticastResourceState', 8)
-  uniqueId = _messages.StringField(9)
-  updateTime = _messages.StringField(10)
+  multicastGroupRangeActivation = _messages.StringField(4)
+  multicastProducerAssociation = _messages.StringField(5)
+  name = _messages.StringField(6)
+  state = _messages.MessageField('MulticastResourceState', 7)
+  uniqueId = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
 
 
 class MulticastGroupRange(_messages.Message):
@@ -6061,10 +6099,10 @@ class NetworkservicesProjectsLocationsExtensionBindingsDeleteRequest(_messages.M
   r"""A NetworkservicesProjectsLocationsExtensionBindingsDeleteRequest object.
 
   Fields:
-    etag: Optional. The etag of the ExtensionBinding to delete.
-    name: Required. A name of the `ExtensionBinding` resource to delete. Must
-      be in the format `projects/{project}/locations/{location}/extensionBindi
-      ngs/{extension_binding}`.
+    etag: Optional. The ETag of the `ExtensionBinding` to delete.
+    name: Required. The name of the `ExtensionBinding` resource to delete.
+      Must be in the format `projects/{project}/locations/{location}/extension
+      Bindings/{extension_binding}`.
   """
 
   etag = _messages.StringField(1)
@@ -6075,9 +6113,9 @@ class NetworkservicesProjectsLocationsExtensionBindingsGetRequest(_messages.Mess
   r"""A NetworkservicesProjectsLocationsExtensionBindingsGetRequest object.
 
   Fields:
-    name: Required. A name of the `ExtensionBinding` resource to get. Must be
-      in the format `projects/{project}/locations/{location}/extensionBindings
-      /{extension_binding}`.
+    name: Required. The name of the `ExtensionBinding` resource to get. Must
+      be in the format `projects/{project}/locations/{location}/extensionBindi
+      ngs/{extension_binding}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -6090,9 +6128,9 @@ class NetworkservicesProjectsLocationsExtensionBindingsListRequest(_messages.Mes
     pageSize: Optional. Maximum number of `ExtensionBinding` resources to
       return per call.
     pageToken: Optional. The value returned by the last
-      `ListExtensionBindingsResponse` Indicates that this is a continuation of
-      a prior `ListExtensionBindings` call, and that the system should return
-      the next page of data.
+      `ListExtensionBindingsResponse`. Indicates that this is a continuation
+      of a prior `ListExtensionBindings` call, and that the system should
+      return the next page of data.
     parent: Required. The project and location from which the
       `ExtensionBinding` resources should be listed, specified in the format
       `projects/{project}/locations/{location}`.
@@ -6114,9 +6152,9 @@ class NetworkservicesProjectsLocationsExtensionBindingsPatchRequest(_messages.Me
       nsion_binding}`.
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the `ExtensionBinding` resource by the update. The fields
-      specified in the update_mask are relative to the resource, not the full
-      request. A field will be overwritten if it is in the mask. If the user
-      does not provide a mask then all fields will be overwritten.
+      specified in the `update_mask` are relative to the resource, not the
+      full request. A field is overwritten if it is in the mask. If the user
+      does not provide a mask then all fields are overwritten.
   """
 
   extensionBinding = _messages.MessageField('ExtensionBinding', 1)
@@ -8294,7 +8332,7 @@ class NetworkservicesProjectsLocationsProducerExtensionsCreateRequest(_messages.
       Must be in the format `projects/{project}/locations/{location}`.
     producerExtension: A ProducerExtension resource to be passed as the
       request body.
-    producerExtensionId: Required. Short name of the `ProducerExtension`
+    producerExtensionId: Required. The short name of the `ProducerExtension`
       resource to be created.
   """
 
@@ -8308,10 +8346,10 @@ class NetworkservicesProjectsLocationsProducerExtensionsDeleteRequest(_messages.
   object.
 
   Fields:
-    etag: Optional. The etag of the ProducerExtension to delete.
-    name: Required. A name of the `ProducerExtension` resource to delete. Must
-      be in the format `projects/{project}/locations/{location}/producerExtens
-      ions/{producer_extension}`.
+    etag: Optional. The ETag of the `ProducerExtension` to delete.
+    name: Required. The name of the `ProducerExtension` resource to delete. It
+      must be in this format: `projects/{project}/locations/{location}/produce
+      rExtensions/{producer_extension}`.
   """
 
   etag = _messages.StringField(1)
@@ -8322,9 +8360,9 @@ class NetworkservicesProjectsLocationsProducerExtensionsGetRequest(_messages.Mes
   r"""A NetworkservicesProjectsLocationsProducerExtensionsGetRequest object.
 
   Fields:
-    name: Required. A name of the `ProducerExtension` resource to get. Must be
-      in the format `projects/{project}/locations/{location}/producerExtension
-      s/{producer_extension}`.
+    name: Required. The name of the `ProducerExtension` resource to get. It
+      must be in this format: `projects/{project}/locations/{location}/produce
+      rExtensions/{producer_extension}`.
   """
 
   name = _messages.StringField(1, required=True)
@@ -8337,12 +8375,12 @@ class NetworkservicesProjectsLocationsProducerExtensionsListRequest(_messages.Me
     pageSize: Optional. Maximum number of `ProducerExtension` resources to
       return per call.
     pageToken: Optional. The value returned by the last
-      `ListProducerExtensionsResponse` Indicates that this is a continuation
-      of a prior `ListProducerExtensions` call, and that the system should
-      return the next page of data.
+      `ListProducerExtensionsResponse`. It indicates that this is a
+      continuation of a prior `ListProducerExtensions` call, and that the
+      system should return the next page of data.
     parent: Required. The project and location from which the
-      `ProducerExtension` resources should be listed, specified in the format
-      `projects/{project}/locations/{location}`.
+      `ProducerExtension` resources should be listed, specified in this
+      format: `projects/{project}/locations/{location}`.
   """
 
   pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
@@ -9974,12 +10012,12 @@ class PimSpec(_messages.Message):
 
 
 class ProducerExtension(_messages.Message):
-  r"""`ProducerExtension` is a resource representing producer defined
-  configuration for their service extension.
+  r"""`ProducerExtension` is a resource that represents a producer-defined
+  configuration for its service extension.
 
   Enums:
     PhaseValueValuesEnum: Required. The phase in which this
-      `ProducerExtension` should execute.
+      `ProducerExtension` runs.
 
   Messages:
     LabelsValue: Optional. Set of labels associated with the
@@ -9990,9 +10028,9 @@ class ProducerExtension(_messages.Message):
   Fields:
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A human-readable description of the resource.
-    etag: Optional. Etag of the resource. If this is provided, it must match
-      the server's etag. If the provided etag does not match the server's
-      etag, the request will fail with a 409 ABORTED error.
+    etag: Optional. ETag of the resource. If this is provided, it must match
+      the server's ETag. If the provided ETag doesn't match the server's ETag,
+      then the request fails with a `409 ABORTED` error.
     extensionSettings: Required. The configuration for the service that this
       `ProducerExtension` offers.
     labels: Optional. Set of labels associated with the `ProducerExtension`
@@ -10002,18 +10040,16 @@ class ProducerExtension(_messages.Message):
     name: Identifier. Name of the `ProducerExtension` resource in the
       following format: `projects/{project}/locations/{location}/producerExten
       sions/{producer_extension}`.
-    phase: Required. The phase in which this `ProducerExtension` should
-      execute.
+    phase: Required. The phase in which this `ProducerExtension` runs.
     updateTime: Output only. The timestamp when the resource was updated.
   """
 
   class PhaseValueValuesEnum(_messages.Enum):
-    r"""Required. The phase in which this `ProducerExtension` should execute.
+    r"""Required. The phase in which this `ProducerExtension` runs.
 
     Values:
       PHASE_UNSPECIFIED: Unspecified phase.
-      TRAFFIC: The `ProducerExtension` will be executed during the traffic
-        phase.
+      TRAFFIC: Not supported.
       AUTHZ: The `ProducerExtension` will be executed during the authorization
         phase.
     """
@@ -10068,7 +10104,8 @@ class ProducerExtensionExtensionSettings(_messages.Message):
     authority: Optional. The `:authority` header in the request sent to the
       extension service.
     observabilityMode: Optional. This field is not supported.
-    service: Required. URI of the PSC attachment.
+    service: Required. The URI of the Private Service Connect (PSC)
+      attachment.
     supportedEvents: Required. The event types supported by the extension.
   """
 
@@ -10086,9 +10123,9 @@ class ProducerExtensionExtensionSettings(_messages.Message):
       RESPONSE_BODY: If included in `supported_events`, the extension is
         called when the HTTP response body arrives.
       REQUEST_TRAILERS: If included in `supported_events`, the extension is
-        called when the HTTP request trailers arrives.
+        called when the HTTP request trailers arrive.
       RESPONSE_TRAILERS: If included in `supported_events`, the extension is
-        called when the HTTP response trailers arrives.
+        called when the HTTP response trailers arrive.
     """
     EVENT_TYPE_UNSPECIFIED = 0
     REQUEST_HEADERS = 1
@@ -10642,8 +10679,8 @@ class ServiceBinding(_messages.Message):
 
 
 class ServiceLbPolicy(_messages.Message):
-  r"""ServiceLbPolicy holds global load balancing and traffic distribution
-  configuration that can be applied to a BackendService.
+  r"""ServiceLbPolicy holds load balancing and traffic distribution
+  configuration that can be applied to a global or regional BackendService.
 
   Enums:
     LoadBalancingAlgorithmValueValuesEnum: Optional. The type of load
@@ -10682,16 +10719,24 @@ class ServiceLbPolicy(_messages.Message):
       LOAD_BALANCING_ALGORITHM_UNSPECIFIED: The type of the loadbalancing
         algorithm is unspecified.
       SPRAY_TO_WORLD: Balance traffic across all backends across the world
-        proportionally based on capacity.
+        proportionally based on capacity. Only supported for global
+        ServiceLbPolicy with Cloud Service Mesh, not supported for regional
+        ServiceLbPolicy.
       SPRAY_TO_REGION: Direct traffic to the nearest region with endpoints and
         capacity before spilling over to other regions and spread the traffic
-        from each client to all the MIGs/NEGs in a region.
+        from each client to all the MIGs/NEGs in a region. For regional
+        ServiceLbPolicy, traffic stays within the configured region and does
+        not spill over to other regions.
       WATERFALL_BY_REGION: Direct traffic to the nearest region with endpoints
         and capacity before spilling over to other regions. All MIGs/NEGs
         within a region are evenly loaded but each client might not spread the
-        traffic to all the MIGs/NEGs in the region.
+        traffic to all the MIGs/NEGs in the region. For regional
+        ServiceLbPolicy, traffic stays within the configured region and does
+        not spill over to other regions.
       WATERFALL_BY_ZONE: Attempt to keep traffic in a single zone closest to
-        the client, before spilling over to other zones.
+        the client, before spilling over to other zones. For regional
+        ServiceLbPolicy, traffic only spills over to other zones within the
+        same region.
     """
     LOAD_BALANCING_ALGORITHM_UNSPECIFIED = 0
     SPRAY_TO_WORLD = 1
@@ -10736,8 +10781,8 @@ class ServiceLbPolicy(_messages.Message):
 
 
 class ServiceLbPolicyAutoCapacityDrain(_messages.Message):
-  r"""Option to specify if an unhealthy IG/NEG should be considered for global
-  load balancing and traffic routing.
+  r"""Option to specify if an unhealthy IG/NEG should be considered for load
+  balancing and traffic routing.
 
   Fields:
     enable: Optional. If set to 'True', an unhealthy IG/NEG will be set as
@@ -11094,6 +11139,9 @@ class TelemetryPolicy(_messages.Message):
       match the server's etag, the request will fail with a 409 ABORTED error.
     labels: Optional. Set of label tags associated with the TelemetryPolicy
       resource.
+    loggingConfiguration: Optional. Specifies the top-level configuration
+      block within the telemetry policy that contains all the settings for how
+      logging will be applied to the target resources.
     metricsConfiguration: Optional. Specifies the top-level configuration
       block within the telemetry policy that contains all the settings for how
       metrics will be applied to the target resources.
@@ -11169,13 +11217,14 @@ class TelemetryPolicy(_messages.Message):
   displayName = _messages.StringField(4)
   etag = _messages.StringField(5)
   labels = _messages.MessageField('LabelsValue', 6)
-  metricsConfiguration = _messages.MessageField('MetricsConfiguration', 7)
-  name = _messages.StringField(8)
-  reconciling = _messages.BooleanField(9)
-  telemetryTarget = _messages.MessageField('TelemetryTarget', 10)
-  tracingConfiguration = _messages.MessageField('TracingConfiguration', 11)
-  uid = _messages.StringField(12)
-  updateTime = _messages.StringField(13)
+  loggingConfiguration = _messages.MessageField('LoggingConfiguration', 7)
+  metricsConfiguration = _messages.MessageField('MetricsConfiguration', 8)
+  name = _messages.StringField(9)
+  reconciling = _messages.BooleanField(10)
+  telemetryTarget = _messages.MessageField('TelemetryTarget', 11)
+  tracingConfiguration = _messages.MessageField('TracingConfiguration', 12)
+  uid = _messages.StringField(13)
+  updateTime = _messages.StringField(14)
 
 
 class TelemetryTarget(_messages.Message):

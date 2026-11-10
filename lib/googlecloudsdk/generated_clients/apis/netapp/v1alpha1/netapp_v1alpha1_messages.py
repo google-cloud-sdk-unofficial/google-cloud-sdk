@@ -1166,6 +1166,19 @@ class ExportPolicy(_messages.Message):
   rules = _messages.MessageField('SimpleExportPolicyRule', 1, repeated=True)
 
 
+class FetchQuotaReportResponse(_messages.Message):
+  r"""Contains the paginated quota report entries.
+
+  Fields:
+    nextPageToken: Token to retrieve the next page of results, or empty if
+      there are no more results.
+    quotaReportEntries: List of quota usage report entries for the volume.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  quotaReportEntries = _messages.MessageField('QuotaReportEntry', 2, repeated=True)
+
+
 class GoogleProtobufEmpty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -1546,12 +1559,16 @@ class InventorySvm(_messages.Message):
 
   Fields:
     displayName: Output only. The name of the SVM.
+    storagePool: Output only. The storage pool associated with the SVM.
+      Format:
+      `projects/{project}/locations/{location}/storagePools/{storage_pool}`
     volumes: Output only. Volumes hosted on this SVM. Only populated when
       `view=FULL`.
   """
 
   displayName = _messages.StringField(1)
-  volumes = _messages.MessageField('InventoryVolume', 2, repeated=True)
+  storagePool = _messages.StringField(2)
+  volumes = _messages.MessageField('InventoryVolume', 3, repeated=True)
 
 
 class InventoryVolume(_messages.Message):
@@ -3131,6 +3148,35 @@ class NetappProjectsLocationsVolumesEstablishPeeringRequest(_messages.Message):
   name = _messages.StringField(2, required=True)
 
 
+class NetappProjectsLocationsVolumesFetchQuotaReportRequest(_messages.Message):
+  r"""A NetappProjectsLocationsVolumesFetchQuotaReportRequest object.
+
+  Fields:
+    filter: Optional. Server-side filter expression following AIP-160
+      (https://google.aip.dev/160). Filterable fields: * `type` (allowed
+      values: `INDIVIDUAL_USER_QUOTA`, `INDIVIDUAL_GROUP_QUOTA`,
+      `DEFAULT_USER_QUOTA`, `DEFAULT_GROUP_QUOTA`) * `target` *
+      `disk_limit_mib` * `disk_used_bytes` * `used_percent` Supported
+      operators: * `=`, `!=` for `type` and `target` * `=`, `!=`, `>`, `<`,
+      `>=`, `<=` for numeric comparison on `disk_limit_mib`,
+      `disk_used_bytes`, and `used_percent` * `AND` to combine filters across
+      different fields * `OR` to combine values within `type` or `target`
+      Examples: * `used_percent >= 80` * `type = "INDIVIDUAL_USER_QUOTA" AND
+      disk_used_bytes > 10485760`
+    name: Required. The resource name of the volume, in the format
+      `projects/{project}/locations/{location}/volumes/{volume}`.
+    pageSize: Optional. The maximum number of records to return. Default is
+      100.
+    pageToken: Optional. Pagination token from a previous
+      FetchQuotaReportResponse.
+  """
+
+  filter = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+
+
 class NetappProjectsLocationsVolumesGetRequest(_messages.Message):
   r"""A NetappProjectsLocationsVolumesGetRequest object.
 
@@ -3710,6 +3756,53 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(7)
 
 
+class QuotaReportEntry(_messages.Message):
+  r"""Represents a single live quota usage record from ONTAP.
+
+  Enums:
+    TypeValueValuesEnum: Output only. The type of quota rule (e.g.,
+      INDIVIDUAL_USER_QUOTA, INDIVIDUAL_GROUP_QUOTA, DEFAULT_USER_QUOTA,
+      DEFAULT_GROUP_QUOTA).
+
+  Fields:
+    derived: Output only. True if this entry was automatically derived from a
+      default user or group quota rule rather than an explicit individual
+      quota rule.
+    diskLimitMib: Output only. Configured hard disk limit in MiB (0 for
+      tracking quotas).
+    diskUsedBytes: Output only. Current disk space used in bytes.
+    target: Output only. The target identity (UID, GID, or Windows SID) to
+      which the quota applies. Empty for unexpanded default quota entries.
+    type: Output only. The type of quota rule (e.g., INDIVIDUAL_USER_QUOTA,
+      INDIVIDUAL_GROUP_QUOTA, DEFAULT_USER_QUOTA, DEFAULT_GROUP_QUOTA).
+    usedPercent: Output only. Percentage of disk limit used (0 to 100).
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of quota rule (e.g., INDIVIDUAL_USER_QUOTA,
+    INDIVIDUAL_GROUP_QUOTA, DEFAULT_USER_QUOTA, DEFAULT_GROUP_QUOTA).
+
+    Values:
+      TYPE_UNSPECIFIED: Unspecified type for quota rule
+      INDIVIDUAL_USER_QUOTA: Individual user quota rule
+      INDIVIDUAL_GROUP_QUOTA: Individual group quota rule
+      DEFAULT_USER_QUOTA: Default user quota rule
+      DEFAULT_GROUP_QUOTA: Default group quota rule
+    """
+    TYPE_UNSPECIFIED = 0
+    INDIVIDUAL_USER_QUOTA = 1
+    INDIVIDUAL_GROUP_QUOTA = 2
+    DEFAULT_USER_QUOTA = 3
+    DEFAULT_GROUP_QUOTA = 4
+
+  derived = _messages.BooleanField(1)
+  diskLimitMib = _messages.IntegerField(2)
+  diskUsedBytes = _messages.IntegerField(3)
+  target = _messages.StringField(4)
+  type = _messages.EnumField('TypeValueValuesEnum', 5)
+  usedPercent = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+
+
 class QuotaRule(_messages.Message):
   r"""QuotaRule specifies the maximum disk space a user or group can use
   within a volume. They can be used for creating default and individual quota
@@ -4261,6 +4354,22 @@ class SnapshotPolicy(_messages.Message):
   weeklySchedule = _messages.MessageField('WeeklySchedule', 5)
 
 
+class SoleTenancyConfig(_messages.Message):
+  r"""Defines configuration parameters for a sole-tenant storage pool. Sole
+  tenancy ensures that the virtual machines serving the storage pool run on
+  physical hardware dedicated to the consumer project, providing compute
+  isolation from other tenants.
+
+  Fields:
+    enabled: Required. Immutable. If `true`, virtual machines serving this
+      storage pool run on physical hosts dedicated to the consumer project. If
+      dedicated host capacity is unavailable, pool creation fails with an
+      error rather than provisioning on shared hardware.
+  """
+
+  enabled = _messages.BooleanField(1)
+
+
 class SplitStatus(_messages.Message):
   r"""Message for SplitStatus.
 
@@ -4521,6 +4630,11 @@ class StoragePool(_messages.Message):
     scaleType: Optional. The scale type of the storage pool. Defaults to
       `SCALE_TYPE_DEFAULT` if not specified.
     serviceLevel: Required. Service level of the storage pool
+    soleTenancyConfig: Optional. Immutable. Configures sole tenancy for the
+      storage pool, providing compute isolation by running the pool's virtual
+      machines on dedicated physical hardware. Setting this configuration on
+      an unsupported storage pool configuration returns an `INVALID_ARGUMENT`
+      error.
     state: Output only. State of the storage pool
     stateDetails: Output only. State details of the storage pool
     totalIops: Optional. Custom Performance Total IOPS of the pool if not
@@ -4722,15 +4836,16 @@ class StoragePool(_messages.Message):
   scaleTier = _messages.EnumField('ScaleTierValueValuesEnum', 27)
   scaleType = _messages.EnumField('ScaleTypeValueValuesEnum', 28)
   serviceLevel = _messages.EnumField('ServiceLevelValueValuesEnum', 29)
-  state = _messages.EnumField('StateValueValuesEnum', 30)
-  stateDetails = _messages.StringField(31)
-  totalIops = _messages.IntegerField(32)
-  totalThroughputMibps = _messages.IntegerField(33)
-  type = _messages.EnumField('TypeValueValuesEnum', 34)
-  unifiedPool = _messages.BooleanField(35)
-  volumeCapacityGib = _messages.IntegerField(36)
-  volumeCount = _messages.IntegerField(37, variant=_messages.Variant.INT32)
-  zone = _messages.StringField(38)
+  soleTenancyConfig = _messages.MessageField('SoleTenancyConfig', 30)
+  state = _messages.EnumField('StateValueValuesEnum', 31)
+  stateDetails = _messages.StringField(32)
+  totalIops = _messages.IntegerField(33)
+  totalThroughputMibps = _messages.IntegerField(34)
+  type = _messages.EnumField('TypeValueValuesEnum', 35)
+  unifiedPool = _messages.BooleanField(36)
+  volumeCapacityGib = _messages.IntegerField(37)
+  volumeCount = _messages.IntegerField(38, variant=_messages.Variant.INT32)
+  zone = _messages.StringField(39)
 
 
 class SubscribeTrialRequest(_messages.Message):

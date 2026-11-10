@@ -18,12 +18,24 @@ from .build import (
     SubmitBuildRequest,
     SubmitBuildResponse,
 )
+from .common_domain_mapping import (
+    ResourceRecord,
+)
 from .condition import (
     Condition,
 )
 from .container_status import (
     BuildStatus,
     ContainerStatus,
+)
+from .domain_mapping import (
+    CreateDomainMappingRequest,
+    DeleteDomainMappingRequest,
+    DomainMapping,
+    GetDomainMappingRequest,
+    ListDomainMappingsRequest,
+    ListDomainMappingsResponse,
+    UpdateDomainMappingRequest,
 )
 from .execution import (
     CancelExecutionRequest,
@@ -73,6 +85,7 @@ from .k8s_min import (
     EmptyDirVolumeSource,
     EnvVar,
     EnvVarSource,
+    FilestoreVolumeSource,
     GCSVolumeSource,
     GRPCAction,
     HTTPGetAction,
@@ -170,9 +183,17 @@ __all__ = (
     'StorageSource',
     'SubmitBuildRequest',
     'SubmitBuildResponse',
+    'ResourceRecord',
     'Condition',
     'BuildStatus',
     'ContainerStatus',
+    'CreateDomainMappingRequest',
+    'DeleteDomainMappingRequest',
+    'DomainMapping',
+    'GetDomainMappingRequest',
+    'ListDomainMappingsRequest',
+    'ListDomainMappingsResponse',
+    'UpdateDomainMappingRequest',
     'CancelExecutionRequest',
     'DeleteExecutionRequest',
     'Execution',
@@ -210,6 +231,7 @@ __all__ = (
     'EmptyDirVolumeSource',
     'EnvVar',
     'EnvVarSource',
+    'FilestoreVolumeSource',
     'GCSVolumeSource',
     'GRPCAction',
     'HTTPGetAction',

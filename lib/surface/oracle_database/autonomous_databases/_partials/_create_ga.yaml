@@ -18,6 +18,8 @@
 - release_tracks:
   - GA
   auto_generated: true
+  hints:
+    read_only: false
   help_text:
     brief: Create a new AutonomousDatabase.
     description: Create a new AutonomousDatabase.
@@ -47,6 +49,15 @@
        --location=us-east4 --database=testadb --admin-password=123Abpassdord \
        --properties-compute-count=2 --properties-db-version=19c \
        --properties-license-type=LICENSE_INCLUDED --properties-db-workload=DW
+
+      To create an AutonomousDatabase with the Lakehouse workload type (`LH`) using an OdbNetwork configuration in the location `us-east4`, run:
+
+        $ {command} my-lh-instance --location=us-east4 --display-name="my lakehouse instance" \
+       --database=lhdb --admin-password=123Abpassdord \
+       --properties-compute-count=2 --properties-db-version=19c \
+       --properties-license-type=LICENSE_INCLUDED --properties-db-workload=LH \
+       --odb-network=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork \
+       --odb-subnet=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork/odbSubnets/my-odbsubnet
   arguments:
     params:
     - help_text: |-

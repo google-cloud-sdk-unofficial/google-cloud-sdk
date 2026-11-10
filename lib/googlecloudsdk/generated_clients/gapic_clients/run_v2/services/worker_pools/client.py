@@ -280,6 +280,17 @@ class WorkerPoolsClient(metaclass=WorkerPoolsClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
+    def volume_path(project: str,location: str,volume_pool: str,volume: str,) -> str:
+        """Returns a fully-qualified volume string."""
+        return "projects/{project}/locations/{location}/volumePools/{volume_pool}/volumes/{volume}".format(project=project, location=location, volume_pool=volume_pool, volume=volume, )
+
+    @staticmethod
+    def parse_volume_path(path: str) -> Dict[str,str]:
+        """Parses a volume path into its component segments."""
+        m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/volumePools/(?P<volume_pool>.+?)/volumes/(?P<volume>.+?)$", path)
+        return m.groupdict() if m else {}
+
+    @staticmethod
     def worker_pool_path(project: str,location: str,worker_pool: str,) -> str:
         """Returns a fully-qualified worker_pool string."""
         return "projects/{project}/locations/{location}/workerPools/{worker_pool}".format(project=project, location=location, worker_pool=worker_pool, )

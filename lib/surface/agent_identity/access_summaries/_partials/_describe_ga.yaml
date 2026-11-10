@@ -30,7 +30,7 @@
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        The resource name of the access summary.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.agent_identity.v1_resources:projects_locations_access_summaries

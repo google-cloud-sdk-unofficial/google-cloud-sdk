@@ -64,6 +64,10 @@
           api_field: connectivityTest.source.dmsPrivateConnection
           help_text: |
             DMS private connection URI as the source endpoint.
+        - arg_name: source-datastream-private-connection
+          api_field: connectivityTest.source.datastreamPrivateConnection
+          help_text: |
+            Datastream private connection URI as the source endpoint.
     - arg_name: source-network
       api_field: connectivityTest.source.network
       help_text: |
@@ -212,6 +216,7 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunRevisionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunJobsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateDmsPrivateConnectionsURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateDatastreamPrivateConnectionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateForwardingRulesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisInstancesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisClustersURIs
@@ -230,6 +235,7 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunRevisionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunJobsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateDmsPrivateConnectionsURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateDatastreamPrivateConnectionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateForwardingRulesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisInstancesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisClustersURIs

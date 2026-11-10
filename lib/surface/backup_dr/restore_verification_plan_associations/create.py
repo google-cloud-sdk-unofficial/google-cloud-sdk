@@ -31,9 +31,10 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create a new restore verification plan association."""
 
@@ -74,6 +75,17 @@ class Create(base.CreateCommand):
           collection='backupdr.projects.locations.restoreVerificationPlans',
           api_version=api_version,
       )
+      raw_assoc = getattr(args, 'RESTORE_VERIFICATION_PLAN_ASSOCIATION', None)
+      explicit_project = args.IsSpecified('project') or (
+          raw_assoc and 'projects/' in raw_assoc
+      )
+      if explicit_project and association.projectsId != plan_ref.projectsId:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--project',
+            f'The project [{association.projectsId}] does not match the'
+            ' parent restore-verification-plan project'
+            f' [{plan_ref.projectsId}].',
+        )
       if association.locationsId != plan_ref.locationsId:
         raise calliope_exceptions.InvalidArgumentException(
             '--location',
@@ -84,7 +96,7 @@ class Create(base.CreateCommand):
       association = resources.REGISTRY.Parse(
           association.Name(),
           params={
-              'projectsId': association.projectsId,
+              'projectsId': plan_ref.projectsId,
               'locationsId': association.locationsId,
               'restoreVerificationPlansId': plan_ref.Name(),
           },

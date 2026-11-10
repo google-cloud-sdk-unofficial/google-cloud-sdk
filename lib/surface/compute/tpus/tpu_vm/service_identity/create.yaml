@@ -1,4 +1,6 @@
 - release_tracks: [GA, ALPHA]
+  hints:
+    read_only: false
   command_type: GENERIC
   help_text:
     brief: Create a Cloud TPU VM service identity for a project.

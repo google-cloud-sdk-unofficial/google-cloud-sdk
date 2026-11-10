@@ -17,7 +17,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.UniverseCompatible
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SaasFlagsAttributes(base.Group):
   category: str = base.SAAS_CATEGORY

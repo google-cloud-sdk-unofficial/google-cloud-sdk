@@ -420,6 +420,9 @@ def _ShouldUseRegionalEndpoints(api_name, api_version, region):
   |              |               | client        |                             |
   +--------------+---------------+---------------+-----------------------------+
 
+  Commands annotated with `@base.RegionalEndpointsNotSupported` and commands
+  without a regional endpoint annotation only support global endpoints.
+
   Args:
     api_name: str, The API name.
     api_version: str, The version of the API.
@@ -432,6 +435,13 @@ def _ShouldUseRegionalEndpoints(api_name, api_version, region):
   """
   mode = properties.VALUES.regional.endpoint_mode.Get()
   compatibility = properties.VALUES.regional.endpoint_compatibility.Get()
+  if (
+      mode == properties.constants.regional.REGIONAL
+      and compatibility == properties.constants.regional.NOT_SUPPORTED
+  ):
+    raise UnsupportedEndpointModeError(
+        f'The regional/endpoint_mode property is currently set to [{mode}], but'
+        ' this command only supports global endpoints.')
   if mode == properties.constants.regional.REGIONAL and compatibility is None:
     raise UnsupportedEndpointModeError(
         f'The regional/endpoint_mode property is currently set to [{mode}], but'
@@ -446,7 +456,7 @@ def _ShouldUseRegionalEndpoints(api_name, api_version, region):
 
   # Global.
   if (
-      compatibility is None
+      not regional.IsRegionalEndpointCompatible()
       or mode == properties.constants.regional.GLOBAL
       or (
           mode is None

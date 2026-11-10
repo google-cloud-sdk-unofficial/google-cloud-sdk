@@ -390,6 +390,12 @@ definitions:
       # custom spec for arg_object type
       spec: {$ref: "#/definitions/flag_spec"}
 
+      # Only applicable when action is store_true_false. If true, the
+      # generated help text reads "Use --flag to disable and --no-flag to
+      # enable." instead of the default "Use --flag to enable and --no-flag to
+      # disable." Use this for negatively named flags such as --disabled.
+      inverted_help_text: {type: boolean}
+
       # The argparse action to use for this argument. See inline options for
       # this value.
       action:

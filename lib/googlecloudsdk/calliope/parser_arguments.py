@@ -245,6 +245,21 @@ class ArgumentInterceptor(Argument):
   def concepts(self):
     return self.data.concepts
 
+  @property
+  def prefix_chars(self):
+    """Returns the underlying parser's option prefix characters."""
+    return self.parser.prefix_chars
+
+  @property
+  def formatter_class(self):
+    """Returns the underlying parser's help formatter class."""
+    return self.parser.formatter_class
+
+  @property
+  def prog(self):
+    """Returns the underlying parser's program name."""
+    return self.parser.prog
+
   def add_concepts(self, handler):  # pylint: disable=invalid-name
     # RuntimeParser is the v2 concepts handler.
     # pylint: disable=g-import-not-at-top

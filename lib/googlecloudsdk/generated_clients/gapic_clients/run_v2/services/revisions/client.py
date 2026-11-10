@@ -55,6 +55,7 @@ from cloudsdk.google.protobuf import duration_pb2  # type: ignore
 from cloudsdk.google.protobuf import timestamp_pb2  # type: ignore
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.services.revisions import pagers
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import condition
+from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import container_status
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import k8s_min
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import revision
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import sandbox
@@ -275,6 +276,17 @@ class RevisionsClient(metaclass=RevisionsClientMeta):
     def parse_service_path(path: str) -> Dict[str,str]:
         """Parses a service path into its component segments."""
         m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/services/(?P<service>.+?)$", path)
+        return m.groupdict() if m else {}
+
+    @staticmethod
+    def volume_path(project: str,location: str,volume_pool: str,volume: str,) -> str:
+        """Returns a fully-qualified volume string."""
+        return "projects/{project}/locations/{location}/volumePools/{volume_pool}/volumes/{volume}".format(project=project, location=location, volume_pool=volume_pool, volume=volume, )
+
+    @staticmethod
+    def parse_volume_path(path: str) -> Dict[str,str]:
+        """Parses a volume path into its component segments."""
+        m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/volumePools/(?P<volume_pool>.+?)/volumes/(?P<volume>.+?)$", path)
         return m.groupdict() if m else {}
 
     @staticmethod

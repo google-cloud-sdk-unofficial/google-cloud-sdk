@@ -70,11 +70,13 @@ class List(base.ListCommand):
           '{description}',
       'EXAMPLES':
           """\
-      To list images under the current project, repository, and location:
+      To list images in the default repository, as specified by the
+      `core/project`, `artifacts/location`, and `artifacts/repository`
+      properties:
 
           $ {command}
 
-      To list images with tags under the current project, repository, and location:
+      To list images with tags in the default repository:
 
           $ {command} --include-tags
 
@@ -84,7 +86,7 @@ class List(base.ListCommand):
 
       The following command lists a maximum of five images:
 
-          $ {command} docker.pkg.dev/my-project/my-repo --limit=5
+          $ {command} us-central1-docker.pkg.dev/my-project/my-repo --limit=5
       """,
   }
 

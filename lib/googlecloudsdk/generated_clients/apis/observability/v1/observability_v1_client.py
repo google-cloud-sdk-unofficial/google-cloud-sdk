@@ -936,6 +936,33 @@ class ObservabilityV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Reprovision(self, request, global_params=None):
+      r"""Initiates reprovisioning of a bucket. This is allowed only a single time for a bucket and results in data loss. Subsequent calls to this method for the same bucket will result in a FAILED_PRECONDITION (400 Bad Request) error.
+
+      Args:
+        request: (ObservabilityProjectsLocationsBucketsReprovisionRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Reprovision')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Reprovision.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/buckets/{bucketsId}:reprovision',
+        http_method='POST',
+        method_id='observability.projects.locations.buckets.reprovision',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:reprovision',
+        request_field='reprovisionBucketRequest',
+        request_type_name='ObservabilityProjectsLocationsBucketsReprovisionRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsOperationsService(base_api.BaseApiService):
     """Service class for the projects_locations_operations resource."""
 

@@ -1526,6 +1526,33 @@ class GkehubV1beta(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Downgrade(self, request, global_params=None):
+      r"""Downgrades a rollout sequence.
+
+      Args:
+        request: (GkehubProjectsLocationsRolloutSequencesDowngradeRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Downgrade')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Downgrade.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/rolloutSequences/{rolloutSequencesId}:downgrade',
+        http_method='POST',
+        method_id='gkehub.projects.locations.rolloutSequences.downgrade',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta/{+name}:downgrade',
+        request_field='downgradeRolloutSequenceRequest',
+        request_type_name='GkehubProjectsLocationsRolloutSequencesDowngradeRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Retrieve a single rollout sequence.
 

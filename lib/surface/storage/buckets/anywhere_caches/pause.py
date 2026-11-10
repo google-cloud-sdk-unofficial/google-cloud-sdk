@@ -15,12 +15,6 @@
 """Implementation of pause command to pause Anywhere Cache instances."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.storage import plurality_checkable_iterator
-from googlecloudsdk.command_lib.storage import progress_callbacks
-from googlecloudsdk.command_lib.storage.tasks import task_executor
-from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
-from googlecloudsdk.command_lib.storage.tasks import task_status
-from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import pause_anywhere_cache_task
 
 
 @base.Deprecate(
@@ -69,30 +63,5 @@ class Pause(base.Command):
         ),
     )
 
-  def get_task_iterator(self, args, task_status_queue):
-    progress_callbacks.workload_estimator_callback(
-        task_status_queue, len(args.id)
-    )
-
-    for id_str in args.id:
-      bucket_name, _, anywhere_cache_id = id_str.rpartition('/')
-      yield pause_anywhere_cache_task.PauseAnywhereCacheTask(
-          bucket_name, anywhere_cache_id
-      )
-
   def Run(self, args):
-    task_status_queue = task_graph_executor.multiprocessing_context.Queue()
-    task_iterator = self.get_task_iterator(args, task_status_queue)
-    plurality_checkable_task_iterator = (
-        plurality_checkable_iterator.PluralityCheckableIterator(task_iterator)
-    )
-
-    self.exit_code = task_executor.execute_tasks(
-        plurality_checkable_task_iterator,
-        parallelizable=True,
-        task_status_queue=task_status_queue,
-        progress_manager_args=task_status.ProgressManagerArgs(
-            increment_type=task_status.IncrementType.INTEGER, manifest_path=None
-        ),
-        continue_on_error=getattr(args, 'continue_on_error', False),
-    )
+    del args  # Unused; command is removed.

@@ -195,18 +195,26 @@ class _LocalECPProxyAdapter(requests.adapters.HTTPAdapter):
 
     super().__init__(**kwargs)
 
-    self.proxy_host = 'localhost'
+    self.proxy_host = ecp_proxy_manager.get_proxy_host()
     self.proxy_port = ecp_proxy_manager.get_proxy_port()
     if not self.proxy_port:
       raise ECPProxyError('ECP HTTP Proxy is not running.')
+    self.proxy_auth_token = ecp_proxy_manager.get_proxy_auth_token()
+    if not self.proxy_auth_token:
+      raise ECPProxyError('ECP HTTP Proxy auth token is not set.')
 
   def send(self, request, **kwargs):
     """Intercepts an outgoing request and reroutes it through the local ECP proxy.
 
-    This method modifies the request's URL to point to the local proxy and
-    adds a custom header (`x-goog-ecpproxy-target-host`) to inform the proxy
-    of the original destination. It then sends the modified request and passes
-    the response to `_handle_proxy_response` for inspection.
+    This method sends a copy of the request to the local proxy, with custom
+    headers that inform the proxy of the original destination
+    (`x-goog-ecpproxy-target-host`) and authenticate to it
+    (`x-goog-ecpproxy-auth-token`). The caller's request is left unmodified
+    and the response is attributed to it, because `requests` builds redirects
+    from the original request and the response URL. This keeps the proxy-only
+    headers from following a redirect to a host that is not routed through the
+    proxy, and resolves relative redirects against the original destination.
+    The response is then passed to `_handle_proxy_response` for inspection.
 
     Args:
       request: The `requests.PreparedRequest` object to send.
@@ -222,8 +230,48 @@ class _LocalECPProxyAdapter(requests.adapters.HTTPAdapter):
     if original_url.hostname in _LOOPBACK_HOSTS:
       return super().send(request, **kwargs)
 
-    # Rewrite the request to target the proxy
-    request.headers['x-goog-ecpproxy-target-host'] = original_url.netloc
+    proxied_request = self._build_proxied_request(request, original_url)
+
+    # We are connecting to the proxy over HTTP, not HTTPS.
+    kwargs['verify'] = False
+
+    log.debug(
+        f'Redirecting request for {original_url.geturl()} to proxy at'
+        f' {proxied_request.url}'
+    )
+    try:
+      response = super().send(proxied_request, **kwargs)
+    except requests.exceptions.RequestException as e:
+      raise ECPProxyError(
+          'Failed to send request to proxy', original_exception=e
+      ) from e
+
+    # Attribute the response to the original request so that requests builds
+    # any redirect from it (without the proxy-only headers), resolves relative
+    # redirects against the original destination, and strips Authorization
+    # only on genuine cross-host redirects.
+    response.request = request
+    response.url = request.url
+    return self._handle_proxy_response(response)
+
+  def _build_proxied_request(self, request, original_url):
+    """Returns a copy of `request` addressed to the local ECP proxy.
+
+    Args:
+      request: The original `requests.PreparedRequest`. It is not modified.
+      original_url: The `urllib.parse.SplitResult` of the request's URL.
+
+    Returns:
+      A `requests.PreparedRequest` targeting the proxy, carrying the headers
+      that tell the proxy where to forward it and authenticate to it.
+    """
+    proxied_request = request.copy()
+    headers = proxied_request.headers
+    headers['x-goog-ecpproxy-target-host'] = original_url.netloc
+    # Authenticate to the proxy, which strips this header before forwarding.
+    # It is added here, below the session-level --log-http logging, so that
+    # the secret is not logged.
+    headers['x-goog-ecpproxy-auth-token'] = self.proxy_auth_token
 
     # The new URL for the request is the proxy address + original path/query
     # urlunsplit takes (scheme, netloc, path, query, fragment).
@@ -233,23 +281,10 @@ class _LocalECPProxyAdapter(requests.adapters.HTTPAdapter):
     proxy_path = urllib.parse.urlunsplit(
         ('', '', original_url.path, original_url.query, '')
     )
-    request.url = f'http://{self.proxy_host}:{self.proxy_port}{proxy_path}'
-
-    # We are connecting to the proxy over HTTP, not HTTPS.
-    kwargs['verify'] = False
-
-    log.debug(
-        f'Redirecting request for {original_url.geturl()} to proxy at'
-        f' {request.url}'
+    proxied_request.url = (
+        f'http://{self.proxy_host}:{self.proxy_port}{proxy_path}'
     )
-    try:
-      response = super().send(request, **kwargs)
-    except requests.exceptions.RequestException as e:
-      raise ECPProxyError(
-          'Failed to send request to proxy', original_exception=e
-      ) from e
-
-    return self._handle_proxy_response(response)
+    return proxied_request
 
   def _handle_proxy_response(self, response):
     """Inspects the proxy's response for custom error headers.

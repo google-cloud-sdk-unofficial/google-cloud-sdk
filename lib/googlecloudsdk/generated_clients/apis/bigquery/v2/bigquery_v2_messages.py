@@ -811,11 +811,17 @@ class BigqueryDatasetsGetRequest(_messages.Message):
       ACL: View ACL information for the dataset, which defines dataset access
         for one or more entities.
       FULL: View both dataset metadata and ACL information.
+      BASIC: View both dataset metadata and ACL information.
+      BASIC_REPLICA_METADATA_VIEW: Includes everything from the BASIC view
+        plus replication information. However, it will not include sync_status
+        or other fields requiring cross-region requests.
     """
     DATASET_VIEW_UNSPECIFIED = 0
     METADATA = 1
     ACL = 2
     FULL = 3
+    BASIC = 4
+    BASIC_REPLICA_METADATA_VIEW = 5
 
   accessPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   datasetId = _messages.StringField(2, required=True)
@@ -2627,6 +2633,11 @@ class Dataset(_messages.Message):
     externalDatasetReference: Optional. Reference to a read-only external
       dataset defined in data catalogs outside of BigQuery. Filled out when
       the dataset type is EXTERNAL.
+    failoverReservationId: Optional. The failover reservation associated with
+      the dataset in the regionless format. Example: .. To learn about about
+      failover reservations see:
+      https://docs.cloud.google.com/bigquery/docs/managed-disaster-
+      recovery#overview
     friendlyName: Optional. A descriptive name for the dataset.
     id: Output only. The fully-qualified unique name of the dataset in the
       format projectId:datasetId. The dataset name without the project name is
@@ -2656,6 +2667,8 @@ class Dataset(_messages.Message):
     maxTimeTravelHours: Optional. Defines the time travel window in hours. The
       value can be from 48 to 168 hours (2 to 7 days). The default value is
       168 hours if this is not set.
+    replicas: Optional. The list of replicas in a cross region replicated or
+      disaster recovery dataset.
     resourceTags: Optional. The
       [tags](https://cloud.google.com/bigquery/docs/tags) attached to this
       dataset. Tag keys are globally unique. Tag key is expected to be in the
@@ -2867,24 +2880,26 @@ class Dataset(_messages.Message):
   etag = _messages.StringField(11)
   externalCatalogDatasetOptions = _messages.MessageField('ExternalCatalogDatasetOptions', 12)
   externalDatasetReference = _messages.MessageField('ExternalDatasetReference', 13)
-  friendlyName = _messages.StringField(14)
-  id = _messages.StringField(15)
-  isCaseInsensitive = _messages.BooleanField(16)
-  kind = _messages.StringField(17, default='bigquery#dataset')
-  labels = _messages.MessageField('LabelsValue', 18)
-  lastModifiedTime = _messages.IntegerField(19)
-  linkedDatasetMetadata = _messages.MessageField('LinkedDatasetMetadata', 20)
-  linkedDatasetSource = _messages.MessageField('LinkedDatasetSource', 21)
-  location = _messages.StringField(22)
-  maxTimeTravelHours = _messages.IntegerField(23)
-  resourceTags = _messages.MessageField('ResourceTagsValue', 24)
-  restrictions = _messages.MessageField('RestrictionConfig', 25)
-  satisfiesPzi = _messages.BooleanField(26)
-  satisfiesPzs = _messages.BooleanField(27)
-  selfLink = _messages.StringField(28)
-  storageBillingModel = _messages.EnumField('StorageBillingModelValueValuesEnum', 29)
-  tags = _messages.MessageField('TagsValueListEntry', 30, repeated=True)
-  type = _messages.StringField(31)
+  failoverReservationId = _messages.StringField(14)
+  friendlyName = _messages.StringField(15)
+  id = _messages.StringField(16)
+  isCaseInsensitive = _messages.BooleanField(17)
+  kind = _messages.StringField(18, default='bigquery#dataset')
+  labels = _messages.MessageField('LabelsValue', 19)
+  lastModifiedTime = _messages.IntegerField(20)
+  linkedDatasetMetadata = _messages.MessageField('LinkedDatasetMetadata', 21)
+  linkedDatasetSource = _messages.MessageField('LinkedDatasetSource', 22)
+  location = _messages.StringField(23)
+  maxTimeTravelHours = _messages.IntegerField(24)
+  replicas = _messages.MessageField('Replica', 25, repeated=True)
+  resourceTags = _messages.MessageField('ResourceTagsValue', 26)
+  restrictions = _messages.MessageField('RestrictionConfig', 27)
+  satisfiesPzi = _messages.BooleanField(28)
+  satisfiesPzs = _messages.BooleanField(29)
+  selfLink = _messages.StringField(30)
+  storageBillingModel = _messages.EnumField('StorageBillingModelValueValuesEnum', 31)
+  tags = _messages.MessageField('TagsValueListEntry', 32, repeated=True)
+  type = _messages.StringField(33)
 
 
 class DatasetAccessEntry(_messages.Message):
@@ -7405,8 +7420,19 @@ class PythonOptions(_messages.Message):
   r"""Options for a user-defined Python function.
 
   Fields:
+    buildConnection: Optional. Fully qualified name of the connection whose
+      service account will be used to authenticate to private package
+      repositories during build-time. Format: "projects/{project_id}/locations
+      /{location_id}/connections/{connection_id}"
     entryPoint: Required. The name of the function defined in Python code as
       the entry point when the Python UDF is invoked.
+    extraPackageRepositories: Optional. The list of additional package
+      repositories to search when resolving Python packages. These
+      repositories are searched in addition to the default public PyPI. Only
+      repositories hosted in Artifact Registry (.pkg.dev) are supported. Only
+      pre-compiled Wheel (.whl) packages are supported from these
+      repositories. E.g. ['https://my-region-python.pkg.dev/my-project/my-
+      repo/simple']
     packages: Optional. A list of Python package names along with versions to
       be installed. Example: ["pandas>=2.1", "google-cloud-translate==3.11"].
       For more information, see [Use third-party
@@ -7414,8 +7440,10 @@ class PythonOptions(_messages.Message):
       python#third-party-packages).
   """
 
-  entryPoint = _messages.StringField(1)
-  packages = _messages.StringField(2, repeated=True)
+  buildConnection = _messages.StringField(1)
+  entryPoint = _messages.StringField(2)
+  extraPackageRepositories = _messages.StringField(3, repeated=True)
+  packages = _messages.StringField(4, repeated=True)
 
 
 class QueryInfo(_messages.Message):
@@ -8374,6 +8402,94 @@ class RemoteModelInfo(_messages.Message):
   remoteModelVersion = _messages.StringField(4)
   remoteServiceType = _messages.EnumField('RemoteServiceTypeValueValuesEnum', 5)
   speechRecognizer = _messages.StringField(6)
+
+
+class Replica(_messages.Message):
+  r"""The replica metadata of the dataset. If the dataset has two or more
+  replicas, it's considered a cross region replicated (CRR) dataset.
+
+  Enums:
+    ReplicaStateValueValuesEnum: Output only. Gives an explicit indicator of
+      the replica primary state.
+
+  Fields:
+    backfillCompletionTime: Output only. The time when the backfill was
+      completed and replica is ready to use.
+    creationTime: Output only. The timestamp when the replica was created. For
+      any dataset's first replica, this should be set to the dataset's
+      creation_time.
+    failoverReservationUri: Output only. Failover reservation ID for the
+      replica's region if this replica is used for DR. Fully-qualified format,
+      e.g. "projects/some-project/locations/US/reservations/some-reservation"
+      The location portion of the format is upper case if "US" or "EU",
+      otherwise a lower case cloud region like "asia-northeast1".
+    id: Required. The user-visible string identifier for this dataset replica.
+      This is generally named after the region.
+    location: Required. The logical bigquery region where this replica is
+      located. This is upper case if "US" or "EU", otherwise a lower case
+      cloud region like "asia-northeast1".
+    primaryAssignmentCompletionTime: Output only. After a new primary
+      assignment is made, this is the time that the dataset's data has been
+      fully replicated to the replica, and after which the system will use
+      current reads in the new primary replica.
+    primaryAssignmentTime: Output only. The time at which the replica was
+      assigned primary. Only one replica will have this field populated at any
+      point.
+    replicaOptions: Optional. Contains modify options on the replica such as
+      set a kms key on the replica.
+    replicaState: Output only. Gives an explicit indicator of the replica
+      primary state.
+  """
+
+  class ReplicaStateValueValuesEnum(_messages.Enum):
+    r"""Output only. Gives an explicit indicator of the replica primary state.
+
+    Values:
+      REPLICA_STATE_UNSPECIFIED: Should never be set.
+      PRIMARY: Denotes that the replica is the primary. All routing by default
+        goes to the primary and only the primary is writable.
+      SECONDARY: Denotes that the replica is the secondary and is only
+        readable.
+      ASSIGNED_PRIMARY: This value for the replica where the new primary is
+        going to be. At most one replica can have this value, and its only
+        present when the dataset has a primary switch in progress.
+      PREVIOUSLY_ASSIGNED_PRIMARY: This value for the replica where the last
+        primary was, but is no longer assigned the primary. All routing still
+        goes to this replica, but it is no longer writable. Only set on the
+        old primary during a primary switch. At most one replica at any moment
+        can have this value.
+      BACKFILLING: The replica is not queriable yet since it's still
+        backfilling.
+    """
+    REPLICA_STATE_UNSPECIFIED = 0
+    PRIMARY = 1
+    SECONDARY = 2
+    ASSIGNED_PRIMARY = 3
+    PREVIOUSLY_ASSIGNED_PRIMARY = 4
+    BACKFILLING = 5
+
+  backfillCompletionTime = _messages.StringField(1)
+  creationTime = _messages.StringField(2)
+  failoverReservationUri = _messages.StringField(3)
+  id = _messages.StringField(4)
+  location = _messages.StringField(5)
+  primaryAssignmentCompletionTime = _messages.StringField(6)
+  primaryAssignmentTime = _messages.StringField(7)
+  replicaOptions = _messages.MessageField('ReplicaOptions', 8)
+  replicaState = _messages.EnumField('ReplicaStateValueValuesEnum', 9)
+
+
+class ReplicaOptions(_messages.Message):
+  r"""Options set by the user when creating the replica. These include region-
+  specific dataset values, for example default KMS key name. When a resource
+  is replicated, the destination region's replica contains values that should
+  be overwritten in the destination region.
+
+  Fields:
+    defaultKmsKeyName: Optional. Default KMS encryption key name.
+  """
+
+  defaultKmsKeyName = _messages.StringField(1)
 
 
 class RestrictionConfig(_messages.Message):

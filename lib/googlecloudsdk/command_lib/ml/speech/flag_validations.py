@@ -17,7 +17,7 @@
 import os
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import exceptions
-
+from googlecloudsdk.core import properties
 
 EXPLICIT_ENCODING_OPTIONS = ('LINEAR16', 'MULAW', 'ALAW')
 ENCODING_OPTIONS = frozenset(EXPLICIT_ENCODING_OPTIONS) | {'AUTO'}
@@ -91,6 +91,37 @@ def ValidateDecodingConfig(args):
               '[--audio-channel-count] must be specified when configuring'
               ' explicit encoding options '
               + ', '.join(sorted(EXPLICIT_ENCODING_OPTIONS))
+          ),
+      )
+
+
+def ValidateRecognizerResourceFlag(args):
+  """Validates recognizer resource flag input."""
+  recognizer_set = args.recognizer is not None
+  if not recognizer_set:
+    args.recognizer = '_'
+
+  if args.location is None and args.CONCEPTS.recognizer.Parse() is None:
+    location = properties.VALUES.ml_engine.location.Get()
+    if location is not None:
+      args.location = location
+      args.CONCEPTS.Reset()
+    elif recognizer_set:
+      raise exceptions.InvalidArgumentException(
+          '--location',
+          (
+              '[--location] must be specified if a recognizer is set. The'
+              ' --location flag can be set using the ml_engine/location'
+              ' property or using the --location flag.'
+          ),
+      )
+    else:
+      raise exceptions.InvalidArgumentException(
+          'ml_engine/location',
+          (
+              '[ml_engine/location] must be specified if no recognizer is'
+              ' set. NOTE: not specifying a recognizer will mean using the'
+              ' default recognizer'
           ),
       )
 

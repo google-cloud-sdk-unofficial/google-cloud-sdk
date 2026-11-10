@@ -38,6 +38,9 @@ class GapicWrapperClient(object):
     self.builds = gapic_util.MakeRestClient(
         run_v2.services.builds.client.BuildsClient,
         credentials, **kwargs)
+    self.domain = gapic_util.MakeRestClient(
+        run_v2.services.domain_mappings.client.DomainMappingsClient,
+        credentials, **kwargs)
     self.executions = gapic_util.MakeRestClient(
         run_v2.services.executions.client.ExecutionsClient,
         credentials, **kwargs)

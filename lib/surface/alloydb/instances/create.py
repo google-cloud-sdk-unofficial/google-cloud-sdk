@@ -82,6 +82,8 @@ class Create(base.CreateCommand):
     flags.AddAllowedPSCProjects(parser)
     flags.AddPSCNetworkAttachmentUri(parser)
     flags.AddPSCAutoConnections(parser)
+    flags.AddEnablePscAutoDns(parser)
+    flags.AddEnablePscAutoConnectionPolicy(parser)
     flags.AddAllocatedIPRangeOverride(parser)
 
     # Observability flags.
@@ -177,8 +179,6 @@ class CreateBeta(Create):
         parser, show_negated_in_help=True
     )
 
-    flags.AddEnablePscAutoDns(parser)
-    flags.AddEnablePscAutoConnectionPolicy(parser)
     flags.AddAgentPoolFlags(parser)
     flags.AddEnablePublicDns(parser)
     flags.AddConnectionPoolingAuthproxyPoolerScalingType(parser)

@@ -593,6 +593,23 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  LEARNINGSETS = (
+      'learningSets',
+      'learningSets/{learningSetsId}',
+      {},
+      ['learningSetsId'],
+      True
+  )
+  LEARNINGSETS_OPERATIONS = (
+      'learningSets.operations',
+      '{+name}',
+      {
+          '':
+              'learningSets/{learningSetsId}/operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
   MEMORYBANKS = (
       'memoryBanks',
       'memoryBanks/{memoryBanksId}',
@@ -968,17 +985,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_AGENTS_TASKS = (
-      'projects.locations.agents.tasks',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/agents/'
-              '{agentsId}/tasks/{tasksId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_APPS = (
       'projects.locations.apps',
       'projects/{projectsId}/locations/{locationsId}/apps/{appsId}',
@@ -1218,6 +1224,17 @@ class Collections(enum.Enum):
               'projects/{projectsId}/locations/{locationsId}/'
               'deploymentResourcePools/{deploymentResourcePoolsId}/'
               'operations/{operationsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_DETECTORS = (
+      'projects.locations.detectors',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/detectors/'
+              '{detectorsId}',
       },
       ['name'],
       True
@@ -1720,6 +1737,25 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/'
               'interactionsHttp/{interactionsHttpId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_LEARNINGSETS = (
+      'projects.locations.learningSets',
+      'projects/{projectsId}/locations/{locationsId}/learningSets/'
+      '{learningSetsId}',
+      {},
+      ['projectsId', 'locationsId', 'learningSetsId'],
+      True
+  )
+  PROJECTS_LOCATIONS_LEARNINGSETS_OPERATIONS = (
+      'projects.locations.learningSets.operations',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/learningSets/'
+              '{learningSetsId}/operations/{operationsId}',
       },
       ['name'],
       True
@@ -2798,16 +2834,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/taskStores/'
               '{taskStoresId}/operations/{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_TASKS = (
-      'projects.locations.tasks',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/tasks/{tasksId}',
       },
       ['name'],
       True

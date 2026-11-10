@@ -53,6 +53,7 @@ class Update(base.UpdateCommand):
     flags.AddDescription(parser)
     flags.AddValidateOnly(parser)
     flags.AddServiceAccount(parser)
+    flags.AddEnableVulnerabilityScanning(parser)
 
   def Run(self, args):
     # Get resource args to contruct base url
@@ -68,12 +69,15 @@ class Update(base.UpdateCommand):
       update_mask.append("description")
     if args.IsSpecified("service_account"):
       update_mask.append("serviceAccount")
+    if args.IsSpecified("enable_vulnerability_scanning"):
+      update_mask.append("scanConfig.vulnerabilityScanConfig.enabled")
 
     if not update_mask:
       raise exceptions.MinimumArgumentException(
           [
               "--description",
               "--service-account",
+              "--enable-vulnerability-scanning",
           ],
           self.NO_CHANGES_MESSAGE.format(repository=repository_ref.Name()),
       )
@@ -86,6 +90,7 @@ class Update(base.UpdateCommand):
         args.validate_only,
         args.description,
         args.service_account,
+        args.enable_vulnerability_scanning,
     )
 
     log.UpdatedResource(repository_ref.RelativeName())

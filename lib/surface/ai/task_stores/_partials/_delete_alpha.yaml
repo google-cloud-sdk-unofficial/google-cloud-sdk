@@ -42,7 +42,6 @@
     api_version: v1beta1
     collection:
     - aiplatform.projects.locations.taskStores
-    regional_endpoint_compatibility: SUPPORTED
   async:
     collection:
     - aiplatform.operations

@@ -534,6 +534,10 @@
             help_text: |-
               The network where the PSC endpoints are created, in the form of
               projects/{project_id}/global/networks/{network_id}.
+          - api_field: ipVersion
+            help_text: |-
+              The IP version used for the PSC auto-created endpoint. Must be one of:
+              ipv4, ipv6 (case-insensitive). If not specified, defaults to IPV4.
     - arg_name: mode
       api_field: instance.mode
       required: false

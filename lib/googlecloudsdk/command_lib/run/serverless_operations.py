@@ -939,7 +939,7 @@ class ServerlessOperations(object):
       deploy_from_source_container_name: The name of the ingress container that
         is deployed from source include build-from-source and zip deploy. This
         field could be an empty string.
-      build_worker_pool:  The name of the Cloud Build custom worker pool that
+      build_worker_pool:  The name of the Cloud Build private pool that
         should be used to build the function.
       build_machine_type: The machine type from Cloud Build default pool to use
         for the build.

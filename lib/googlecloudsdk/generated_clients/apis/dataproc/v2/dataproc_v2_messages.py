@@ -3369,6 +3369,9 @@ class KubernetesRuntimeConfig(_messages.Message):
       spark:spark.executor.instances -> 4).
     version: Optional. Managed Spark version (for example, "2.3"). If
       unspecified, defaults to the version configured on the execution target.
+    zonalAffinityConfig: Optional. Zonal affinity configuration for Spark
+      driver and executor pods. If unspecified, defaults to the zonal affinity
+      configuration on the resolved execution target (if any).
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -3402,6 +3405,7 @@ class KubernetesRuntimeConfig(_messages.Message):
   executorConfig = _messages.MessageField('KubernetesPodConfig', 3)
   properties = _messages.MessageField('PropertiesValue', 4)
   version = _messages.StringField(5)
+  zonalAffinityConfig = _messages.MessageField('ZonalAffinityConfig', 6)
 
 
 class ListEnvironmentRevisionsResponse(_messages.Message):
@@ -4363,6 +4367,9 @@ class RunStatus(_messages.Message):
     stateMessages: Output only. Diagnostic messages associated with the
       current state of the run, such as error details when state is FAILED or
       runtime warnings.
+    terminationTime: Output only. The time when the run will be automatically
+      terminated if it is still active, calculated as create_time +
+      config.max_run_duration.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -4395,6 +4402,7 @@ class RunStatus(_messages.Message):
   args = _messages.StringField(1, repeated=True)
   namedParameters = _messages.MessageField('NamedParametersValue', 2)
   stateMessages = _messages.MessageField('StateMessage', 3, repeated=True)
+  terminationTime = _messages.StringField(4)
 
 
 class RunWorkloadRequest(_messages.Message):
@@ -6417,6 +6425,10 @@ class WorkloadConfig(_messages.Message):
     computeCluster: Optional. Executes on an existing Compute Engine Dataproc
       cluster.
     kubernetes: Optional. Executes on a Kubernetes cluster.
+    maxRunDuration: Optional. The maximum execution duration for runs of this
+      workload. If a run exceeds this duration, it is automatically
+      terminated.If unspecified, defaults to the maximum run duration
+      configured on the resolved execution target or profile (if any).
     parameterDeclarations: Optional. Formal input parameter declarations for
       this workload.Declares expected named parameters, their descriptions,
       and optional default values. Any declaration without a default_value is
@@ -6455,13 +6467,49 @@ class WorkloadConfig(_messages.Message):
 
   computeCluster = _messages.MessageField('ComputeClusterPlacement', 1)
   kubernetes = _messages.MessageField('KubernetesPlacement', 2)
-  parameterDeclarations = _messages.MessageField('ParameterDeclaration', 3, repeated=True)
-  placementOverridePolicy = _messages.EnumField('PlacementOverridePolicyValueValuesEnum', 4)
-  pyspark = _messages.MessageField('PySparkPayload', 5)
-  pysparkNotebook = _messages.MessageField('PySparkNotebookPayload', 6)
-  serverless = _messages.MessageField('ServerlessPlacement', 7)
-  sparkJar = _messages.MessageField('SparkJarPayload', 8)
-  sparkSql = _messages.MessageField('SparkSqlPayload', 9)
+  maxRunDuration = _messages.StringField(3)
+  parameterDeclarations = _messages.MessageField('ParameterDeclaration', 4, repeated=True)
+  placementOverridePolicy = _messages.EnumField('PlacementOverridePolicyValueValuesEnum', 5)
+  pyspark = _messages.MessageField('PySparkPayload', 6)
+  pysparkNotebook = _messages.MessageField('PySparkNotebookPayload', 7)
+  serverless = _messages.MessageField('ServerlessPlacement', 8)
+  sparkJar = _messages.MessageField('SparkJarPayload', 9)
+  sparkSql = _messages.MessageField('SparkSqlPayload', 10)
+
+
+class ZonalAffinityConfig(_messages.Message):
+  r"""Zonal affinity configuration for Spark driver and executor pods running
+  on Kubernetes.
+
+  Enums:
+    ModeValueValuesEnum: Optional. Zonal affinity mode for Spark driver and
+      executor pods. If unspecified, defaults to the zonal affinity
+      configuration on the resolved execution target (if any).
+
+  Fields:
+    mode: Optional. Zonal affinity mode for Spark driver and executor pods. If
+      unspecified, defaults to the zonal affinity configuration on the
+      resolved execution target (if any).
+  """
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Zonal affinity mode for Spark driver and executor pods. If
+    unspecified, defaults to the zonal affinity configuration on the resolved
+    execution target (if any).
+
+    Values:
+      MODE_UNSPECIFIED: Default value. Inherits the zonal affinity
+        configuration from the resolved execution target (if any).
+      BEST_EFFORT: Co-locates driver and executor pods in the same
+        availability zone on a best-effort basis, falling back to other zones
+        in the cluster if the driver zone lacks capacity.
+      DISABLED: Disables zonal affinity for driver and executor pods.
+    """
+    MODE_UNSPECIFIED = 0
+    BEST_EFFORT = 1
+    DISABLED = 2
+
+  mode = _messages.EnumField('ModeValueValuesEnum', 1)
 
 
 encoding.AddCustomJsonFieldMapping(

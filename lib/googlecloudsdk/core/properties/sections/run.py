@@ -62,9 +62,12 @@ class _SectionRun(_Section):
         choices=['gke', 'managed', 'kubernetes'],
         help_text='Target platform for running commands.',
     )
-    self.enable_unified_build = self._Add(
-        'enable_unified_build',
+    self.skip_ar_creation = self._Add(
+        'skip_ar_creation',
         default=False,
         hidden=True,
-        help_text='Enables using Cloud Run API to orchestrate builds.',
+        help_text=(
+            'Skips client-side Artifact Registry repository creation for'
+            ' unified builds.'
+        ),
     )

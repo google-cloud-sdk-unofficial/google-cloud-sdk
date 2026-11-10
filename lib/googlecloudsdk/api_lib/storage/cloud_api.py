@@ -186,22 +186,6 @@ class CloudApi(object):
     """
     raise NotImplementedError('get_anywhere_cache must be overridden.')
 
-  def pause_anywhere_cache(
-      self, bucket_name, anywhere_cache_id
-  ):
-    """Pauses Anywhere Cache Instance for a zone in bucket.
-
-    Args:
-      bucket_name (str): The name of the bucket.
-      anywhere_cache_id (str): Unique identifier for a cache instance in bucket.
-
-    Raises:
-      CloudApiError: API returned an error.
-      NotImplementedError: This function was not implemented by a class using
-        this interface.
-    """
-    raise NotImplementedError('pause_anywhere_cache must be overridden.')
-
   def resume_anywhere_cache(self, bucket_name, anywhere_cache_id):
     """Resumes Anywhere Cache in particular zone of a bucket.
 
@@ -1044,6 +1028,31 @@ class CloudApi(object):
     """
     raise NotImplementedError('upload_object must be overridden.')
 
+  def view_object_full_context(
+      self, bucket_name, object_name, context_key, generation=None
+  ):
+    """Gets the full representation of one object context.
+
+    Unlike object metadata, the full representation includes the context's
+    extended data.
+
+    Args:
+      bucket_name (str): Name of the bucket.
+      object_name (str): Name of the object.
+      context_key (str): Key of the object context to get.
+      generation (str|None): Generation of the object.
+
+    Returns:
+      GcsObjectFullContextResource holding the context and its extended data.
+        Currently only available for GCS.
+
+    Raises:
+      CloudApiError: API returned an error.
+      NotImplementedError: This function was not implemented by a class using
+        this interface.
+    """
+    raise NotImplementedError('view_object_full_context must be overridden.')
+
   def create_managed_folder(
       self, bucket_name, managed_folder_name, rapid_cache_config=None
   ):
@@ -1225,6 +1234,24 @@ class CloudApi(object):
         this interface.
     """
     raise NotImplementedError('delete_folder must be overridden.')
+
+  def delete_folder_recursive(self, bucket_name, folder_name):
+    """Deletes a folder and all of its contents recursively.
+
+    Args:
+      bucket_name (str): The bucket containing the folder to delete.
+      folder_name (str): The name of the folder to delete.
+
+    Returns:
+      GoogleLongrunningOperation Apitools object for recursively deleting
+      folders.
+
+    Raises:
+      CloudApiError: API returned an error.
+      NotImplementedError: This function was not implemented by a class using
+        this interface.
+    """
+    raise NotImplementedError('delete_folder_recursive must be overridden.')
 
   def get_folder(self, bucket_name, folder_name):
     """Gets metadata for a folder.

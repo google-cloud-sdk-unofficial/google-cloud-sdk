@@ -2276,14 +2276,6 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstance(_messages.Message):
       CAS.
     casPermissions: Optional. Permissions for which instances are allowed to
       use this instance as their CAS.
-    casRelations: Deprecated: Use `cas_instance` and `cas_permissions`
-      instead. Specify parent or child instances of `this` instance.
-      Configurations will be rejected if: -- If `this` instance is not
-      allowlisted for `ENABLE_DATA_READS_FROM_PARENT` and this list specifies
-      parent instances. -- If `this` instance is not allowlisted for
-      `ENABLE_DATA_READS_BY_CHILDREN` and this list specifies child instances.
-      -- If both parent and child instances are specified. -- If instance has
-      more than allowed number of parent or child instances.
     featurePolicy: The policy to define whether or not RBE features can be
       used or how they can be used.
     githubEnterpriseAccess: Optional. GitHub Enterprise access configuration
@@ -2348,17 +2340,16 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstance(_messages.Message):
   bindings = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaIAMBinding', 4, repeated=True)
   casInstance = _messages.StringField(5)
   casPermissions = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstancePermissions', 6)
-  casRelations = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaRelationship', 7, repeated=True)
-  featurePolicy = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaFeaturePolicy', 8)
-  githubEnterpriseAccess = _messages.EnumField('GithubEnterpriseAccessValueValuesEnum', 9)
-  groupProperties = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaGroupProperties', 10)
-  location = _messages.StringField(11)
-  loggingEnabled = _messages.BooleanField(12)
-  name = _messages.StringField(13)
-  schedulerNotificationConfig = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaSchedulerNotificationConfig', 14)
-  state = _messages.EnumField('StateValueValuesEnum', 15)
-  storageSettings = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaStorageSettings', 16)
-  zoneDrains = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaZoneDrain', 17, repeated=True)
+  featurePolicy = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaFeaturePolicy', 7)
+  githubEnterpriseAccess = _messages.EnumField('GithubEnterpriseAccessValueValuesEnum', 8)
+  groupProperties = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaGroupProperties', 9)
+  location = _messages.StringField(10)
+  loggingEnabled = _messages.BooleanField(11)
+  name = _messages.StringField(12)
+  schedulerNotificationConfig = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaSchedulerNotificationConfig', 13)
+  state = _messages.EnumField('StateValueValuesEnum', 14)
+  storageSettings = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaStorageSettings', 15)
+  zoneDrains = _messages.MessageField('GoogleDevtoolsRemotebuildexecutionAdminV1alphaZoneDrain', 16, repeated=True)
 
 
 class GoogleDevtoolsRemotebuildexecutionAdminV1alphaInstancePermissions(_messages.Message):
@@ -2449,46 +2440,6 @@ class GoogleDevtoolsRemotebuildexecutionAdminV1alphaPermittedInstances(_messages
   """
 
   instances = _messages.StringField(1, repeated=True)
-
-
-class GoogleDevtoolsRemotebuildexecutionAdminV1alphaRelationship(_messages.Message):
-  r"""Deprecated: Use `cas_instance` and `cas_permissions` instead. Defines
-  the relationship with another RBE instance.
-
-  Enums:
-    RelationValueValuesEnum: Specify the relationship between `instance` and
-      the RBE instance it is related to.
-
-  Fields:
-    instance: Instance resource name (e.g.
-      `projects/[PROJECT_ID]/instances/[INSTANCE_ID]`) of an instance which is
-      either a parent or child of another RBE instance.
-    relation: Specify the relationship between `instance` and the RBE instance
-      it is related to.
-    status: Output only. The validation result of this relationship. Possible
-      status codes are: - `OK`: a valid relationship - `FAILED_PRECONDITION`:
-      missing allowlist or misconfigured instance (Note that we don't want to
-      return `NOT_FOUND` which leaks information about whether or not a
-      project exists)
-  """
-
-  class RelationValueValuesEnum(_messages.Enum):
-    r"""Specify the relationship between `instance` and the RBE instance it is
-    related to.
-
-    Values:
-      RELATION_UNSPECIFIED: Default value but not a valid value; it is an
-        error to set this value.
-      RELATION_CAS_PARENT: `instance` is a parent of another RBE instance.
-      RELATION_CAS_CHILD: `instance` is a child of another RBE instance.
-    """
-    RELATION_UNSPECIFIED = 0
-    RELATION_CAS_PARENT = 1
-    RELATION_CAS_CHILD = 2
-
-  instance = _messages.StringField(1)
-  relation = _messages.EnumField('RelationValueValuesEnum', 2)
-  status = _messages.MessageField('GoogleRpcStatus', 3)
 
 
 class GoogleDevtoolsRemotebuildexecutionAdminV1alphaSchedulerNotificationConfig(_messages.Message):

@@ -17,8 +17,21 @@
 
 
 import abc
+import typing
 
 import six
+
+
+# VMBootTroubleshooter keeps its own BootFinding with the same fields.
+class Finding(typing.NamedTuple):
+  """One issue found by a troubleshooter.
+
+  Attributes:
+    cause: Short stable key for the issue, for example 'oslogin'.
+    message: User-facing explanation and remediation text.
+  """
+  cause: str
+  message: str
 
 
 @six.add_metaclass(abc.ABCMeta)

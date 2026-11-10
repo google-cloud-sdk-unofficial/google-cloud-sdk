@@ -260,10 +260,13 @@ class EventImpact(_messages.Message):
       Output only.
 
   Fields:
-    endTime: Output only. The end time of the impact.
+    endTime: Output only. The end time of the impact. It may be empty if the
+      event is an emerging incident, the issue is still ongoing or if the end
+      time is still being determined.
     location: Location impacted by the event.
     product: Google Cloud product impacted by the event.
-    startTime: Output only. The start time of the impact.
+    startTime: Output only. The start time of the impact. It may be empty for
+      an emerging incident.
     state: Output only. The impact is affected or resolved. Output only.
   """
 
@@ -385,6 +388,27 @@ class GoogleCloudLocationLocation(_messages.Message):
   name = _messages.StringField(5)
 
 
+class Impact(_messages.Message):
+  r"""Represents an impact.
+
+  Fields:
+    asset: Output only. Asset associated with the impact.
+    createTime: Output only. The time when the impact was created.
+    description: Output only. Free-form human-readable description.
+    events: Output only. Event associated with the impact.
+    name: Identifier. Name of the impact. The format could be: -
+      projects/{project_id}/locations/{location}/impacts/{impact_id}.
+    updateTime: Output only. The time when the impact was last modified.
+  """
+
+  asset = _messages.MessageField('Asset', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  events = _messages.StringField(4, repeated=True)
+  name = _messages.StringField(5)
+  updateTime = _messages.StringField(6)
+
+
 class Issue(_messages.Message):
   r"""Represents an internal problem with Service Health.
 
@@ -460,6 +484,24 @@ class ListEventsResponse(_messages.Message):
   """
 
   events = _messages.MessageField('Event', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListImpactsResponse(_messages.Message):
+  r"""Message for response to listing impacts.
+
+  Fields:
+    impacts: Output only. List of impacts.
+    nextPageToken: Output only. The continuation token, used to page through
+      large result sets. Provide this value in a subsequent request as
+      page_token in subsequent requests to retrieve the next page. If this
+      field is not present, there are no subsequent results.
+    unreachable: Output only. Unordered list. Locations that could not be
+      reached.
+  """
+
+  impacts = _messages.MessageField('Impact', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -1007,6 +1049,41 @@ class ServicehealthProjectsLocationsGetStatusRequest(_messages.Message):
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class ServicehealthProjectsLocationsImpactsGetRequest(_messages.Message):
+  r"""A ServicehealthProjectsLocationsImpactsGetRequest object.
+
+  Fields:
+    name: Required. Name of the resource. Format is
+      `projects/{project}/locations/{location}/impacts/{impact}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class ServicehealthProjectsLocationsImpactsListRequest(_messages.Message):
+  r"""A ServicehealthProjectsLocationsImpactsListRequest object.
+
+  Fields:
+    filter: Optional. A filter expression that filters resources listed in the
+      response. The expression is in the form of field=value.
+    pageSize: Optional. The maximum number of results to return. The service
+      may return fewer results than this value. If unspecified, server will
+      pick an appropriate default. Maximum value is 100.
+    pageToken: Optional. A token identifying a page of results the server
+      should return. Provide Page token returned by a previous 'ListImpacts'
+      call to retrieve the next page of results. When paginating, all other
+      parameters provided to 'ListImpacts' must match the call that provided
+      the page token.
+    parent: Required. Parent value for ListImpactsRequest eg:
+      "projects/{project_id}/locations/{location}"
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class ServicehealthProjectsLocationsListRequest(_messages.Message):

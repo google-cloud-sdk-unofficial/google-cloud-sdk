@@ -5052,12 +5052,12 @@ class DataprocProjectsRegionsClustersPatchRequest(_messages.Message):
       workers in a cluster to 5, the update_mask parameter would be
       config.secondary_worker_config.num_instances, and the PATCH request body
       would be set as follows: { "config":{ "secondaryWorkerConfig":{
-      "numInstances":"5" } } } *Note:* Currently, only the following fields
-      can be updated: *Mask* *Purpose* *labels* Update labels
-      *config.worker_config.num_instances* Resize primary worker group
-      *config.secondary_worker_config.num_instances* Resize secondary worker
-      group config.autoscaling_config.policy_uri Use, stop using, or change
-      autoscaling policies
+      "numInstances":"5" } } } Wildcard * is not supported. Currently, only
+      the following fields can be updated: labels: Updates labels
+      config.worker_config.num_instances: Resizes primary worker group
+      config.secondary_worker_config.num_instances: Resizes secondary worker
+      group config.autoscaling_config.policy_uri: Uses, stops using, or
+      changes autoscaling policies
   """
 
   cluster = _messages.MessageField('Cluster', 1)
@@ -9212,6 +9212,8 @@ class NodeGroupOperationMetadata(_messages.Message):
         the node group and await for intended config change to be completed at
         the node group level. Currently, only the identity config update is
         supported.
+      UPDATE_INSTANCE_FLEXIBILITY_POLICY: Operation type for updating instance
+        flexibility policy.
     """
     NODE_GROUP_OPERATION_TYPE_UNSPECIFIED = 0
     CREATE = 1
@@ -9223,6 +9225,7 @@ class NodeGroupOperationMetadata(_messages.Message):
     START = 7
     STOP = 8
     UPDATE_METADATA_CONFIG = 9
+    UPDATE_INSTANCE_FLEXIBILITY_POLICY = 10
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):

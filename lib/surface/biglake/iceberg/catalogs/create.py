@@ -88,6 +88,9 @@ def _BuildFederatedCatalogMessage(args, messages, release_track=None):
             warehouse=args.snowflake_warehouse,
             account_identifier=args.snowflake_account_identifier,
             snowflake_role=args.snowflake_role,
+            snowflake_user_identity_federation_role=getattr(
+                args, 'snowflake_user_identity_federation_role', None
+            ),
         ),
     )
   elif args.federated_catalog_type == 'workday':
@@ -171,6 +174,7 @@ class CreateCatalog(base.CreateCommand):
   _support_federated_catalog = True
   _support_glue_catalog = True
   _support_snowflake_catalog = True
+  _support_snowflake_user_identity_federation_role = False
   _support_workday_catalog = True
   _support_workday_api_client_client_id = False
   _support_unity_service_principal_application_id = True
@@ -201,7 +205,10 @@ class CreateCatalog(base.CreateCommand):
     if cls._support_glue_catalog:
       arguments.AddGlueCatalogArgs(parser)
     if cls._support_snowflake_catalog:
-      arguments.AddSnowflakeCatalogArgs(parser)
+      arguments.AddSnowflakeCatalogArgs(
+          parser,
+          support_user_identity_federation_role=cls._support_snowflake_user_identity_federation_role,
+      )
     if cls._support_workday_catalog:
       arguments.AddWorkdayCatalogArgs(parser)
     if cls._support_workday_api_client_client_id:
@@ -288,6 +295,7 @@ class CreateBeta(CreateCatalog):
   """Create a BigLake Iceberg REST catalog."""
 
   _support_workday_api_client_client_id = True
+  _support_snowflake_user_identity_federation_role = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

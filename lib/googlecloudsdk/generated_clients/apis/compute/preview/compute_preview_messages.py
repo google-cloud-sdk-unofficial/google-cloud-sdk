@@ -2456,6 +2456,8 @@ class AllocationAggregateReservation(_messages.Message):
       VM_FAMILY_CLOUD_TPU_POD_SLICE_CT4P: <no description>
       VM_FAMILY_CLOUD_TPU_POD_SLICE_CT5P: <no description>
       VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU7X: <no description>
+      VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU8T: <no description>
+      VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU8T_METAL: <no description>
     """
     VM_FAMILY_CLOUD_TPU_DEVICE_CT3 = 0
     VM_FAMILY_CLOUD_TPU_LITE_DEVICE_CT5L = 1
@@ -2465,6 +2467,8 @@ class AllocationAggregateReservation(_messages.Message):
     VM_FAMILY_CLOUD_TPU_POD_SLICE_CT4P = 5
     VM_FAMILY_CLOUD_TPU_POD_SLICE_CT5P = 6
     VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU7X = 7
+    VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU8T = 8
+    VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU8T_METAL = 9
 
   class WorkloadTypeValueValuesEnum(_messages.Enum):
     r"""The workload type of the instances that will target this reservation.
@@ -6037,6 +6041,9 @@ class BackendService(_messages.Message):
       be specified when the load balancing scheme is set toINTERNAL, or when
       the load balancing scheme is set toEXTERNAL and haPolicy fastIpMove is
       enabled.
+    networkAttachment: Optional. The URL of the network attachment that this
+      resource belongs to.projects/{project}/regions/{region_name}/networkAtta
+      chments/{network_attachment_name}.
     networkPassThroughLbTrafficPolicy: Configures traffic steering properties
       of internal passthrough Network Load Balancers.
       networkPassThroughLbTrafficPolicy cannot be specified with haPolicy.
@@ -6099,6 +6106,11 @@ class BackendService(_messages.Message):
     serviceBindings: URLs of networkservices.ServiceBinding resources.  Can
       only be set if load balancing scheme is INTERNAL_SELF_MANAGED. If set,
       lists of backends and health checks must be both empty.
+    serviceClassId: Optional. The service class ID associated with this
+      resource. Producer Service's Service class ID for the region of this
+      backend service. Can only be used with network_attachment. It is not
+      possible to use on its own; however, network_attachment can be used
+      without service_class_id.
     serviceLbPolicy: URL to networkservices.ServiceLbPolicy resource.  Can
       only be set if load balancing scheme is EXTERNAL_MANAGED,
       INTERNAL_MANAGED or INTERNAL_SELF_MANAGED for a global backend service,
@@ -6469,25 +6481,27 @@ class BackendService(_messages.Message):
   metadatas = _messages.MessageField('MetadatasValue', 31)
   name = _messages.StringField(32)
   network = _messages.StringField(33)
-  networkPassThroughLbTrafficPolicy = _messages.MessageField('BackendServiceNetworkPassThroughLbTrafficPolicy', 34)
-  orchestrationInfo = _messages.MessageField('BackendServiceOrchestrationInfo', 35)
-  outlierDetection = _messages.MessageField('OutlierDetection', 36)
-  params = _messages.MessageField('BackendServiceParams', 37)
-  port = _messages.IntegerField(38, variant=_messages.Variant.INT32)
-  portName = _messages.StringField(39)
-  protocol = _messages.EnumField('ProtocolValueValuesEnum', 40)
-  region = _messages.StringField(41)
-  securityPolicy = _messages.StringField(42)
-  securitySettings = _messages.MessageField('SecuritySettings', 43)
-  selfLink = _messages.StringField(44)
-  serviceBindings = _messages.StringField(45, repeated=True)
-  serviceLbPolicy = _messages.StringField(46)
-  sessionAffinity = _messages.EnumField('SessionAffinityValueValuesEnum', 47)
-  strongSessionAffinityCookie = _messages.MessageField('BackendServiceHttpCookie', 48)
-  subsetting = _messages.MessageField('Subsetting', 49)
-  timeoutSec = _messages.IntegerField(50, variant=_messages.Variant.INT32)
-  tlsSettings = _messages.MessageField('BackendServiceTlsSettings', 51)
-  usedBy = _messages.MessageField('BackendServiceUsedBy', 52, repeated=True)
+  networkAttachment = _messages.StringField(34)
+  networkPassThroughLbTrafficPolicy = _messages.MessageField('BackendServiceNetworkPassThroughLbTrafficPolicy', 35)
+  orchestrationInfo = _messages.MessageField('BackendServiceOrchestrationInfo', 36)
+  outlierDetection = _messages.MessageField('OutlierDetection', 37)
+  params = _messages.MessageField('BackendServiceParams', 38)
+  port = _messages.IntegerField(39, variant=_messages.Variant.INT32)
+  portName = _messages.StringField(40)
+  protocol = _messages.EnumField('ProtocolValueValuesEnum', 41)
+  region = _messages.StringField(42)
+  securityPolicy = _messages.StringField(43)
+  securitySettings = _messages.MessageField('SecuritySettings', 44)
+  selfLink = _messages.StringField(45)
+  serviceBindings = _messages.StringField(46, repeated=True)
+  serviceClassId = _messages.StringField(47)
+  serviceLbPolicy = _messages.StringField(48)
+  sessionAffinity = _messages.EnumField('SessionAffinityValueValuesEnum', 49)
+  strongSessionAffinityCookie = _messages.MessageField('BackendServiceHttpCookie', 50)
+  subsetting = _messages.MessageField('Subsetting', 51)
+  timeoutSec = _messages.IntegerField(52, variant=_messages.Variant.INT32)
+  tlsSettings = _messages.MessageField('BackendServiceTlsSettings', 53)
+  usedBy = _messages.MessageField('BackendServiceUsedBy', 54, repeated=True)
 
 
 class BackendServiceAggregatedList(_messages.Message):
@@ -7312,7 +7326,9 @@ class BackendServiceHAPolicy(_messages.Message):
     Values:
       DISABLED: <no description>
       GARP_RA: <no description>
-      HA_CONTROLLER: <no description>
+      HA_CONTROLLER: The Backend Service is managed by a High Availability
+        Controller. Failover and leader election are exclusively managed by
+        the HA Controller service.
     """
     DISABLED = 0
     GARP_RA = 1
@@ -36153,12 +36169,15 @@ class ComputeRegionSslCertificatesFetchEncryptionKeyRequest(_messages.Message):
   r"""A ComputeRegionSslCertificatesFetchEncryptionKeyRequest object.
 
   Fields:
+    name: Required. Name of the SslCertificate resource to be created. The
+      name must be 1-63 characters long, and comply withRFC1035.
     project: Project ID for this request.
     region: Name of the region scoping this request.
   """
 
-  project = _messages.StringField(1, required=True)
-  region = _messages.StringField(2, required=True)
+  name = _messages.StringField(1)
+  project = _messages.StringField(2, required=True)
+  region = _messages.StringField(3, required=True)
 
 
 class ComputeRegionSslCertificatesGetRequest(_messages.Message):
@@ -40935,10 +40954,13 @@ class ComputeSslCertificatesFetchEncryptionKeyRequest(_messages.Message):
   r"""A ComputeSslCertificatesFetchEncryptionKeyRequest object.
 
   Fields:
+    name: Required. Name of the SslCertificate resource to be created. The
+      name must be 1-63 characters long, and comply withRFC1035.
     project: Project ID for this request.
   """
 
-  project = _messages.StringField(1, required=True)
+  name = _messages.StringField(1)
+  project = _messages.StringField(2, required=True)
 
 
 class ComputeSslCertificatesGetRequest(_messages.Message):
@@ -51250,6 +51272,9 @@ class ForwardingRule(_messages.Message):
       be used. If neither subnetwork nor this field is specified, the default
       network will be used.  For Private Service Connect forwarding rules that
       forward traffic to Google APIs, a network must be provided.
+    networkAttachment: Optional. The URL of the network attachment that this
+      resource belongs to.projects/{project}/regions/{region_name}/networkAtta
+      chments/{network_attachment_name}.
     networkTier: This signifies the networking tier used for configuring this
       load balancer and can only take the following values:PREMIUM, STANDARD.
       For regional ForwardingRule, the valid values are PREMIUM andSTANDARD.
@@ -51302,6 +51327,10 @@ class ForwardingRule(_messages.Message):
     selfLink: [Output Only] Server-defined URL for the resource.
     selfLinkWithId: Output only. [Output Only] Server-defined URL for this
       resource with the resource id.
+    serviceClassId: Optional. Producer Service's Service class ID for the
+      region of this forwarding rule. Can only be used with
+      network_attachment. It is not possible to use on its own; however,
+      network_attachment can be used without service_class_id.
     serviceDirectoryRegistrations: Service Directory resources to register
       this forwarding rule with. Currently, only supports a single Service
       Directory resource.
@@ -51525,21 +51554,23 @@ class ForwardingRule(_messages.Message):
   metadataFilters = _messages.MessageField('MetadataFilter', 22, repeated=True)
   name = _messages.StringField(23)
   network = _messages.StringField(24)
-  networkTier = _messages.EnumField('NetworkTierValueValuesEnum', 25)
-  noAutomateDnsZone = _messages.BooleanField(26)
-  portRange = _messages.StringField(27)
-  ports = _messages.StringField(28, repeated=True)
-  pscConnectionId = _messages.IntegerField(29, variant=_messages.Variant.UINT64)
-  pscConnectionStatus = _messages.EnumField('PscConnectionStatusValueValuesEnum', 30)
-  region = _messages.StringField(31)
-  selfLink = _messages.StringField(32)
-  selfLinkWithId = _messages.StringField(33)
-  serviceDirectoryRegistrations = _messages.MessageField('ForwardingRuleServiceDirectoryRegistration', 34, repeated=True)
-  serviceLabel = _messages.StringField(35)
-  serviceName = _messages.StringField(36)
-  sourceIpRanges = _messages.StringField(37, repeated=True)
-  subnetwork = _messages.StringField(38)
-  target = _messages.StringField(39)
+  networkAttachment = _messages.StringField(25)
+  networkTier = _messages.EnumField('NetworkTierValueValuesEnum', 26)
+  noAutomateDnsZone = _messages.BooleanField(27)
+  portRange = _messages.StringField(28)
+  ports = _messages.StringField(29, repeated=True)
+  pscConnectionId = _messages.IntegerField(30, variant=_messages.Variant.UINT64)
+  pscConnectionStatus = _messages.EnumField('PscConnectionStatusValueValuesEnum', 31)
+  region = _messages.StringField(32)
+  selfLink = _messages.StringField(33)
+  selfLinkWithId = _messages.StringField(34)
+  serviceClassId = _messages.StringField(35)
+  serviceDirectoryRegistrations = _messages.MessageField('ForwardingRuleServiceDirectoryRegistration', 36, repeated=True)
+  serviceLabel = _messages.StringField(37)
+  serviceName = _messages.StringField(38)
+  sourceIpRanges = _messages.StringField(39, repeated=True)
+  subnetwork = _messages.StringField(40)
+  target = _messages.StringField(41)
 
 
 class ForwardingRuleAggregatedList(_messages.Message):
@@ -53414,6 +53445,8 @@ class FutureResourcesSpecAggregateResources(_messages.Message):
       VM_FAMILY_CLOUD_TPU_POD_SLICE_CT4P: <no description>
       VM_FAMILY_CLOUD_TPU_POD_SLICE_CT5P: <no description>
       VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU7X: <no description>
+      VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU8T: <no description>
+      VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU8T_METAL: <no description>
     """
     VM_FAMILY_CLOUD_TPU_DEVICE_CT3 = 0
     VM_FAMILY_CLOUD_TPU_LITE_DEVICE_CT5L = 1
@@ -53423,6 +53456,8 @@ class FutureResourcesSpecAggregateResources(_messages.Message):
     VM_FAMILY_CLOUD_TPU_POD_SLICE_CT4P = 5
     VM_FAMILY_CLOUD_TPU_POD_SLICE_CT5P = 6
     VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU7X = 7
+    VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU8T = 8
+    VM_FAMILY_CLOUD_TPU_POD_SLICE_TPU8T_METAL = 9
 
   class WorkloadTypeValueValuesEnum(_messages.Enum):
     r"""Workload type. Use for TPU reservations.
@@ -64188,6 +64223,7 @@ class InstanceGroupManagerUpdatePolicy(_messages.Message):
   r"""A InstanceGroupManagerUpdatePolicy object.
 
   Enums:
+    AllowedActionsValueListEntryValuesEnum:
     InstanceRedistributionTypeValueValuesEnum: The  instance redistribution
       policy for regional managed instance groups. Valid values are:         -
       PROACTIVE (default): The group attempts to maintain an    even
@@ -64220,6 +64256,7 @@ class InstanceGroupManagerUpdatePolicy(_messages.Message):
       want to update.
 
   Fields:
+    allowedActions: Actions that are allowed to update instances within MIG.
     instanceRedistributionType: The  instance redistribution policy for
       regional managed instance groups. Valid values are:         - PROACTIVE
       (default): The group attempts to maintain an    even distribution of VM
@@ -64273,6 +64310,24 @@ class InstanceGroupManagerUpdatePolicy(_messages.Message):
       orOPPORTUNISTIC so that you can select the VMs that you want to update.
   """
 
+  class AllowedActionsValueListEntryValuesEnum(_messages.Enum):
+    r"""AllowedActionsValueListEntryValuesEnum enum type.
+
+    Values:
+      NONE: Do not perform any action.
+      REFRESH: Do not stop the instance.
+      REPLACE: (Default.) Replace the instance according to the replacement
+        method option.
+      RESTART: Stop the instance and start it again.
+      RESTART_IN_PLACE: Restart the instance using the same capacity and
+        preserving local SSDs.
+    """
+    NONE = 0
+    REFRESH = 1
+    REPLACE = 2
+    RESTART = 3
+    RESTART_IN_PLACE = 4
+
   class InstanceRedistributionTypeValueValuesEnum(_messages.Enum):
     r"""The  instance redistribution policy for regional managed instance
     groups. Valid values are:         - PROACTIVE (default): The group
@@ -64308,11 +64363,14 @@ class InstanceGroupManagerUpdatePolicy(_messages.Message):
       REPLACE: (Default.) Replace the instance according to the replacement
         method option.
       RESTART: Stop the instance and start it again.
+      RESTART_IN_PLACE: Restart the instance using the same capacity and
+        preserving local SSDs.
     """
     NONE = 0
     REFRESH = 1
     REPLACE = 2
     RESTART = 3
+    RESTART_IN_PLACE = 4
 
   class MostDisruptiveAllowedActionValueValuesEnum(_messages.Enum):
     r"""Most disruptive action that is allowed to be taken on an instance. You
@@ -64329,11 +64387,14 @@ class InstanceGroupManagerUpdatePolicy(_messages.Message):
       REPLACE: (Default.) Replace the instance according to the replacement
         method option.
       RESTART: Stop the instance and start it again.
+      RESTART_IN_PLACE: Restart the instance using the same capacity and
+        preserving local SSDs.
     """
     NONE = 0
     REFRESH = 1
     REPLACE = 2
     RESTART = 3
+    RESTART_IN_PLACE = 4
 
   class ReplacementMethodValueValuesEnum(_messages.Enum):
     r"""What action should be used to replace instances. See
@@ -64362,13 +64423,14 @@ class InstanceGroupManagerUpdatePolicy(_messages.Message):
     OPPORTUNISTIC = 0
     PROACTIVE = 1
 
-  instanceRedistributionType = _messages.EnumField('InstanceRedistributionTypeValueValuesEnum', 1)
-  maxSurge = _messages.MessageField('FixedOrPercent', 2)
-  maxUnavailable = _messages.MessageField('FixedOrPercent', 3)
-  minimalAction = _messages.EnumField('MinimalActionValueValuesEnum', 4)
-  mostDisruptiveAllowedAction = _messages.EnumField('MostDisruptiveAllowedActionValueValuesEnum', 5)
-  replacementMethod = _messages.EnumField('ReplacementMethodValueValuesEnum', 6)
-  type = _messages.EnumField('TypeValueValuesEnum', 7)
+  allowedActions = _messages.EnumField('AllowedActionsValueListEntryValuesEnum', 1, repeated=True)
+  instanceRedistributionType = _messages.EnumField('InstanceRedistributionTypeValueValuesEnum', 2)
+  maxSurge = _messages.MessageField('FixedOrPercent', 3)
+  maxUnavailable = _messages.MessageField('FixedOrPercent', 4)
+  minimalAction = _messages.EnumField('MinimalActionValueValuesEnum', 5)
+  mostDisruptiveAllowedAction = _messages.EnumField('MostDisruptiveAllowedActionValueValuesEnum', 6)
+  replacementMethod = _messages.EnumField('ReplacementMethodValueValuesEnum', 7)
+  type = _messages.EnumField('TypeValueValuesEnum', 8)
 
 
 class InstanceGroupManagerVersion(_messages.Message):
@@ -64418,6 +64480,7 @@ class InstanceGroupManagersApplyUpdatesRequest(_messages.Message):
   r"""InstanceGroupManagers.applyUpdatesToInstances
 
   Enums:
+    AllowedActionsValueListEntryValuesEnum:
     MinimalActionValueValuesEnum: The minimal action that you want to perform
       on each instance during the update:              - REPLACE: At minimum,
       delete the instance and create it      again.     - RESTART: Stop the
@@ -64439,6 +64502,7 @@ class InstanceGroupManagersApplyUpdatesRequest(_messages.Message):
     allInstances: Flag to update all instances instead of specified list of
       "instances". If the flag is set to true then the instances may not be
       specified in the request.
+    allowedActions: Actions that are allowed to update instances within MIG.
     instances: The list of URLs of one or more instances for which you want to
       apply updates. Each URL can be a full URL or a partial URL, such
       aszones/[ZONE]/instances/[INSTANCE_NAME].
@@ -64460,6 +64524,24 @@ class InstanceGroupManagersApplyUpdatesRequest(_messages.Message):
       action than you set with this flag, the update request will fail.
   """
 
+  class AllowedActionsValueListEntryValuesEnum(_messages.Enum):
+    r"""AllowedActionsValueListEntryValuesEnum enum type.
+
+    Values:
+      NONE: Do not perform any action.
+      REFRESH: Do not stop the instance.
+      REPLACE: (Default.) Replace the instance according to the replacement
+        method option.
+      RESTART: Stop the instance and start it again.
+      RESTART_IN_PLACE: Restart the instance using the same capacity and
+        preserving local SSDs.
+    """
+    NONE = 0
+    REFRESH = 1
+    REPLACE = 2
+    RESTART = 3
+    RESTART_IN_PLACE = 4
+
   class MinimalActionValueValuesEnum(_messages.Enum):
     r"""The minimal action that you want to perform on each instance during
     the update:              - REPLACE: At minimum, delete the instance and
@@ -64476,11 +64558,14 @@ class InstanceGroupManagersApplyUpdatesRequest(_messages.Message):
       REPLACE: (Default.) Replace the instance according to the replacement
         method option.
       RESTART: Stop the instance and start it again.
+      RESTART_IN_PLACE: Restart the instance using the same capacity and
+        preserving local SSDs.
     """
     NONE = 0
     REFRESH = 1
     REPLACE = 2
     RESTART = 3
+    RESTART_IN_PLACE = 4
 
   class MostDisruptiveAllowedActionValueValuesEnum(_messages.Enum):
     r"""The most disruptive action that you want to perform on each instance
@@ -64498,16 +64583,20 @@ class InstanceGroupManagersApplyUpdatesRequest(_messages.Message):
       REPLACE: (Default.) Replace the instance according to the replacement
         method option.
       RESTART: Stop the instance and start it again.
+      RESTART_IN_PLACE: Restart the instance using the same capacity and
+        preserving local SSDs.
     """
     NONE = 0
     REFRESH = 1
     REPLACE = 2
     RESTART = 3
+    RESTART_IN_PLACE = 4
 
   allInstances = _messages.BooleanField(1)
-  instances = _messages.StringField(2, repeated=True)
-  minimalAction = _messages.EnumField('MinimalActionValueValuesEnum', 3)
-  mostDisruptiveAllowedAction = _messages.EnumField('MostDisruptiveAllowedActionValueValuesEnum', 4)
+  allowedActions = _messages.EnumField('AllowedActionsValueListEntryValuesEnum', 2, repeated=True)
+  instances = _messages.StringField(3, repeated=True)
+  minimalAction = _messages.EnumField('MinimalActionValueValuesEnum', 4)
+  mostDisruptiveAllowedAction = _messages.EnumField('MostDisruptiveAllowedActionValueValuesEnum', 5)
 
 
 class InstanceGroupManagersCreateInstancesRequest(_messages.Message):
@@ -65972,6 +66061,8 @@ class InstanceProperties(_messages.Message):
       tofalse. See theEnable IP forwarding documentation for more information.
     confidentialInstanceConfig: Specifies the Confidential Instance options.
       Note that for MachineImage, this is not supported yet.
+    deletionProtection: Whether the resource should be protected against
+      deletion.
     description: An optional text description for the instances that are
       created from these properties.
     disks: An array of disks that are associated with the instances that are
@@ -66146,26 +66237,27 @@ class InstanceProperties(_messages.Message):
   advancedMachineFeatures = _messages.MessageField('AdvancedMachineFeatures', 1)
   canIpForward = _messages.BooleanField(2)
   confidentialInstanceConfig = _messages.MessageField('ConfidentialInstanceConfig', 3)
-  description = _messages.StringField(4)
-  disks = _messages.MessageField('AttachedDisk', 5, repeated=True)
-  guestAccelerators = _messages.MessageField('AcceleratorConfig', 6, repeated=True)
-  keyRevocationActionType = _messages.EnumField('KeyRevocationActionTypeValueValuesEnum', 7)
-  labels = _messages.MessageField('LabelsValue', 8)
-  localSsdEncryptionMode = _messages.EnumField('LocalSsdEncryptionModeValueValuesEnum', 9)
-  machineType = _messages.StringField(10)
-  metadata = _messages.MessageField('Metadata', 11)
-  minCpuPlatform = _messages.StringField(12)
-  networkInterfaces = _messages.MessageField('NetworkInterface', 13, repeated=True)
-  networkPerformanceConfig = _messages.MessageField('NetworkPerformanceConfig', 14)
-  privateIpv6GoogleAccess = _messages.EnumField('PrivateIpv6GoogleAccessValueValuesEnum', 15)
-  reservationAffinity = _messages.MessageField('ReservationAffinity', 16)
-  resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 17)
-  resourcePolicies = _messages.StringField(18, repeated=True)
-  scheduling = _messages.MessageField('Scheduling', 19)
-  serviceAccounts = _messages.MessageField('ServiceAccount', 20, repeated=True)
-  shieldedInstanceConfig = _messages.MessageField('ShieldedInstanceConfig', 21)
-  tags = _messages.MessageField('Tags', 22)
-  workloadIdentityConfig = _messages.MessageField('WorkloadIdentityConfig', 23)
+  deletionProtection = _messages.BooleanField(4)
+  description = _messages.StringField(5)
+  disks = _messages.MessageField('AttachedDisk', 6, repeated=True)
+  guestAccelerators = _messages.MessageField('AcceleratorConfig', 7, repeated=True)
+  keyRevocationActionType = _messages.EnumField('KeyRevocationActionTypeValueValuesEnum', 8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  localSsdEncryptionMode = _messages.EnumField('LocalSsdEncryptionModeValueValuesEnum', 10)
+  machineType = _messages.StringField(11)
+  metadata = _messages.MessageField('Metadata', 12)
+  minCpuPlatform = _messages.StringField(13)
+  networkInterfaces = _messages.MessageField('NetworkInterface', 14, repeated=True)
+  networkPerformanceConfig = _messages.MessageField('NetworkPerformanceConfig', 15)
+  privateIpv6GoogleAccess = _messages.EnumField('PrivateIpv6GoogleAccessValueValuesEnum', 16)
+  reservationAffinity = _messages.MessageField('ReservationAffinity', 17)
+  resourceManagerTags = _messages.MessageField('ResourceManagerTagsValue', 18)
+  resourcePolicies = _messages.StringField(19, repeated=True)
+  scheduling = _messages.MessageField('Scheduling', 20)
+  serviceAccounts = _messages.MessageField('ServiceAccount', 21, repeated=True)
+  shieldedInstanceConfig = _messages.MessageField('ShieldedInstanceConfig', 22)
+  tags = _messages.MessageField('Tags', 23)
+  workloadIdentityConfig = _messages.MessageField('WorkloadIdentityConfig', 24)
 
 
 class InstancePropertiesPatch(_messages.Message):
@@ -89076,6 +89168,7 @@ class RegionInstanceGroupManagersApplyUpdatesRequest(_messages.Message):
   r"""RegionInstanceGroupManagers.applyUpdatesToInstances
 
   Enums:
+    AllowedActionsValueListEntryValuesEnum:
     MinimalActionValueValuesEnum: The minimal action that you want to perform
       on each instance during the update:              - REPLACE: At minimum,
       delete the instance and create it      again.     - RESTART: Stop the
@@ -89097,6 +89190,7 @@ class RegionInstanceGroupManagersApplyUpdatesRequest(_messages.Message):
     allInstances: Flag to update all instances instead of specified list of
       "instances". If the flag is set to true then the instances may not be
       specified in the request.
+    allowedActions: Actions that are allowed to update instances within MIG.
     instances: The list of URLs of one or more instances for which you want to
       apply updates. Each URL can be a full URL or a partial URL, such
       aszones/[ZONE]/instances/[INSTANCE_NAME].
@@ -89118,6 +89212,24 @@ class RegionInstanceGroupManagersApplyUpdatesRequest(_messages.Message):
       action than you set with this flag, the update request will fail.
   """
 
+  class AllowedActionsValueListEntryValuesEnum(_messages.Enum):
+    r"""AllowedActionsValueListEntryValuesEnum enum type.
+
+    Values:
+      NONE: Do not perform any action.
+      REFRESH: Do not stop the instance.
+      REPLACE: (Default.) Replace the instance according to the replacement
+        method option.
+      RESTART: Stop the instance and start it again.
+      RESTART_IN_PLACE: Restart the instance using the same capacity and
+        preserving local SSDs.
+    """
+    NONE = 0
+    REFRESH = 1
+    REPLACE = 2
+    RESTART = 3
+    RESTART_IN_PLACE = 4
+
   class MinimalActionValueValuesEnum(_messages.Enum):
     r"""The minimal action that you want to perform on each instance during
     the update:              - REPLACE: At minimum, delete the instance and
@@ -89134,11 +89246,14 @@ class RegionInstanceGroupManagersApplyUpdatesRequest(_messages.Message):
       REPLACE: (Default.) Replace the instance according to the replacement
         method option.
       RESTART: Stop the instance and start it again.
+      RESTART_IN_PLACE: Restart the instance using the same capacity and
+        preserving local SSDs.
     """
     NONE = 0
     REFRESH = 1
     REPLACE = 2
     RESTART = 3
+    RESTART_IN_PLACE = 4
 
   class MostDisruptiveAllowedActionValueValuesEnum(_messages.Enum):
     r"""The most disruptive action that you want to perform on each instance
@@ -89156,16 +89271,20 @@ class RegionInstanceGroupManagersApplyUpdatesRequest(_messages.Message):
       REPLACE: (Default.) Replace the instance according to the replacement
         method option.
       RESTART: Stop the instance and start it again.
+      RESTART_IN_PLACE: Restart the instance using the same capacity and
+        preserving local SSDs.
     """
     NONE = 0
     REFRESH = 1
     REPLACE = 2
     RESTART = 3
+    RESTART_IN_PLACE = 4
 
   allInstances = _messages.BooleanField(1)
-  instances = _messages.StringField(2, repeated=True)
-  minimalAction = _messages.EnumField('MinimalActionValueValuesEnum', 3)
-  mostDisruptiveAllowedAction = _messages.EnumField('MostDisruptiveAllowedActionValueValuesEnum', 4)
+  allowedActions = _messages.EnumField('AllowedActionsValueListEntryValuesEnum', 2, repeated=True)
+  instances = _messages.StringField(3, repeated=True)
+  minimalAction = _messages.EnumField('MinimalActionValueValuesEnum', 4)
+  mostDisruptiveAllowedAction = _messages.EnumField('MostDisruptiveAllowedActionValueValuesEnum', 5)
 
 
 class RegionInstanceGroupManagersCreateInstancesRequest(_messages.Message):
@@ -100062,6 +100181,8 @@ class ServiceAttachment(_messages.Message):
       attachment. The value can be set to ACCEPT_AUTOMATIC. An
       ACCEPT_AUTOMATIC service attachment is one that always accepts the
       connection from consumer forwarding rules.
+    ModeValueValuesEnum: Optional. The connection mode of the service
+      attachment.
 
   Messages:
     MetadataValue: Metadata of the service attachment.
@@ -100109,6 +100230,7 @@ class ServiceAttachment(_messages.Message):
     kind: Output only. [Output Only] Type of the resource.
       Alwayscompute#serviceAttachment for service attachments.
     metadata: Metadata of the service attachment.
+    mode: Optional. The connection mode of the service attachment.
     name: Name of the resource. Provided by the client when the resource is
       created. The name must be 1-63 characters long, and comply withRFC1035.
       Specifically, the name must be 1-63 characters long and match the
@@ -100170,6 +100292,20 @@ class ServiceAttachment(_messages.Message):
     ACCEPT_MANUAL = 1
     CONNECTION_PREFERENCE_UNSPECIFIED = 2
 
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Optional. The connection mode of the service attachment.
+
+    Values:
+      DIRECT: The service attachment does not use NAT subnets to create
+        connections.
+      MODE_UNSPECIFIED: Default value. The service attachment defaults to NAT
+        mode.
+      NAT: The service attachment uses NAT subnets to create connections.
+    """
+    DIRECT = 0
+    MODE_UNSPECIFIED = 1
+    NAT = 2
+
   @encoding.MapUnrecognizedFields('additionalProperties')
   class MetadataValue(_messages.Message):
     r"""Metadata of the service attachment.
@@ -100206,16 +100342,17 @@ class ServiceAttachment(_messages.Message):
   id = _messages.IntegerField(10, variant=_messages.Variant.UINT64)
   kind = _messages.StringField(11, default='compute#serviceAttachment')
   metadata = _messages.MessageField('MetadataValue', 12)
-  name = _messages.StringField(13)
-  natIpsPerEndpoint = _messages.IntegerField(14, variant=_messages.Variant.UINT32)
-  natSubnets = _messages.StringField(15, repeated=True)
-  producerForwardingRule = _messages.StringField(16)
-  propagatedConnectionLimit = _messages.IntegerField(17, variant=_messages.Variant.UINT32)
-  pscServiceAttachmentId = _messages.MessageField('Uint128', 18)
-  reconcileConnections = _messages.BooleanField(19)
-  region = _messages.StringField(20)
-  selfLink = _messages.StringField(21)
-  targetService = _messages.StringField(22)
+  mode = _messages.EnumField('ModeValueValuesEnum', 13)
+  name = _messages.StringField(14)
+  natIpsPerEndpoint = _messages.IntegerField(15, variant=_messages.Variant.UINT32)
+  natSubnets = _messages.StringField(16, repeated=True)
+  producerForwardingRule = _messages.StringField(17)
+  propagatedConnectionLimit = _messages.IntegerField(18, variant=_messages.Variant.UINT32)
+  pscServiceAttachmentId = _messages.MessageField('Uint128', 19)
+  reconcileConnections = _messages.BooleanField(20)
+  region = _messages.StringField(21)
+  selfLink = _messages.StringField(22)
+  targetService = _messages.StringField(23)
 
 
 class ServiceAttachmentAggregatedList(_messages.Message):

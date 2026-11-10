@@ -2131,7 +2131,7 @@ class ServicedirectoryProjectsLocationsNamespacesWorkloadsPatchRequest(_messages
   object.
 
   Fields:
-    name: Immutable. The resource name for the workload in the format
+    name: Identifier. The resource name for the workload in the format
       `projects/*/locations/*/namespaces/*/workloads/*`.
     updateMask: Required. List of fields to be updated in this request.
       Allowable fields: `display_name`, `annotations`. -- Internal
@@ -2286,8 +2286,7 @@ class TestIamPermissionsResponse(_messages.Message):
 class Workload(_messages.Message):
   r"""An individual Workload. A logical collection of assets that provide the
   same functionality, with a common set of core attributes, that power
-  services in Service Directory and to which policies can be applied. Next id:
-  22
+  services in Service Directory and to which policies can be applied.
 
   Enums:
     CriticalityValueValuesEnum: Optional. Criticality of this workload.
@@ -2326,7 +2325,7 @@ class Workload(_messages.Message):
       for this workload.
     internalAttributes: Optional. Internal Attributes associated with this
       workload. This field should stay GOOGLE_INTERNAL post launch.
-    name: Immutable. The resource name for the workload in the format
+    name: Identifier. The resource name for the workload in the format
       `projects/*/locations/*/namespaces/*/workloads/*`.
     owners: Optional. List of contacts for this workload. This can include
       application engineers, architects, SRE, ops team, business owners etc.

@@ -22,7 +22,6 @@ from googlecloudsdk.command_lib.bq.migration import validation_flags
 @base.RegionalEndpointsSupported
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Run(base.Command):
   """Validate data migrated to BigQuery against its source."""
 
@@ -62,21 +61,21 @@ class Run(base.Command):
       'EXAMPLES': (
           """\
           To validate the tables configured under `./validation_config` with
-          validation workflows in location `us`, run:
+          validation workflows in location `eu`, run:
 
-            $ {command} validation_config --location=us
+            $ {command} validation_config --location=eu
 
           To validate only the tables `sales.orders` and `sales.customers`,
           staging the source samples under `gs://my-bucket/validation/`, run:
 
-            $ {command} validation_config --location=us \\
+            $ {command} validation_config --location=eu \\
                 --tables=sales.orders,sales.customers \\
                 --gcs-path=gs://my-bucket/validation/
 
           To only compare the schemas and aggregates of the configured tables,
           run:
 
-            $ {command} validation_config --location=us \\
+            $ {command} validation_config --location=eu \\
                 --validation-types=schema,aggregate
           """
       ),

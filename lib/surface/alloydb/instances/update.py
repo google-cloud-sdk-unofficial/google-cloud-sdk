@@ -82,6 +82,8 @@ class Update(base.UpdateCommand):
     flags.AddPSCNetworkAttachmentUri(parser)
     flags.ClearPSCNetworkAttachmentUri(parser)
     flags.AddPSCAutoConnectionGroup(parser)
+    flags.AddEnablePscAutoDns(parser)
+    flags.AddEnablePscAutoConnectionPolicy(parser)
     flags.AddActivationPolicy(parser, alloydb_messages)
 
     # Observability flags.
@@ -179,8 +181,6 @@ class UpdateBeta(Update):
         parser, show_negated_in_help=True
     )
 
-    flags.AddEnablePscAutoDns(parser)
-    flags.AddEnablePscAutoConnectionPolicy(parser)
     flags.AddEnablePublicDns(parser)
     flags.AddConnectionPoolingAuthproxyPoolerScalingType(parser)
 

@@ -300,6 +300,73 @@
                   Global scope.
                 ALPHA:
                   help_text: Global type.
+    - group:
+        api_field: unitKind.applicationTemplateComponent
+        required: false
+        help_text: |-
+          Reference to a component and revision in an Application Design Center
+          composite application template.
+        ALPHA:
+          help_text: |-
+            ComponentRef represents a reference to a component in a composite
+            ApplicationTemplate.
+        params:
+        - group:
+            api_field: unitKind.applicationTemplateComponent.compositeRef
+            required: false
+            help_text: |-
+              Reference to the composite application template.
+            ALPHA:
+              help_text: |-
+                CompositeRef represents a reference to a composite resource.
+            params:
+            - arg_name: composite-ref-application-template
+              api_field: unitKind.applicationTemplateComponent.compositeRef.applicationTemplate
+              required: true
+              repeated: false
+              help_text: |-
+                Full resource name of the Application Design Center composite
+                application template.
+              ALPHA:
+                help_text: |-
+                  Reference to the ApplicationTemplate resource.
+            - arg_name: composite-ref-revision
+              api_field: unitKind.applicationTemplateComponent.compositeRef.revision
+              required: false
+              repeated: false
+              help_text: |-
+                Revision of the composite application template to use. Changes
+                to the revision trigger manual resynchronization. If empty, the
+                application template is ignored.
+              ALPHA:
+                help_text: |-
+                  Revision of the ApplicationTemplate to use.
+                  Changes to revision will trigger manual resynchronization.
+                  If empty, ApplicationTemplate will be ignored.
+        - arg_name: application-template-component
+          api_field: unitKind.applicationTemplateComponent.component
+          required: false
+          repeated: false
+          help_text: |-
+            Name of the component in the Application Design Center composite
+            application template.
+          ALPHA:
+            help_text: |-
+              Name of the component in the composite ApplicationTemplate (in
+              `composite.Components`).
+        - arg_name: application-template-component-revision
+          api_field: unitKind.applicationTemplateComponent.revision
+          required: false
+          repeated: false
+          help_text: |-
+            Revision of the component. If the component does not have a
+            revision, this defaults to the revision of the composite
+            application template.
+          ALPHA:
+            help_text: |-
+              Revision of the component. If the component does not have a
+              revision, this field is explicitly set to the revision of the
+              composite ApplicationTemplate.
     - arg_name: labels
       api_field: unitKind.labels
       required: false

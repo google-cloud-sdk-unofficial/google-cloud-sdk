@@ -55,9 +55,10 @@ class _SectionRegional(_Section):
     self.endpoint_compatibility = self._Add(
         'endpoint_compatibility',
         hidden=True,
-        choices=['supported', 'required'],
+        choices=['supported', 'required', 'not-supported'],
         help_text=(
-            'Hidden property set by @base.RegionalEndpoints[Supported|Required]'
+            'Hidden property set by'
+            ' @base.RegionalEndpoints[Supported|Required|NotSupported]'
             ' annotation that indicates the level of regional endpoint'
             ' compatibility for the command/group in question.'
         ),

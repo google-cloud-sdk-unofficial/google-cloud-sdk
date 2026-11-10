@@ -49,6 +49,13 @@ arguments:
           params:
           - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:mtls-ca-pools
           - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:clear-mtls-ca-pools
+      - group:
+          mutex: true
+          hidden: true
+          release_tracks: [ALPHA]
+          params:
+          - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:binary-version
+          - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:kafka-version-update
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:allow-broker-downscale-on-cluster-upscale
 
 async:

@@ -40,6 +40,16 @@ class RepositoriesClient(object):
     self._resource_parser = resources.Registry()
     self._resource_parser.RegisterApiByName('securesourcemanager', 'v1')
 
+  def _BuildScanConfig(self, enable_vulnerability_scanning=None):
+    """Builds a ScanConfig message from the provided scanning flags."""
+    if enable_vulnerability_scanning is None:
+      return None
+    return self.messages.ScanConfig(
+        vulnerabilityScanConfig=self.messages.VulnerabilityScanConfig(
+            enabled=enable_vulnerability_scanning
+        )
+    )
+
   def Create(
       self,
       repository_ref,
@@ -50,6 +60,7 @@ class RepositoriesClient(object):
       license_name,
       readme,
       service_account,
+      enable_vulnerability_scanning=None,
   ):
     """Create a new Secure Source Manager repository.
 
@@ -64,6 +75,8 @@ class RepositoriesClient(object):
       license_name: license template name
       readme: README template name
       service_account: the service account to attach to the repository
+      enable_vulnerability_scanning: whether to enable vulnerability scanning on
+        the repository
 
     Returns:
       Created repository.
@@ -83,11 +96,15 @@ class RepositoriesClient(object):
         },
         collection='securesourcemanager.projects.locations.instances',
     )
+    scan_config = self._BuildScanConfig(
+        enable_vulnerability_scanning=enable_vulnerability_scanning
+    )
     repository = self.messages.Repository(
         description=description,
         instance=instance.RelativeName(),
         initialConfig=initial_config,
         serviceAccount=service_account,
+        scanConfig=scan_config,
     )
     create_req = self.messages.SecuresourcemanagerProjectsLocationsRepositoriesCreateRequest(
         parent=repository_ref.Parent().RelativeName(),
@@ -177,6 +194,7 @@ class RepositoriesClient(object):
       validate_only,
       description,
       service_account=None,
+      enable_vulnerability_scanning=None,
   ):
     """Update a Secure Source Manager repository.
 
@@ -189,15 +207,20 @@ class RepositoriesClient(object):
         the request will succeed but no action will be taken on the server.
       description: Description of the repository.
       service_account: The service account to attach to the repository.
+      enable_vulnerability_scanning: Whether to enable vulnerability scanning on
+        the repository.
 
     Returns:
     Updated Repository Resource.
     """
-
+    scan_config = self._BuildScanConfig(
+        enable_vulnerability_scanning=enable_vulnerability_scanning
+    )
     repository = self.messages.Repository(
         name=repository_ref.RelativeName(),
         description=description,
         serviceAccount=service_account,
+        scanConfig=scan_config,
     )
     update_req = self.messages.SecuresourcemanagerProjectsLocationsRepositoriesPatchRequest(
         name=repository_ref.RelativeName(),

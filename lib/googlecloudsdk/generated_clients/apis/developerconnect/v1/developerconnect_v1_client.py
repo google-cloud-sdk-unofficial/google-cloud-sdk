@@ -428,6 +428,60 @@ class DeveloperconnectV1(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def AddPullRequestComment(self, request, global_params=None):
+      r"""Add a comment to a Pull Request.
+
+      Args:
+        request: (DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksAddPullRequestCommentRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PullRequestComment) The response message.
+      """
+      config = self.GetMethodConfig('AddPullRequestComment')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AddPullRequestComment.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/connections/{connectionsId}/gitRepositoryLinks/{gitRepositoryLinksId}:addPullRequestComment',
+        http_method='POST',
+        method_id='developerconnect.projects.locations.connections.gitRepositoryLinks.addPullRequestComment',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:addPullRequestComment',
+        request_field='addGitRepositoryLinkPullRequestCommentRequest',
+        request_type_name='DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksAddPullRequestCommentRequest',
+        response_type_name='PullRequestComment',
+        supports_download=False,
+    )
+
+    def AddPullRequestReviewComment(self, request, global_params=None):
+      r"""Add a review comment (inline on diff) to a Pull Request.
+
+      Args:
+        request: (DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksAddPullRequestReviewCommentRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PullRequestReviewComment) The response message.
+      """
+      config = self.GetMethodConfig('AddPullRequestReviewComment')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AddPullRequestReviewComment.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/connections/{connectionsId}/gitRepositoryLinks/{gitRepositoryLinksId}:addPullRequestReviewComment',
+        http_method='POST',
+        method_id='developerconnect.projects.locations.connections.gitRepositoryLinks.addPullRequestReviewComment',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:addPullRequestReviewComment',
+        request_field='addGitRepositoryLinkPullRequestReviewCommentRequest',
+        request_type_name='DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksAddPullRequestReviewCommentRequest',
+        response_type_name='PullRequestReviewComment',
+        supports_download=False,
+    )
+
     def Create(self, request, global_params=None):
       r"""Creates a GitRepositoryLink. Upon linking a Git Repository, Developer Connect will configure the Git Repository to send webhook events to Developer Connect. Connections that use Firebase GitHub Application will have events forwarded to the Firebase service. Connections that use Gemini Code Assist will have events forwarded to Gemini Code Assist service. All other Connections will have events forwarded to Cloud Build.
 
@@ -482,6 +536,114 @@ class DeveloperconnectV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def DiffCommit(self, request, global_params=None):
+      r"""Diff commits for a GitRepositoryLink.
+
+      Args:
+        request: (DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksDiffCommitRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (DiffGitRepositoryLinkCommitResponse) The response message.
+      """
+      config = self.GetMethodConfig('DiffCommit')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DiffCommit.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/connections/{connectionsId}/gitRepositoryLinks/{gitRepositoryLinksId}:diffCommit',
+        http_method='GET',
+        method_id='developerconnect.projects.locations.connections.gitRepositoryLinks.diffCommit',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['baseSha', 'headSha', 'pathFilters'],
+        relative_path='v1/{+name}:diffCommit',
+        request_field='',
+        request_type_name='DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksDiffCommitRequest',
+        response_type_name='DiffGitRepositoryLinkCommitResponse',
+        supports_download=False,
+    )
+
+    def FetchCommit(self, request, global_params=None):
+      r"""Fetch Commit details from a Git repository link.
+
+      Args:
+        request: (DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchCommitRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchGitRepositoryLinkCommitResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchCommit')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchCommit.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/connections/{connectionsId}/gitRepositoryLinks/{gitRepositoryLinksId}:fetchCommit',
+        http_method='GET',
+        method_id='developerconnect.projects.locations.connections.gitRepositoryLinks.fetchCommit',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['commitSha', 'pathFilters', 'view'],
+        relative_path='v1/{+name}:fetchCommit',
+        request_field='',
+        request_type_name='DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchCommitRequest',
+        response_type_name='FetchGitRepositoryLinkCommitResponse',
+        supports_download=False,
+    )
+
+    def FetchCommitList(self, request, global_params=None):
+      r"""Fetch a list of Commits from a Git repository link.
+
+      Args:
+        request: (DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchCommitListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchGitRepositoryLinkCommitListResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchCommitList')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchCommitList.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/connections/{connectionsId}/gitRepositoryLinks/{gitRepositoryLinksId}:fetchCommitList',
+        http_method='GET',
+        method_id='developerconnect.projects.locations.connections.gitRepositoryLinks.fetchCommitList',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['pageSize', 'pageToken', 'ref', 'view'],
+        relative_path='v1/{+name}:fetchCommitList',
+        request_field='',
+        request_type_name='DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchCommitListRequest',
+        response_type_name='FetchGitRepositoryLinkCommitListResponse',
+        supports_download=False,
+    )
+
+    def FetchFileBlame(self, request, global_params=None):
+      r"""Fetches blame information for a file or line range in a file.
+
+      Args:
+        request: (DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchFileBlameRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchGitRepositoryLinkFileBlameResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchFileBlame')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchFileBlame.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/connections/{connectionsId}/gitRepositoryLinks/{gitRepositoryLinksId}:fetchFileBlame',
+        http_method='GET',
+        method_id='developerconnect.projects.locations.connections.gitRepositoryLinks.fetchFileBlame',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['firstLine', 'lastLine', 'path', 'ref'],
+        relative_path='v1/{+name}:fetchFileBlame',
+        request_field='',
+        request_type_name='DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchFileBlameRequest',
+        response_type_name='FetchGitRepositoryLinkFileBlameResponse',
+        supports_download=False,
+    )
+
     def FetchGitRefs(self, request, global_params=None):
       r"""Fetch the list of branches or tags for a given repository.
 
@@ -506,6 +668,60 @@ class DeveloperconnectV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchGitRefsRequest',
         response_type_name='FetchGitRefsResponse',
+        supports_download=False,
+    )
+
+    def FetchPullRequest(self, request, global_params=None):
+      r"""Fetch Pull Request details from a Git repository link.
+
+      Args:
+        request: (DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchPullRequestRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PullRequest) The response message.
+      """
+      config = self.GetMethodConfig('FetchPullRequest')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchPullRequest.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/connections/{connectionsId}/gitRepositoryLinks/{gitRepositoryLinksId}:fetchPullRequest',
+        http_method='GET',
+        method_id='developerconnect.projects.locations.connections.gitRepositoryLinks.fetchPullRequest',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['pullRequestId'],
+        relative_path='v1/{+name}:fetchPullRequest',
+        request_field='',
+        request_type_name='DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchPullRequestRequest',
+        response_type_name='PullRequest',
+        supports_download=False,
+    )
+
+    def FetchPullRequestList(self, request, global_params=None):
+      r"""Fetches a list of Pull Requests from the remote repository.
+
+      Args:
+        request: (DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchPullRequestListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchGitRepositoryLinkPullRequestListResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchPullRequestList')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchPullRequestList.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/connections/{connectionsId}/gitRepositoryLinks/{gitRepositoryLinksId}:fetchPullRequestList',
+        http_method='GET',
+        method_id='developerconnect.projects.locations.connections.gitRepositoryLinks.fetchPullRequestList',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+name}:fetchPullRequestList',
+        request_field='',
+        request_type_name='DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchPullRequestListRequest',
+        response_type_name='FetchGitRepositoryLinkPullRequestListResponse',
         supports_download=False,
     )
 
@@ -614,6 +830,60 @@ class DeveloperconnectV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksListRequest',
         response_type_name='ListGitRepositoryLinksResponse',
+        supports_download=False,
+    )
+
+    def ModifyPullRequest(self, request, global_params=None):
+      r"""Modifies a Pull Request in the remote SCM repository associated with a GitRepositoryLink.
+
+      Args:
+        request: (DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksModifyPullRequestRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PullRequest) The response message.
+      """
+      config = self.GetMethodConfig('ModifyPullRequest')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ModifyPullRequest.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/connections/{connectionsId}/gitRepositoryLinks/{gitRepositoryLinksId}:modifyPullRequest',
+        http_method='POST',
+        method_id='developerconnect.projects.locations.connections.gitRepositoryLinks.modifyPullRequest',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:modifyPullRequest',
+        request_field='modifyGitRepositoryLinkPullRequestRequest',
+        request_type_name='DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksModifyPullRequestRequest',
+        response_type_name='PullRequest',
+        supports_download=False,
+    )
+
+    def OpenPullRequest(self, request, global_params=None):
+      r"""Opens a Pull Request in the remote SCM repository associated with a GitRepositoryLink.
+
+      Args:
+        request: (DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksOpenPullRequestRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PullRequest) The response message.
+      """
+      config = self.GetMethodConfig('OpenPullRequest')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    OpenPullRequest.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/connections/{connectionsId}/gitRepositoryLinks/{gitRepositoryLinksId}:openPullRequest',
+        http_method='POST',
+        method_id='developerconnect.projects.locations.connections.gitRepositoryLinks.openPullRequest',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:openPullRequest',
+        request_field='openGitRepositoryLinkPullRequestRequest',
+        request_type_name='DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksOpenPullRequestRequest',
+        response_type_name='PullRequest',
         supports_download=False,
     )
 

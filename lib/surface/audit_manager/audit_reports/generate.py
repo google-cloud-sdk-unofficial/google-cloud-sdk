@@ -27,12 +27,18 @@ from googlecloudsdk.core import properties
 
 _DETAILED_HELP = {
     'DESCRIPTION': 'Generate a new Audit Report.',
-    'EXAMPLES': """ \
+    'EXAMPLES': (
+        """ \
         To generate an Audit Report in the `us-central1` region,
-        for a project with ID `123` for compliance framework `fedramp_moderate` in `odf` format and store it in `gs://testbucketauditmanager` bucket, run:
+        for a project with ID `123` against the compliance framework `organizations/456/locations/global/frameworks/builtin-nist-800-53-revision5` in `odf` format and store it in `gs://testbucketauditmanager` bucket, run:
 
-          $ {command} --project=123 --location=us-central1 --compliance-framework=fedramp_moderate --report-format=odf --gcs-uri=gs://testbucketauditmanager
-        """,
+          $ {command} --project=123 --location=us-central1 --compliance-framework=organizations/456/locations/global/frameworks/builtin-nist-800-53-revision5 --report-format=odf --gcs-uri=gs://testbucketauditmanager
+
+        If the compliance framework is parameterized, to generate the same Audit Report while overriding cloud control parameters defined in the file `overrides.json`, run:
+
+          $ {command} --project=123 --location=us-central1 --compliance-framework=organizations/456/locations/global/frameworks/builtin-nist-800-53-revision5 --report-format=odf --gcs-uri=gs://testbucketauditmanager --parameter-overrides=overrides.json
+        """
+    ),
 }
 
 
@@ -53,6 +59,7 @@ class Generate(base.CreateCommand):
     flags.AddComplianceFrameworkFlag(parser)
     flags.AddReportFormatFlag(parser)
     flags.AddDestinationFlags(parser)
+    flags.AddParameterOverridesFlag(parser)
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 
   def Run(self, args):
@@ -81,6 +88,7 @@ class Generate(base.CreateCommand):
           gcs_uri=args.gcs_uri,
           is_parent_folder=is_parent_folder,
           is_parent_organization=is_parent_organization,
+          parameter_overrides=args.parameter_overrides,
       )
 
     except apitools_exceptions.HttpError as error:

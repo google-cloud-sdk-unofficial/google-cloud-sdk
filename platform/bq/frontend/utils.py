@@ -614,7 +614,9 @@ def CreateExternalTableDefinition(
       external_table_def['sourceFormat'] = None
       external_table_def['objectMetadata'] = object_metadata
     if timestamp_target_precision is not None:
-      external_table_def['timestampTargetPrecision'] = timestamp_target_precision
+      external_table_def['timestampTargetPrecision'] = (
+          timestamp_target_precision
+      )
 
     if external_table_def['sourceFormat'] == 'CSV':
       if autodetect:
@@ -1239,6 +1241,25 @@ def PrintJobMessages(printable_job_info):
     print(messages)
 
 
+def _IsPythonUdf(printable_job_info: dict[str, Any]) -> bool:
+  """Checks if the query statement created a Python UDF.
+
+  Args:
+    printable_job_info: Formatted job info dictionary.
+
+  Returns:
+    True if the query statement includes LANGUAGE python, False otherwise.
+  """
+  query_text = (
+      printable_job_info.get('configuration', {})
+      .get('query', {})
+      .get('query', '')
+  )
+  return bool(
+      re.search(r'\blanguage\s+[\'"`]?python[\'"`]?', query_text, re.IGNORECASE)
+  )
+
+
 def GetJobMessagesForPrinting(printable_job_info):
   """Similar to _PrintJobMessages(), but returns a string, rather than printing."""
   result_lines = []
@@ -1342,6 +1363,26 @@ def GetJobMessagesForPrinting(printable_job_info):
                   stringutil.ensure_str(index_progress_instruction),
               )
           )
+        elif 'AI_INDEX' in printable_job_info['Statement Type']:
+          index_progress_instruction = ''
+          if printable_job_info.get('DDL Operation Performed') in (
+              'CREATE',
+              'REPLACE',
+          ):
+            index_progress_instruction = (
+                'Please query %s.%s.INFORMATION_SCHEMA.AI_INDEXES to check '
+                'the progress of the index.\n'
+            ) % (project_id, dataset_id)
+          result_lines.append(
+              '%s AI index on table %s.%s.%s\n%s'
+              % (
+                  stringutil.ensure_str(op),
+                  stringutil.ensure_str(project_id),
+                  stringutil.ensure_str(dataset_id),
+                  stringutil.ensure_str(table_id),
+                  stringutil.ensure_str(index_progress_instruction),
+              )
+          )
       else:
         result_lines.append(
             '%s %s.%s.%s\n'
@@ -1389,8 +1430,19 @@ def GetJobMessagesForPrinting(printable_job_info):
       result_lines.append('%s temporary routine %s' % (op, temp_object_name))
     else:
       result_lines.append(
-          '%s %s.%s.%s' % (op, project_id, dataset_id, routine_id)
+          f'{stringutil.ensure_str(op)} {stringutil.ensure_str(project_id)}.'
+          f'{stringutil.ensure_str(dataset_id)}.'
+          f'{stringutil.ensure_str(routine_id)}'
       )
+      if printable_job_info.get('DDL Operation Performed') in (
+          'CREATE',
+          'REPLACE',
+      ) and _IsPythonUdf(printable_job_info):
+        result_lines.append(
+            f'Please query {stringutil.ensure_str(project_id)}.'
+            f'{stringutil.ensure_str(dataset_id)}.INFORMATION_SCHEMA.ROUTINES'
+            ' to check the build status.'
+        )
   elif 'DDL Target Row Access Policy' in printable_job_info:
     ddl_target_row_access_policy = printable_job_info[
         'DDL Target Row Access Policy'

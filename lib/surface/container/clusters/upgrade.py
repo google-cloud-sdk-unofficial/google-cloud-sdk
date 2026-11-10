@@ -189,6 +189,17 @@ class Upgrade(base.Command):
                        console_attr.SafeText(error)))
       cluster = None
 
+    if (
+        cluster is not None
+        and not args.master
+        and not args.node_pool
+        and not cluster.nodePools
+    ):
+      raise util.Error(
+          'Cluster [{0}] has no node pools, so there are no nodes to upgrade.'
+          ' To upgrade the control plane, use --master.'.format(cluster.name)
+      )
+
     try:
       server_conf = adapter.GetServerConfig(project_id, location)
     except (exceptions.HttpException, apitools_exceptions.HttpForbiddenError,

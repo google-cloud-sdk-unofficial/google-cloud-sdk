@@ -306,7 +306,7 @@ class Create(base.CreateCommand):
     if len(configuration_zones) == 2 and args.migrate_disks_to_regional:
       instance, primary_zone, secondary_zone = utils.ValidateReplicaZones(
           holder,
-          args.instance_name,
+          args.instance_name or ha_controller_ref.Name(),
           ha_controller_ref.project,
           ha_controller_ref.region,
           configuration_zones,

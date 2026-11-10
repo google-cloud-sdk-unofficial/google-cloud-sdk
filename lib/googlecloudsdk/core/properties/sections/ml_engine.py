@@ -48,3 +48,11 @@ class _SectionMlEngine(_Section):
             ' the one to the Python interpreter found on system `PATH`.'
         ),
     )
+    self.location = self._Add(
+        'location',
+        help_text=(
+            'Default location to use when working with Recognizer resources.'
+            ' When a `location` value is required but not provided, the command'
+            ' will fall back to this value, if set.'
+        ),
+    )

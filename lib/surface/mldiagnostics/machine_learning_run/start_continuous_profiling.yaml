@@ -28,10 +28,14 @@
       `--kind=snapshot`. On-demand profiler sessions can't be captured while
       continuous profiling is active.
 
+      Continuous profiling records device (TPU) traces only. Host and Python
+      tracing are always disabled for continuous profiling, because their trace
+      data is not bounded by the circular buffer.
+
       Only one continuous profiling session can be active on a machine learning
-      run at a time. The tracer levels and XProf server port can't be changed
-      while continuous profiling is active. To change them, stop continuous
-      profiling by running
+      run at a time. The device tracer level and XProf server port can't be
+      changed while continuous profiling is active. To change them, stop
+      continuous profiling by running
       `gcloud alpha mldiagnostics machine-learning-run stop-continuous-profiling`,
       and then start it again.
     examples: |-
@@ -40,10 +44,10 @@
 
           $ {command} --machine-learning-run=my-run --location=us-central1 --targets=my-node-0,my-node-1
 
-      To start continuous profiling with the lowest-overhead host tracer level
-      and device tracing disabled, run:
+      To start continuous profiling when the XProf profiler server in your
+      workload listens on port 9012, run:
 
-          $ {command} --machine-learning-run=my-run --location=us-central1 --targets=my-node-0 --host-tracer-level=critical --device-tracer-level=disabled
+          $ {command} --machine-learning-run=my-run --location=us-central1 --targets=my-node-0 --xprof-server-port=9012
 
       To list the profiler targets of the machine learning run `my-run`, run:
 
@@ -72,30 +76,6 @@
         startContinuousProfilingRequest.profilerTargets: '{__relative_name__}'
       required: true
       repeated: true
-    - arg_name: host-tracer-level
-      api_field: startContinuousProfilingRequest.hostTracerLevel
-      required: false
-      default: info
-      help_text: |-
-        Host tracer level for the session. If the field is not set or unspecified,
-        the default is `HOST_TRACER_LEVEL_INFO`.
-      choices:
-      - arg_value: disabled
-        enum_value: HOST_TRACER_LEVEL_DISABLED
-        help_text: |-
-          Tracer level is disabled.
-      - arg_value: critical
-        enum_value: HOST_TRACER_LEVEL_CRITICAL
-        help_text: |-
-          Tracer level is critical.
-      - arg_value: info
-        enum_value: HOST_TRACER_LEVEL_INFO
-        help_text: |-
-          Tracer level is info.
-      - arg_value: verbose
-        enum_value: HOST_TRACER_LEVEL_VERBOSE
-        help_text: |-
-          Tracer level is verbose.
     - arg_name: device-tracer-level
       api_field: startContinuousProfilingRequest.deviceTracerLevel
       required: false
@@ -110,22 +90,6 @@
           Tracer level is disabled.
       - arg_value: enabled
         enum_value: DEVICE_TRACER_LEVEL_ENABLED
-        help_text: |-
-          Tracer level is enabled.
-    - arg_name: python-tracer-level
-      api_field: startContinuousProfilingRequest.pythonTracerLevel
-      required: false
-      default: disabled
-      help_text: |-
-        Python tracer level for the session. If the field is not set or
-        unspecified, the default is `PYTHON_TRACER_LEVEL_DISABLED`.
-      choices:
-      - arg_value: disabled
-        enum_value: PYTHON_TRACER_LEVEL_DISABLED
-        help_text: |-
-          Tracer level is disabled.
-      - arg_value: enabled
-        enum_value: PYTHON_TRACER_LEVEL_ENABLED
         help_text: |-
           Tracer level is enabled.
     - arg_name: xprof-server-port

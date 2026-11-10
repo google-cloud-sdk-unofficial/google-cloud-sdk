@@ -1,7 +1,6 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
-  hidden: true
   help_text:
     brief: List Backup and DR restore verification plan associations.
     description: List restore verification plan associations in the project for a specified restore verification plan.
@@ -11,10 +10,12 @@
         $ {command} --restore-verification-plan=my-plan --location=us-central1
 
   request:
-    ALPHA:
-      api_version: v1alpha
+    GA:
+      api_version: v1
     BETA:
       api_version: v1beta
+    ALPHA:
+      api_version: v1alpha
     collection: backupdr.projects.locations.restoreVerificationPlans.associations
 
   response:

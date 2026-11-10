@@ -14,6 +14,7 @@
 # limitations under the License.
 """Utilities for Audit Manager API, Audit Report Endpoints."""
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.audit_manager import constants
 from googlecloudsdk.api_lib.audit_manager import util
 
@@ -43,6 +44,7 @@ class AuditReportsClient(object):
       gcs_uri: str,
       is_parent_folder: bool,
       is_parent_organization: bool,
+      parameter_overrides=None,
   ):
     """Generate an Audit Report.
 
@@ -56,6 +58,9 @@ class AuditReportsClient(object):
       is_parent_folder: Whether the parent is folder and not project.
       is_parent_organization: Whether the parent is organization and not
         project.
+      parameter_overrides: Optional dict mapping cloud control resource names
+        to `{"parameters": [...]}`, in the shape of the API's
+        `parameterOverrides` map.
 
     Returns:
       Described audit operation resource.
@@ -69,6 +74,11 @@ class AuditReportsClient(object):
     inner_req.complianceFramework = compliance_framework
     inner_req.reportFormat = self.report_format_map[report_format.lower()]
     inner_req.gcsUri = gcs_uri
+    if parameter_overrides is not None:
+      inner_req.parameterOverrides = encoding.DictToMessage(
+          parameter_overrides,
+          self.messages.GenerateAuditReportRequest.ParameterOverridesValue,
+      )
 
     if is_parent_folder:
       service = self.client.folders_locations_auditReports

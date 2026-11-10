@@ -700,7 +700,7 @@ To disable Default Compute Class in an existing cluster, explicitly set flag
 
 
 def AddDefaultComputeClassFlag(
-    parser: parser_arguments.ArgumentInterceptor, hidden: bool = True
+    parser: parser_arguments.ArgumentInterceptor, hidden: bool = False
 ) -> None:
   """Adds default compute class flag to parser.
 

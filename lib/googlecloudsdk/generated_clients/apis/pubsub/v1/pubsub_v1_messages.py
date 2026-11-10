@@ -3126,6 +3126,8 @@ class Subscription(_messages.Message):
   may be set.
 
   Enums:
+    EditionValueValuesEnum: Optional. The edition of the subscription.
+      Defaults to ENTERPRISE.
     StateValueValuesEnum: Output only. An output-only field indicating whether
       or not the subscription can receive messages.
 
@@ -3175,6 +3177,8 @@ class Subscription(_messages.Message):
       topic and don't retain any backlog. `Pull` and `StreamingPull` requests
       will return FAILED_PRECONDITION. If the subscription is a push
       subscription, pushes to the endpoint will not be made.
+    edition: Optional. The edition of the subscription. Defaults to
+      ENTERPRISE.
     enableExactlyOnceDelivery: Optional. If true, Pub/Sub provides the
       following guarantees for the delivery of a message with a given value of
       `message_id` on this subscription: * The message sent to a subscriber is
@@ -3257,6 +3261,18 @@ class Subscription(_messages.Message):
       it is ignored if it is set in any requests.
   """
 
+  class EditionValueValuesEnum(_messages.Enum):
+    r"""Optional. The edition of the subscription. Defaults to ENTERPRISE.
+
+    Values:
+      EDITION_UNSPECIFIED: Default value. Treated as ENTERPRISE.
+      ENTERPRISE: Enterprise edition.
+      ENTERPRISE_PLUS: Enterprise Plus edition.
+    """
+    EDITION_UNSPECIFIED = 0
+    ENTERPRISE = 1
+    ENTERPRISE_PLUS = 2
+
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. An output-only field indicating whether or not the
     subscription can receive messages.
@@ -3332,23 +3348,24 @@ class Subscription(_messages.Message):
   cloudStorageConfig = _messages.MessageField('CloudStorageConfig', 5)
   deadLetterPolicy = _messages.MessageField('DeadLetterPolicy', 6)
   detached = _messages.BooleanField(7)
-  enableExactlyOnceDelivery = _messages.BooleanField(8)
-  enableMessageOrdering = _messages.BooleanField(9)
-  expirationPolicy = _messages.MessageField('ExpirationPolicy', 10)
-  filter = _messages.StringField(11)
-  labels = _messages.MessageField('LabelsValue', 12)
-  messageRetentionDuration = _messages.StringField(13)
-  messageTransforms = _messages.MessageField('MessageTransform', 14, repeated=True)
-  name = _messages.StringField(15)
-  pubsubExportConfig = _messages.MessageField('PubSubExportConfig', 16)
-  pubsubliteExportConfig = _messages.MessageField('PubSubLiteExportConfig', 17)
-  pushConfig = _messages.MessageField('PushConfig', 18)
-  retainAckedMessages = _messages.BooleanField(19)
-  retryPolicy = _messages.MessageField('RetryPolicy', 20)
-  state = _messages.EnumField('StateValueValuesEnum', 21)
-  tags = _messages.MessageField('TagsValue', 22)
-  topic = _messages.StringField(23)
-  topicMessageRetentionDuration = _messages.StringField(24)
+  edition = _messages.EnumField('EditionValueValuesEnum', 8)
+  enableExactlyOnceDelivery = _messages.BooleanField(9)
+  enableMessageOrdering = _messages.BooleanField(10)
+  expirationPolicy = _messages.MessageField('ExpirationPolicy', 11)
+  filter = _messages.StringField(12)
+  labels = _messages.MessageField('LabelsValue', 13)
+  messageRetentionDuration = _messages.StringField(14)
+  messageTransforms = _messages.MessageField('MessageTransform', 15, repeated=True)
+  name = _messages.StringField(16)
+  pubsubExportConfig = _messages.MessageField('PubSubExportConfig', 17)
+  pubsubliteExportConfig = _messages.MessageField('PubSubLiteExportConfig', 18)
+  pushConfig = _messages.MessageField('PushConfig', 19)
+  retainAckedMessages = _messages.BooleanField(20)
+  retryPolicy = _messages.MessageField('RetryPolicy', 21)
+  state = _messages.EnumField('StateValueValuesEnum', 22)
+  tags = _messages.MessageField('TagsValue', 23)
+  topic = _messages.StringField(24)
+  topicMessageRetentionDuration = _messages.StringField(25)
 
 
 class TestIamPermissionsRequest(_messages.Message):
@@ -3430,6 +3447,8 @@ class Topic(_messages.Message):
   r"""A topic resource.
 
   Enums:
+    EditionValueValuesEnum: Optional. The edition of the topic. Defaults to
+      ENTERPRISE.
     StateValueValuesEnum: Output only. An output-only field indicating the
       state of the topic.
 
@@ -3443,6 +3462,7 @@ class Topic(_messages.Message):
       with Pub/Sub resources.
 
   Fields:
+    edition: Optional. The edition of the topic. Defaults to ENTERPRISE.
     ingestionDataSourceSettings: Optional. Settings for ingestion from a data
       source into this topic.
     kmsKeyName: Optional. The resource name of the Cloud KMS CryptoKey to be
@@ -3487,6 +3507,18 @@ class Topic(_messages.Message):
       umentation_domain}/pubsub/docs/tags for more information on using tags
       with Pub/Sub resources.
   """
+
+  class EditionValueValuesEnum(_messages.Enum):
+    r"""Optional. The edition of the topic. Defaults to ENTERPRISE.
+
+    Values:
+      EDITION_UNSPECIFIED: Default value. Treated as ENTERPRISE.
+      ENTERPRISE: Enterprise edition.
+      ENTERPRISE_PLUS: Enterprise Plus edition.
+    """
+    EDITION_UNSPECIFIED = 0
+    ENTERPRISE = 1
+    ENTERPRISE_PLUS = 2
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. An output-only field indicating the state of the topic.
@@ -3555,18 +3587,19 @@ class Topic(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  ingestionDataSourceSettings = _messages.MessageField('IngestionDataSourceSettings', 1)
-  kmsKeyName = _messages.StringField(2)
-  labels = _messages.MessageField('LabelsValue', 3)
-  messageRetentionDuration = _messages.StringField(4)
-  messageStoragePolicy = _messages.MessageField('MessageStoragePolicy', 5)
-  messageTransforms = _messages.MessageField('MessageTransform', 6, repeated=True)
-  name = _messages.StringField(7)
-  replicationPolicy = _messages.MessageField('ReplicationPolicy', 8)
-  satisfiesPzs = _messages.BooleanField(9)
-  schemaSettings = _messages.MessageField('SchemaSettings', 10)
-  state = _messages.EnumField('StateValueValuesEnum', 11)
-  tags = _messages.MessageField('TagsValue', 12)
+  edition = _messages.EnumField('EditionValueValuesEnum', 1)
+  ingestionDataSourceSettings = _messages.MessageField('IngestionDataSourceSettings', 2)
+  kmsKeyName = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  messageRetentionDuration = _messages.StringField(5)
+  messageStoragePolicy = _messages.MessageField('MessageStoragePolicy', 6)
+  messageTransforms = _messages.MessageField('MessageTransform', 7, repeated=True)
+  name = _messages.StringField(8)
+  replicationPolicy = _messages.MessageField('ReplicationPolicy', 9)
+  satisfiesPzs = _messages.BooleanField(10)
+  schemaSettings = _messages.MessageField('SchemaSettings', 11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  tags = _messages.MessageField('TagsValue', 13)
 
 
 class TransformedMessage(_messages.Message):

@@ -52,14 +52,6 @@ class Collections(enum.Enum):
       ['projectsId', 'catalogsId'],
       True
   )
-  ICEBERG_V1_RESTCATALOG_V1_PROJECTS_CATALOGS_NAMESPACES_VIEWS = (
-      'iceberg.v1.restcatalog.v1.projects.catalogs.namespaces.views',
-      'restcatalog/v1/projects/{projectsId}/catalogs/{catalogsId}/namespaces/'
-      '{namespacesId}/views/{viewsId}',
-      {},
-      ['projectsId', 'catalogsId', 'namespacesId', 'viewsId'],
-      True
-  )
   HIVE_V1_PROJECTS_CATALOGS = (
       'hive.v1.projects.catalogs',
       '{+name}',
@@ -121,6 +113,17 @@ class Collections(enum.Enum):
           '':
               'restcatalog/v1/projects/{projectsId}/catalogs/{catalogsId}/'
               'namespaces/{namespacesId}/tables/{tablesId}',
+      },
+      ['name'],
+      True
+  )
+  ICEBERG_V1_RESTCATALOG_V1_PROJECTS_CATALOGS_NAMESPACES_VIEWS = (
+      'iceberg.v1.restcatalog.v1.projects.catalogs.namespaces.views',
+      'restcatalog/v1/{+name}',
+      {
+          '':
+              'restcatalog/v1/projects/{projectsId}/catalogs/{catalogsId}/'
+              'namespaces/{namespacesId}/views/{viewsId}',
       },
       ['name'],
       True

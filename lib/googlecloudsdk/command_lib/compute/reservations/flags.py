@@ -41,17 +41,25 @@ def GetRequireSpecificAllocation(is_update=False):
   Returns:
     The --require-specific-reservation flag.
   """
-  help_text = """\
-  Indicates whether the reservation can be consumed by VMs with "any reservation"
-  defined. If enabled, then only VMs that target this reservation by name using
-  `--reservation-affinity=specific` can consume from this reservation.
-  """
   if is_update:
+    help_text = """\
+    Whether VMs with matching properties can automatically consume the
+    reservation, or whether VMs must target the reservation to consume it. If
+    enabled, then only VMs that target this reservation by name with the
+    `--reservation-affinity=specific` flag can consume it. Before you enable or
+    disable this configuration, you must stop, suspend, or delete all VMs that
+    consume the reservation.
+    """
     return base.Argument(
         '--require-specific-reservation',
         action=arg_parsers.StoreTrueFalseAction,
         help=help_text,
     )
+  help_text = """\
+  Indicates whether the reservation can be consumed by VMs with "any reservation"
+  defined. If enabled, then only VMs that target this reservation by name using
+  `--reservation-affinity=specific` can consume from this reservation.
+  """
   return base.Argument(
       '--require-specific-reservation', action='store_true', help=help_text)
 

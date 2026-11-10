@@ -61,6 +61,7 @@ class _Sections(object):
       'auth': '_SectionAuth',
       'batch': '_SectionBatch',
       'billing': '_SectionBilling',
+      'binauthz': '_SectionBinauthz',
       'builds': '_SectionBuilds',
       'code': '_SectionCode',
       'colab': '_SectionColab',

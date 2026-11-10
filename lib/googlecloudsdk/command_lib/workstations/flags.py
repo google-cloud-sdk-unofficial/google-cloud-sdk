@@ -612,7 +612,7 @@ def AddPdDiskType(parser):
   )
 
 
-def AddNoPersistentStorageOrPdOrDisk(parser, release_track=None):
+def AddNoPersistentStorageOrPdOrDisk(parser):
   """Adds a --no-persistent-storage or group of persistent directory flags to the given parser."""
   top_level_mutex_group = parser.add_mutually_exclusive_group()
 
@@ -628,9 +628,8 @@ def AddNoPersistentStorageOrPdOrDisk(parser, release_track=None):
   AddDiskTypeFlag(disk_group)
   AddDiskReclaimPolicyFlag(disk_group)
   AddDiskArchiveTimeoutFlag(disk_group)
-  if release_track != base.ReleaseTrack.GA:
-    AddDiskProvisionedIopsFlag(disk_group)
-    AddDiskProvisionedThroughputFlag(disk_group)
+  AddDiskProvisionedIopsFlag(disk_group)
+  AddDiskProvisionedThroughputFlag(disk_group)
   disk_size_snapshot_group = disk_group.add_mutually_exclusive_group()
   AddDiskSizeFlag(disk_size_snapshot_group)
   AddDiskSnapshotFlag(disk_size_snapshot_group)
@@ -699,14 +698,11 @@ def AddPdSourceSnapshotArg():
   )
 
 
-def AddPersistentDirectoriesOrHyperdisks(
-    parser, use_default=True, release_track=None
-):
+def AddPersistentDirectoriesOrHyperdisks(parser, use_default=True):
   """Adds a --pd-disk-size, --pd-disk-type, and --pd-source-snapshot flag to the given parser."""
   AddDiskArchiveTimeoutFlag(parser)
-  if release_track != base.ReleaseTrack.GA:
-    AddDiskProvisionedIopsFlag(parser)
-    AddDiskProvisionedThroughputFlag(parser)
+  AddDiskProvisionedIopsFlag(parser)
+  AddDiskProvisionedThroughputFlag(parser)
   group = parser.add_mutually_exclusive_group()
   # OPTION 1: "--pd-source-snapshot"
   AddPdSourceSnapshotArg().AddToParser(group)

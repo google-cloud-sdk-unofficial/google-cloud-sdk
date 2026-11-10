@@ -39,7 +39,7 @@ from googlecloudsdk.core.util import files
 
 # `Pipeline` fields that `pipeline_compiler.CompilePipeline` owns; listing them
 # clears any the new body omits.
-_PIPELINE_UPDATE_MASK = "spec,execution_identity,output_artifact_storage"
+_PIPELINE_UPDATE_MASK = "spec,executionIdentity,outputArtifactStorage"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -49,7 +49,7 @@ class DeployResult:
   Attributes:
     pipeline_name: `projects/*/locations/*/pipelines/*` name of the pipeline.
     version_id: Version ID of this deployment (`vYYYYmmdd-HHMMSS`).
-    artifacts: `gs://` URIs of the artifacts uploaded for all actions.
+    artifacts: `gs://` URIs of the artifacts uploaded for all data models.
     operation: Name of the create or update long-running operation, or None if
       the API response omits it.
     status: `SUCCEEDED` once the operation completed; `PENDING` with `--async`
@@ -101,7 +101,7 @@ def Deploy(
     storage_client: gcs_client.GcsClient | None = None,
     api_client: orchestration_client.OrchestrationClient | None = None,
 ) -> dict[str, Any]:
-  """Packages local action artifacts, uploads them, and deploys the pipeline.
+  """Packages the dbt data models, uploads them, and deploys the pipeline.
 
   Args:
     args: The parsed command-line arguments.
@@ -217,11 +217,11 @@ def _DeployLoadedPipeline(
   # Looked up first so auth and IAM errors surface before anything is uploaded.
   existing_pipeline = api_client.GetPipeline(pipeline_name)
   version_id = _GenerateVersionId()
-  uploaded_artifacts_by_action = _PackageAndUploadActions(
+  uploaded_artifacts_by_model = _PackageAndUploadDbtModels(
       loaded_pipeline, version_id, packager, storage_client
   )
   compiled_pipeline = pipeline_compiler.CompilePipeline(
-      loaded_pipeline, uploaded_artifacts_by_action, version_id
+      loaded_pipeline, uploaded_artifacts_by_model, version_id
   )
   operation = _CreateOrUpdatePipeline(
       api_client, compiled_pipeline, update=existing_pipeline is not None
@@ -230,7 +230,7 @@ def _DeployLoadedPipeline(
       api_client, compiled_pipeline.pipeline_id, operation, args.async_
   )
   return _BuildDeployResult(
-      compiled_pipeline, uploaded_artifacts_by_action, operation, status
+      compiled_pipeline, uploaded_artifacts_by_model, operation, status
   )
 
 
@@ -239,15 +239,15 @@ def _GenerateVersionId() -> str:
   return datetime.datetime.now(datetime.timezone.utc).strftime("v%Y%m%d-%H%M%S")
 
 
-def _PackageAndUploadActions(
+def _PackageAndUploadDbtModels(
     loaded_pipeline: pipeline_loader.LoadedPipeline,
     version_id: str,
     packager: dbt.DbtPackager,
     storage_client: gcs_client.GcsClient,
 ) -> dict[str, tuple[gcs_client.UploadedArtifact, ...]]:
-  """Packages all actions, then uploads their files to Cloud Storage."""
+  """Packages all dbt data models, then uploads their files to Cloud Storage."""
   with files.TemporaryDirectory() as staging_directory:
-    packaged_artifacts = _PackageActions(
+    packaged_artifacts = _PackageDbtModels(
         loaded_pipeline, packager, pathlib.Path(staging_directory)
     )
     return _UploadPackagedArtifacts(
@@ -255,21 +255,36 @@ def _PackageAndUploadActions(
     )
 
 
-def _PackageActions(
+def _PackageDbtModels(
     loaded_pipeline: pipeline_loader.LoadedPipeline,
     packager: dbt.DbtPackager,
     staging_directory: pathlib.Path,
 ) -> list[models.PackagedArtifact]:
-  """Packages each action in `loaded_pipeline` into `staging_directory`."""
-  packaging_context = models.PackagingContext(
-      pipeline_id=loaded_pipeline.pipeline_id,
-      target=loaded_pipeline.target,
-      staging_dir=staging_directory,
-  )
+  """Packages each dbt data model into its own staging subdirectory.
+
+  The subdirectories of `staging_directory` are named after the position of
+  the data model, not its ID: IDs that differ only in case would otherwise
+  share staged files on case-insensitive file systems.
+
+  Args:
+    loaded_pipeline: The pipeline whose dbt data models are packaged.
+    packager: Packages one dbt data model.
+    staging_directory: Empty directory that receives the staged files.
+
+  Returns:
+    The packaged artifact of each dbt data model, in `dbt_models` order.
+  """
   packaged_artifacts = []
-  for action in loaded_pipeline.actions:
-    log.status.Print(f"Packaging action '{action.name}'...")
-    packaged_artifacts.append(packager.Package(action, packaging_context))
+  for index, dbt_model in enumerate(loaded_pipeline.dbt_models):
+    model_staging_directory = staging_directory / str(index)
+    model_staging_directory.mkdir()
+    packaging_context = models.PackagingContext(
+        pipeline_id=loaded_pipeline.pipeline_id,
+        target=loaded_pipeline.target,
+        staging_dir=model_staging_directory,
+    )
+    log.status.Print(f"Packaging data model '{dbt_model.id}'...")
+    packaged_artifacts.append(packager.Package(dbt_model, packaging_context))
   return packaged_artifacts
 
 
@@ -279,27 +294,27 @@ def _UploadPackagedArtifacts(
     packaged_artifacts: Sequence[models.PackagedArtifact],
     storage_client: gcs_client.GcsClient,
 ) -> dict[str, tuple[gcs_client.UploadedArtifact, ...]]:
-  """Uploads each action's packaged files to `<version_prefix>/<action>`."""
+  """Uploads each data model's packaged files to `<version_prefix>/<id>`."""
   artifact_prefix = gcs_client.BuildVersionedArtifactPrefix(
       loaded_pipeline.pipeline_id,
       version_id,
       loaded_pipeline.artifact_path_prefix,
   )
-  uploaded_artifacts_by_action = {}
+  uploaded_artifacts_by_model = {}
   for packaged_artifact in packaged_artifacts:
-    action_prefix = f"{artifact_prefix}/{packaged_artifact.action_name}"
+    model_prefix = f"{artifact_prefix}/{packaged_artifact.model_id}"
     log.status.Print(
-        f"Uploading artifacts of action '{packaged_artifact.action_name}' to"
-        f" gs://{loaded_pipeline.artifact_bucket}/{action_prefix}/..."
+        f"Uploading artifacts of data model '{packaged_artifact.model_id}' to"
+        f" gs://{loaded_pipeline.artifact_bucket}/{model_prefix}/..."
     )
-    uploaded_artifacts_by_action[packaged_artifact.action_name] = (
+    uploaded_artifacts_by_model[packaged_artifact.model_id] = (
         storage_client.UploadWithPrefix(
             packaged_artifact.files,
             loaded_pipeline.artifact_bucket,
-            action_prefix,
+            model_prefix,
         )
     )
-  return uploaded_artifacts_by_action
+  return uploaded_artifacts_by_model
 
 
 def _CreateOrUpdatePipeline(
@@ -353,7 +368,7 @@ def _WaitForDeployment(
 
 def _BuildDeployResult(
     compiled_pipeline: pipeline_compiler.CompiledPipeline,
-    uploaded_artifacts_by_action: Mapping[
+    uploaded_artifacts_by_model: Mapping[
         str, Sequence[gcs_client.UploadedArtifact]
     ],
     operation: Mapping[str, Any],
@@ -361,7 +376,7 @@ def _BuildDeployResult(
 ) -> dict[str, Any]:
   """Builds the `DeployResult` dict returned by the `deploy` command."""
   uploaded_artifacts = itertools.chain.from_iterable(
-      uploaded_artifacts_by_action.values()
+      uploaded_artifacts_by_model.values()
   )
   return dataclasses.asdict(
       DeployResult(

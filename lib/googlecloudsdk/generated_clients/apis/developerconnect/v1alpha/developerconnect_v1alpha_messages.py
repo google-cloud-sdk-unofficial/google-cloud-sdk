@@ -107,6 +107,33 @@ class AccountConnector(_messages.Message):
   updateTime = _messages.StringField(11)
 
 
+class AddGitRepositoryLinkPullRequestCommentRequest(_messages.Message):
+  r"""Request message for AddGitRepositoryLinkPullRequestComment.
+
+  Fields:
+    comment: Required. The comment to add.
+    pullRequestId: Required. The ID of the Pull Request.
+  """
+
+  comment = _messages.MessageField('PullRequestComment', 1)
+  pullRequestId = _messages.StringField(2)
+
+
+class AddGitRepositoryLinkPullRequestReviewCommentRequest(_messages.Message):
+  r"""Request message for AddGitRepositoryLinkPullRequestReviewComment.
+
+  Fields:
+    comment: Required. The review comment to add.
+    commitId: Optional. The commit SHA to comment on. If not specified,
+      defaults to the HEAD commit of the Pull Request.
+    pullRequestId: Required. The ID of the Pull Request.
+  """
+
+  comment = _messages.MessageField('PullRequestReviewComment', 1)
+  commitId = _messages.StringField(2)
+  pullRequestId = _messages.StringField(3)
+
+
 class AppHubService(_messages.Message):
   r"""AppHubService represents the App Hub Service.
 
@@ -278,6 +305,20 @@ class BitbucketDataCenterConfig(_messages.Message):
   serviceDirectoryConfig = _messages.MessageField('ServiceDirectoryConfig', 5)
   sslCaCertificate = _messages.StringField(6)
   webhookSecretSecretVersion = _messages.StringField(7)
+
+
+class BlameRange(_messages.Message):
+  r"""BlameRange represents blame information for a range of lines.
+
+  Fields:
+    commit: The commit metadata for this line range.
+    firstLine: The 1-indexed starting line number of the range (inclusive).
+    lastLine: The 1-indexed ending line number of the range (inclusive).
+  """
+
+  commit = _messages.MessageField('SCMCommit', 1)
+  firstLine = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  lastLine = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
 class Connection(_messages.Message):
@@ -915,6 +956,38 @@ class DeveloperconnectProjectsLocationsConnectionsGetRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
 
 
+class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksAddPullRequestCommentRequest(_messages.Message):
+  r"""A DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksAddPullR
+  equestCommentRequest object.
+
+  Fields:
+    addGitRepositoryLinkPullRequestCommentRequest: A
+      AddGitRepositoryLinkPullRequestCommentRequest resource to be passed as
+      the request body.
+    name: Required. The resource name of the GitRepositoryLink in the format
+      `projects/*/locations/*/connections/*/gitRepositoryLinks/*`.
+  """
+
+  addGitRepositoryLinkPullRequestCommentRequest = _messages.MessageField('AddGitRepositoryLinkPullRequestCommentRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksAddPullRequestReviewCommentRequest(_messages.Message):
+  r"""A DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksAddPullR
+  equestReviewCommentRequest object.
+
+  Fields:
+    addGitRepositoryLinkPullRequestReviewCommentRequest: A
+      AddGitRepositoryLinkPullRequestReviewCommentRequest resource to be
+      passed as the request body.
+    name: Required. The resource name of the GitRepositoryLink in the format
+      `projects/*/locations/*/connections/*/gitRepositoryLinks/*`.
+  """
+
+  addGitRepositoryLinkPullRequestReviewCommentRequest = _messages.MessageField('AddGitRepositoryLinkPullRequestReviewCommentRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksCreateRequest(_messages.Message):
   r"""A
   DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksCreateRequest
@@ -981,6 +1054,148 @@ class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksDeleteReques
   validateOnly = _messages.BooleanField(4)
 
 
+class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksDiffCommitRequest(_messages.Message):
+  r"""A DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksDiffComm
+  itRequest object.
+
+  Fields:
+    baseSha: Required. The base commit SHA or ref.
+    headSha: Required. The head commit SHA or ref.
+    name: Required. The resource name of the GitRepositoryLink.
+    pathFilters: Optional. Path patterns or exact paths to filter returned
+      files. When `path_filters` is specified, `FileDiff.patch` is populated
+      for all matching files (use `["**"]` to include patches for all changed
+      files). When `path_filters` is omitted or empty, the full list of
+      `FileDiff` is returned without patch diffs (`FileDiff.patch` is empty).
+  """
+
+  baseSha = _messages.StringField(1)
+  headSha = _messages.StringField(2)
+  name = _messages.StringField(3, required=True)
+  pathFilters = _messages.StringField(4, repeated=True)
+
+
+class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchCommitListRequest(_messages.Message):
+  r"""A DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchCom
+  mitListRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. The level of commit details to return in
+      the response. Only `BASIC` is supported; `FULL` returns
+      `INVALID_ARGUMENT`. Defaults to `BASIC` if unspecified. Use
+      `FetchGitRepositoryLinkCommit` to get file diffs for a single commit.
+
+  Fields:
+    name: Required. The resource name of the GitRepositoryLink in the format
+      `projects/*/locations/*/connections/*/gitRepositoryLinks/*`.
+    pageSize: Optional. Number of results to return in the list. Default is
+      50. Max is 100.
+    pageToken: Optional. A page token, received from a previous
+      `FetchGitRepositoryLinkCommitList` call. Provide this to retrieve the
+      subsequent page. When paginating, all other parameters provided to
+      `FetchGitRepositoryLinkCommitList` must match the call that provided the
+      page token.
+    ref: Optional. The commit SHA, or symbolic revision (for example, branch
+      name, tag, or Git reference) from which to start listing commits.
+    view: Optional. The level of commit details to return in the response.
+      Only `BASIC` is supported; `FULL` returns `INVALID_ARGUMENT`. Defaults
+      to `BASIC` if unspecified. Use `FetchGitRepositoryLinkCommit` to get
+      file diffs for a single commit.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The level of commit details to return in the response. Only
+    `BASIC` is supported; `FULL` returns `INVALID_ARGUMENT`. Defaults to
+    `BASIC` if unspecified. Use `FetchGitRepositoryLinkCommit` to get file
+    diffs for a single commit.
+
+    Values:
+      COMMIT_VIEW_UNSPECIFIED: Unspecified, defaults to BASIC.
+      BASIC: Basic view, returns commit metadata but no file diffs.
+      FULL: Full view, returns commit metadata and file diffs.
+    """
+    COMMIT_VIEW_UNSPECIFIED = 0
+    BASIC = 1
+    FULL = 2
+
+  name = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  ref = _messages.StringField(4)
+  view = _messages.EnumField('ViewValueValuesEnum', 5)
+
+
+class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchCommitRequest(_messages.Message):
+  r"""A DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchCom
+  mitRequest object.
+
+  Enums:
+    ViewValueValuesEnum: Optional. The level of commit details to return in
+      the response. Defaults to `FULL` if unspecified. In `FULL` view, `files`
+      metadata (paths and statuses) are returned; `path_filters` must also be
+      specified to populate line patch hunks.
+
+  Fields:
+    commitSha: Required. The commit SHA, or symbolic revision (for example,
+      branch name, tag, or Git reference).
+    name: Required. The resource name of the GitRepositoryLink in the format
+      `projects/*/locations/*/connections/*/gitRepositoryLinks/*`.
+    pathFilters: Optional. Path patterns or exact paths to filter returned
+      files (only applicable in `FULL` view). When `path_filters` is
+      specified, `FileDiff.patch` is populated for all matching files (use
+      `["**"]` to include patches for all changed files). When `path_filters`
+      is omitted or empty, the full list of `FileDiff` is returned without
+      patch diffs (`FileDiff.patch` is empty).
+    view: Optional. The level of commit details to return in the response.
+      Defaults to `FULL` if unspecified. In `FULL` view, `files` metadata
+      (paths and statuses) are returned; `path_filters` must also be specified
+      to populate line patch hunks.
+  """
+
+  class ViewValueValuesEnum(_messages.Enum):
+    r"""Optional. The level of commit details to return in the response.
+    Defaults to `FULL` if unspecified. In `FULL` view, `files` metadata (paths
+    and statuses) are returned; `path_filters` must also be specified to
+    populate line patch hunks.
+
+    Values:
+      COMMIT_VIEW_UNSPECIFIED: Unspecified, defaults to BASIC.
+      BASIC: Basic view, returns commit metadata but no file diffs.
+      FULL: Full view, returns commit metadata and file diffs.
+    """
+    COMMIT_VIEW_UNSPECIFIED = 0
+    BASIC = 1
+    FULL = 2
+
+  commitSha = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  pathFilters = _messages.StringField(3, repeated=True)
+  view = _messages.EnumField('ViewValueValuesEnum', 4)
+
+
+class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchFileBlameRequest(_messages.Message):
+  r"""A DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchFil
+  eBlameRequest object.
+
+  Fields:
+    firstLine: Optional. The 1-indexed starting line number of the range to
+      blame (inclusive). If not specified, blame begins at line 1.
+    lastLine: Optional. The 1-indexed ending line number of the range to blame
+      (inclusive). If not specified, blame extends to the end of the file.
+    name: Required. The resource name of the GitRepositoryLink in the format
+      `projects/*/locations/*/connections/*/gitRepositoryLinks/*`.
+    path: Required. The file path within the repository.
+    ref: Required. The SCM commit SHA, or symbolic revision (for example,
+      branch name, tag) from which to fetch the blame.
+  """
+
+  firstLine = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  lastLine = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  name = _messages.StringField(3, required=True)
+  path = _messages.StringField(4)
+  ref = _messages.StringField(5)
+
+
 class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchGitRefsRequest(_messages.Message):
   r"""A DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchGit
   RefsRequest object.
@@ -1013,6 +1228,50 @@ class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchGitRefs
   pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(3)
   refType = _messages.EnumField('RefTypeValueValuesEnum', 4)
+
+
+class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchPullRequestListRequest(_messages.Message):
+  r"""A DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchPul
+  lRequestListRequest object.
+
+  Fields:
+    filter: Optional. A filter expression that filters the pull requests
+      returned in the response. Only a single equality comparison on `state`
+      is supported, for example `state = "OPEN"`. Supported values are `OPEN`,
+      `CLOSED`, and `MERGED`. `DECLINED` is only supported for SCM providers
+      that support declining pull requests, and returns `INVALID_ARGUMENT` for
+      GitHub, GitHub Enterprise, GitLab, and GitLab Enterprise. Other values
+      or expressions return `INVALID_ARGUMENT`. Defaults to `state = "OPEN"`
+      if unspecified.
+    name: Required. The GitRepositoryLink resource name in the format
+      `projects/*/locations/*/connections/*/gitRepositoryLinks/*`.
+    pageSize: Optional. Number of results to return in the list. Default is
+      20. Max is 100. A page may contain fewer than `page_size` results even
+      when more results are available; use `next_page_token` to check for more
+      pages.
+    pageToken: Optional. A page token, received from a previous
+      `FetchGitRepositoryLinkPullRequestList` call. Provide this to retrieve
+      the subsequent page.
+  """
+
+  filter = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+
+
+class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchPullRequestRequest(_messages.Message):
+  r"""A DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchPul
+  lRequestRequest object.
+
+  Fields:
+    name: Required. The resource name of the GitRepositoryLink in the format
+      `projects/*/locations/*/connections/*/gitRepositoryLinks/*`.
+    pullRequestId: Required. The ID of the Pull Request.
+  """
+
+  name = _messages.StringField(1, required=True)
+  pullRequestId = _messages.StringField(2)
 
 
 class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksFetchReadTokenRequest(_messages.Message):
@@ -1077,6 +1336,38 @@ class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksListRequest(
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksModifyPullRequestRequest(_messages.Message):
+  r"""A DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksModifyPu
+  llRequestRequest object.
+
+  Fields:
+    modifyGitRepositoryLinkPullRequestRequest: A
+      ModifyGitRepositoryLinkPullRequestRequest resource to be passed as the
+      request body.
+    name: Required. The GitRepositoryLink resource name in the format
+      `projects/*/locations/*/connections/*/gitRepositoryLinks/*`.
+  """
+
+  modifyGitRepositoryLinkPullRequestRequest = _messages.MessageField('ModifyGitRepositoryLinkPullRequestRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksOpenPullRequestRequest(_messages.Message):
+  r"""A DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksOpenPull
+  RequestRequest object.
+
+  Fields:
+    name: Required. The GitRepositoryLink resource name in the format
+      `projects/*/locations/*/connections/*/gitRepositoryLinks/*`.
+    openGitRepositoryLinkPullRequestRequest: A
+      OpenGitRepositoryLinkPullRequestRequest resource to be passed as the
+      request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  openGitRepositoryLinkPullRequestRequest = _messages.MessageField('OpenGitRepositoryLinkPullRequestRequest', 2)
 
 
 class DeveloperconnectProjectsLocationsConnectionsGitRepositoryLinksProcessBitbucketCloudWebhookRequest(_messages.Message):
@@ -1383,6 +1674,16 @@ class DeveloperconnectProjectsLocationsInsightsConfigsPatchRequest(_messages.Mes
   validateOnly = _messages.BooleanField(5)
 
 
+class DiffGitRepositoryLinkCommitResponse(_messages.Message):
+  r"""Response message for DiffGitRepositoryLinkCommit.
+
+  Fields:
+    files: The file diff extracted from the unified diff.
+  """
+
+  files = _messages.MessageField('FileDiff', 1, repeated=True)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -1449,6 +1750,56 @@ class FetchGitRefsResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   refNames = _messages.StringField(2, repeated=True)
+
+
+class FetchGitRepositoryLinkCommitListResponse(_messages.Message):
+  r"""Response message for FetchGitRepositoryLinkCommitList.
+
+  Fields:
+    commits: The list of commit metadata.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+  """
+
+  commits = _messages.MessageField('SCMCommit', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
+class FetchGitRepositoryLinkCommitResponse(_messages.Message):
+  r"""Response message for FetchGitRepositoryLinkCommit.
+
+  Fields:
+    commit: The commit metadata.
+    files: List of file changes and patch diffs. Omitted when view is `BASIC`.
+      Patch diffs (`FileDiff.patch`) are only populated when `path_filters` is
+      specified in the request.
+  """
+
+  commit = _messages.MessageField('SCMCommit', 1)
+  files = _messages.MessageField('FileDiff', 2, repeated=True)
+
+
+class FetchGitRepositoryLinkFileBlameResponse(_messages.Message):
+  r"""Response message for FetchGitRepositoryLinkFileBlame.
+
+  Fields:
+    ranges: The list of blame ranges for the file.
+  """
+
+  ranges = _messages.MessageField('BlameRange', 1, repeated=True)
+
+
+class FetchGitRepositoryLinkPullRequestListResponse(_messages.Message):
+  r"""Response message for FetchGitRepositoryLinkPullRequestList.
+
+  Fields:
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    pullRequests: The list of pull requests.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  pullRequests = _messages.MessageField('PullRequest', 2, repeated=True)
 
 
 class FetchLinkableGitRepositoriesResponse(_messages.Message):
@@ -1533,6 +1884,21 @@ class FieldVisibility(_messages.Message):
 
   restriction = _messages.StringField(1)
   selector = _messages.StringField(2)
+
+
+class FileDiff(_messages.Message):
+  r"""Message for a file diff.
+
+  Fields:
+    patch: Standard unified diff patch hunk for the file. Only populated when
+      `path_filters` is specified in the request; otherwise empty.
+    path: Relative path to the file in the repository.
+    status: Status of change: "ADDED", "MODIFIED", "REMOVED", "RENAMED".
+  """
+
+  patch = _messages.StringField(1)
+  path = _messages.StringField(2)
+  status = _messages.StringField(3)
 
 
 class FinishOAuthResponse(_messages.Message):
@@ -2266,6 +2632,40 @@ class McpToolVisibility(_messages.Message):
   visibilityRestriction = _messages.StringField(3)
 
 
+class ModifyGitRepositoryLinkPullRequestRequest(_messages.Message):
+  r"""Message for modifying SCM Pull Request.
+
+  Enums:
+    StateValueValuesEnum: Optional. The state of the Pull Request.
+
+  Fields:
+    baseRef: Optional. The target branch to merge into.
+    body: Optional. The body description of the Pull Request.
+    pullRequestId: Required. The SCM-specific pull request identifier (for
+      example, "45").
+    state: Optional. The state of the Pull Request.
+    title: Optional. The title of the Pull Request.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Optional. The state of the Pull Request.
+
+    Values:
+      STATE_UNSPECIFIED: Default value. This value is unused.
+      OPEN: The pull request is open.
+      CLOSED: The pull request is closed.
+    """
+    STATE_UNSPECIFIED = 0
+    OPEN = 1
+    CLOSED = 2
+
+  baseRef = _messages.StringField(1)
+  body = _messages.StringField(2)
+  pullRequestId = _messages.StringField(3)
+  state = _messages.EnumField('StateValueValuesEnum', 4)
+  title = _messages.StringField(5)
+
+
 class OAuthCredential(_messages.Message):
   r"""Represents an OAuth token of the account that authorized the Connection,
   and associated metadata.
@@ -2281,6 +2681,17 @@ class OAuthCredential(_messages.Message):
 
   oauthTokenSecretVersion = _messages.StringField(1)
   username = _messages.StringField(2)
+
+
+class OpenGitRepositoryLinkPullRequestRequest(_messages.Message):
+  r"""Message for opening SCM Pull Request.
+
+  Fields:
+    pullRequest: Required. The Pull Request details to open. Input fields
+      used: title, body, head_ref, base_ref.
+  """
+
+  pullRequest = _messages.MessageField('PullRequest', 1)
 
 
 class Operation(_messages.Message):
@@ -2551,6 +2962,150 @@ class ProxyConfig(_messages.Message):
   httpProxyBaseUri = _messages.StringField(2)
 
 
+class PullRequest(_messages.Message):
+  r"""Message representing a SCM Pull Request.
+
+  Enums:
+    MergeabilityValueValuesEnum: Output only. The mergeability state of the
+      pull request.
+    StateValueValuesEnum: Output only. The current state of the PR.
+
+  Fields:
+    author: Output only. The username of the author.
+    baseRef: Required. The target commit SHA of the base branch.
+    body: Optional. The body description of the PR.
+    closeTime: Output only. When the PR was closed.
+    createTime: Output only. When the PR was created.
+    declineTime: Output only. When the PR was declined. Only set for SCM
+      providers that support declining pull requests. Never set for GitHub,
+      GitHub Enterprise, GitLab, or GitLab Enterprise, where a pull request
+      closed without being merged is `CLOSED`.
+    headRef: Required. The source commit SHA of the head branch.
+    htmlUrl: Output only. The HTML URL of the pull request on the SCM
+      provider.
+    id: Required. The ID of the PR.
+    mergeTime: Output only. When the PR was merged.
+    mergeability: Output only. The mergeability state of the pull request.
+    state: Output only. The current state of the PR.
+    title: Required. The title of the PR.
+    updateTime: Output only. When the PR was updated.
+  """
+
+  class MergeabilityValueValuesEnum(_messages.Enum):
+    r"""Output only. The mergeability state of the pull request.
+
+    Values:
+      MERGEABILITY_UNSPECIFIED: Mergeability state is unspecified.
+      MERGEABLE: The pull request can be merged cleanly without Git conflicts.
+      CONFLICTING: The pull request has merge conflicts and cannot be merged
+        cleanly.
+      COMPUTING: The mergeability state is currently being computed
+        asynchronously by the upstream SCM provider.
+    """
+    MERGEABILITY_UNSPECIFIED = 0
+    MERGEABLE = 1
+    CONFLICTING = 2
+    COMPUTING = 3
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The current state of the PR.
+
+    Values:
+      STATE_UNSPECIFIED: Default value.
+      OPEN: The PR is open.
+      CLOSED: The PR is closed.
+      MERGED: The PR is merged.
+      DECLINED: The PR is declined. Only used by SCM providers that support
+        declining pull requests. Never used for GitHub, GitHub Enterprise,
+        GitLab, or GitLab Enterprise, where a pull request closed without
+        being merged is `CLOSED`.
+    """
+    STATE_UNSPECIFIED = 0
+    OPEN = 1
+    CLOSED = 2
+    MERGED = 3
+    DECLINED = 4
+
+  author = _messages.StringField(1)
+  baseRef = _messages.StringField(2)
+  body = _messages.StringField(3)
+  closeTime = _messages.StringField(4)
+  createTime = _messages.StringField(5)
+  declineTime = _messages.StringField(6)
+  headRef = _messages.StringField(7)
+  htmlUrl = _messages.StringField(8)
+  id = _messages.StringField(9)
+  mergeTime = _messages.StringField(10)
+  mergeability = _messages.EnumField('MergeabilityValueValuesEnum', 11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  title = _messages.StringField(13)
+  updateTime = _messages.StringField(14)
+
+
+class PullRequestComment(_messages.Message):
+  r"""Message representing a SCM Pull Request Comment.
+
+  Fields:
+    author: Output only. The username of the author.
+    body: Required. The body of the comment.
+    createTime: Output only. When the comment was created.
+    id: Output only. The ID of the comment.
+    updateTime: Output only. When the comment was updated.
+  """
+
+  author = _messages.StringField(1)
+  body = _messages.StringField(2)
+  createTime = _messages.StringField(3)
+  id = _messages.StringField(4)
+  updateTime = _messages.StringField(5)
+
+
+class PullRequestReviewComment(_messages.Message):
+  r"""Message representing a SCM Pull Request Review Comment (inline on diff).
+
+  Enums:
+    SideValueValuesEnum: Optional. The side of the diff to comment on.
+      Defaults to HEAD.
+
+  Fields:
+    author: Output only. The username of the author.
+    body: Required. The body of the comment.
+    commitId: Output only. The commit SHA the comment was actually applied to.
+    createTime: Output only. When the comment was created.
+    firstLine: Optional. The first line of the comment range (inclusive). If
+      not specified, the comment applies only to the `last_line`.
+    id: Output only. The ID of the comment.
+    lastLine: Required. The last line of the comment range (inclusive). If
+      `first_line` is not specified, the comment applies only to this line.
+    path: Required. The file path to comment on.
+    side: Optional. The side of the diff to comment on. Defaults to HEAD.
+    updateTime: Output only. When the comment was updated.
+  """
+
+  class SideValueValuesEnum(_messages.Enum):
+    r"""Optional. The side of the diff to comment on. Defaults to HEAD.
+
+    Values:
+      DIFF_SIDE_UNSPECIFIED: Default value. This value is unused.
+      BASE: The side of the diff before changes (deleted or modified lines).
+      HEAD: The side of the diff after changes (added or modified lines).
+    """
+    DIFF_SIDE_UNSPECIFIED = 0
+    BASE = 1
+    HEAD = 2
+
+  author = _messages.StringField(1)
+  body = _messages.StringField(2)
+  commitId = _messages.StringField(3)
+  createTime = _messages.StringField(4)
+  firstLine = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  id = _messages.StringField(6)
+  lastLine = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  path = _messages.StringField(8)
+  side = _messages.EnumField('SideValueValuesEnum', 9)
+  updateTime = _messages.StringField(10)
+
+
 class RuntimeConfig(_messages.Message):
   r"""RuntimeConfig represents the runtimes where the application is deployed.
 
@@ -2586,6 +3141,26 @@ class RuntimeConfig(_messages.Message):
   googleCloudRun = _messages.MessageField('GoogleCloudRun', 4)
   state = _messages.EnumField('StateValueValuesEnum', 5)
   uri = _messages.StringField(6)
+
+
+class SCMCommit(_messages.Message):
+  r"""SCMCommit represents commit metadata.
+
+  Fields:
+    author: The author's display name.
+    authorEmail: The author's email address.
+    commitTime: Timestamp when the commit was authored.
+    message: Commit message text.
+    sha: Full 40-character SCM commit SHA.
+    url: The SCM provider's HTML URL link for this commit.
+  """
+
+  author = _messages.StringField(1)
+  authorEmail = _messages.StringField(2)
+  commitTime = _messages.StringField(3)
+  message = _messages.StringField(4)
+  sha = _messages.StringField(5)
+  url = _messages.StringField(6)
 
 
 class SecureSourceManagerInstanceConfig(_messages.Message):

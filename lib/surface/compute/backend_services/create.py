@@ -444,9 +444,11 @@ class CreateHelper(object):
         client.messages, args, backend_service
     )
     if args.service_lb_policy is not None:
-      raise compute_exceptions.ArgumentError(
-          '--service-lb-policy flag cannot be used for regional backend'
-          ' service.'
+      backend_service.serviceLbPolicy = reference_utils.BuildServiceLbPolicyUrl(
+          project_name=backend_services_ref.project,
+          location=backend_services_ref.region,
+          policy_name=args.service_lb_policy,
+          release_track=self._release_track,
       )
 
     if args.tls_settings is not None or (

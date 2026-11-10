@@ -105,10 +105,11 @@ def _IsSupportedDatasource(datasource: fdc_messages.Datasource) -> bool:
 
 @dataclasses.dataclass(frozen=True)
 class _IntrospectedMetadata:
-  """Introspected service schema DDL and PostgreSQL migrations."""
+  """Introspected service schema DDL, PostgreSQL migrations, and lints."""
 
   ddl: str | None = None
   migrations: list[dict[str, Any]] | None = None
+  lints: list[dict[str, Any]] | None = None
 
 
 class SqlClient:
@@ -334,7 +335,8 @@ class SqlClient:
     """Describes a Firebase SQL Connect service.
 
     Fetches service metadata, linked Cloud SQL instance/database info,
-    introspected database schema DDL, and applied migrations.
+    introspected database schema DDL, applied migrations, and security and
+    performance lints.
 
     Args:
       project_id: str, Google Cloud project ID.
@@ -343,7 +345,7 @@ class SqlClient:
 
     Returns:
       A dict containing service metadata, Cloud SQL instance/database info,
-      schema DDL, and migrations.
+      schema DDL, migrations, and security and performance lints.
 
     Raises:
       firebase_exceptions.HttpException: If fetching the service fails.
@@ -364,6 +366,8 @@ class SqlClient:
       result['schemaDdl'] = introspected.ddl
     if introspected.migrations is not None:
       result['migrations'] = introspected.migrations
+    if introspected.lints is not None:
+      result['lints'] = introspected.lints
 
     return result
 
@@ -745,7 +749,7 @@ class SqlClient:
   def _GetIntrospectedMetadata(
       self, service_name: str
   ) -> _IntrospectedMetadata:
-    """Introspects service schema DDL and PostgreSQL migrations via GraphQL."""
+    """Introspects service schema DDL, migrations, and lints via GraphQL."""
     request = self.messages.FirebasedataconnectProjectsLocationsServicesIntrospectGraphqlRequest(
         name=service_name,
         graphqlRequest=self.messages.GraphqlRequest(query=_INTROSPECTION_QUERY),
@@ -768,6 +772,7 @@ class SqlClient:
     return _IntrospectedMetadata(
         ddl=py_data.get('_service', {}).get('ddl'),
         migrations=py_data.get('_postgres', {}).get('migrations'),
+        lints=py_data.get('_postgres', {}).get('lints'),
     )
 
 
@@ -782,6 +787,13 @@ query DescribeService {
       name
       appliedAt
       statements
+    }
+    lints {
+      name
+      level
+      category
+      detail
+      remediation
     }
   }
 }

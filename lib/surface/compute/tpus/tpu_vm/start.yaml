@@ -1,4 +1,6 @@
 - release_tracks: [GA, ALPHA]
+  hints:
+    read_only: false
   help_text:
     brief: Start a Cloud TPU VM node.
     description: Start a Cloud TPU VM node.

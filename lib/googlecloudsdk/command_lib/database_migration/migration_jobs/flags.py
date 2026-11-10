@@ -359,12 +359,104 @@ def AddMigrationJobObjectsConfigFlagForCreateAndUpdate(parser):
       'The migration job objects config.',
       mutex=True,
   )
-  database_config = migration_config.add_group(
-      'The migration job objects config for databases.',
-      mutex=True,
+  AddAllDatabasesFlag(migration_config)
+  objects_filter_config = migration_config.add_group(
+      'The migration job objects filter config.',
+      mutex=False,
   )
-  AddDatabasesFilterFlag(database_config)
-  AddAllDatabasesFlag(database_config)
+  AddDatabasesFilterFlag(objects_filter_config)
+  AddSchemasFilterFlag(objects_filter_config)
+  AddTablesFilterFlag(objects_filter_config)
+  AddExcludedSchemasFilterFlag(objects_filter_config)
+  AddExcludedTablesFilterFlag(objects_filter_config)
+
+
+def AddSchemasFilterFlag(parser):
+  """Adds a --schemas-filter flag to the given parser."""
+  help_text = """\
+    A list of schemas to be migrated to the destination instance.
+    Provide schemas as a comma separated list in the format DATABASE.SCHEMA,
+    or SCHEMA if a single database is specified in --databases-filter.
+    If a database or schema name contains a dot (.), enclose it in double quotes
+    (e.g. `db1."my.schema"`) or escape the dot with a backslash (e.g.
+    `db1.my\\.schema`).
+    This flag is used only for migrations from PostgreSQL to AlloyDB or Cloud
+    SQL for PostgreSQL.
+    """
+  parser.add_argument(
+      '--schemas-filter',
+      metavar='DATABASE.SCHEMA',
+      type=arg_parsers.ArgList(min_length=1),
+      help=help_text,
+  )
+
+
+def AddTablesFilterFlag(parser):
+  """Adds a --tables-filter flag to the given parser."""
+  help_text = """\
+    A list of tables to be migrated to the destination instance.
+    Provide tables as a comma separated list in the format DATABASE.SCHEMA.TABLE,
+    or SCHEMA.TABLE if a single database is specified in --databases-filter.
+    If a database, schema, or table name contains a dot (.), enclose it in
+    double quotes (e.g. `db1."my.schema"."my.table"`) or escape the dot with a
+    backslash (e.g. `db1.my\\.schema.my\\.table`).
+    This flag is used only for migrations from PostgreSQL to AlloyDB or Cloud
+    SQL for PostgreSQL.
+    """
+  parser.add_argument(
+      '--tables-filter',
+      metavar='DATABASE.SCHEMA.TABLE',
+      type=arg_parsers.ArgList(min_length=1),
+      help=help_text,
+  )
+
+
+def AddExcludedSchemasFilterFlag(parser):
+  """Adds a --excluded-schemas-filter flag to the given parser."""
+  help_text = """\
+    A list of schemas to be excluded from migration to the destination instance.
+    Provide schemas as a comma separated list in the format DATABASE.SCHEMA,
+    or SCHEMA if a single database is specified in --databases-filter.
+    If a database or schema name contains a dot (.), enclose it in double quotes
+    (e.g. `db1."my.schema"`) or escape the dot with a backslash (e.g.
+    `db1.my\\.schema`).
+    This flag is used only for migrations from PostgreSQL to AlloyDB or Cloud
+    SQL for PostgreSQL.
+
+    Note: Omitting --databases-filter migrates only the database(s) referenced
+    in this filter. On multi-database instances, specify all databases to be
+    migrated in --databases-filter.
+    """
+  parser.add_argument(
+      '--excluded-schemas-filter',
+      metavar='DATABASE.SCHEMA',
+      type=arg_parsers.ArgList(min_length=1),
+      help=help_text,
+  )
+
+
+def AddExcludedTablesFilterFlag(parser):
+  """Adds a --excluded-tables-filter flag to the given parser."""
+  help_text = """\
+    A list of tables to be excluded from migration to the destination instance.
+    Provide tables as a comma separated list in the format DATABASE.SCHEMA.TABLE,
+    or SCHEMA.TABLE if a single database is specified in --databases-filter.
+    If a database, schema, or table name contains a dot (.), enclose it in
+    double quotes (e.g. `db1."my.schema"."my.table"`) or escape the dot with a
+    backslash (e.g. `db1.my\\.schema.my\\.table`).
+    This flag is used only for migrations from PostgreSQL to AlloyDB or Cloud
+    SQL for PostgreSQL.
+
+    Note: Omitting --databases-filter migrates only the database(s) referenced
+    in this filter. On multi-database instances, specify all databases to be
+    migrated in --databases-filter.
+    """
+  parser.add_argument(
+      '--excluded-tables-filter',
+      metavar='DATABASE.SCHEMA.TABLE',
+      type=arg_parsers.ArgList(min_length=1),
+      help=help_text,
+  )
 
 
 def AddMigrationJobObjectsConfigFlagForPromote(parser):

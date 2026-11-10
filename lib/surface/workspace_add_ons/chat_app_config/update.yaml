@@ -18,8 +18,11 @@
         project comes from `--project`.
 
       Lists, such as app commands, URL patterns, and testing principals, are
-      replaced as a whole. Setting a Dialogflow edition replaces the whole
-      Dialogflow configuration.
+      replaced as a whole. To add or remove testing principals without
+      listing all of them, use `--add-allowlisted-testing-principals` and
+      `--remove-allowlisted-testing-principals`, which read the current list
+      first. Setting a Dialogflow edition replaces the whole Dialogflow
+      configuration.
 
       While the app is published or under review in the Google Workspace
       Marketplace, the API rejects changes to the display name, avatar,
@@ -41,12 +44,21 @@
       To send events to an HTTP endpoint, run:
 
         $ {command} --http-endpoint-url=https://bot.example.com/events
+
+      To let another person test the app, run:
+
+        $ {command} --add-allowlisted-testing-principals=alice@example.com
+
+      To stop letting that person test the app, run:
+
+        $ {command} --remove-allowlisted-testing-principals=alice@example.com
   request:
     collection: gsuiteaddons.projects.chatAppConfig
     api_version: v1
     display_resource_type: Chat app configuration
     modify_request_hooks:
     - googlecloudsdk.command_lib.workspace_add_ons.chat_app_util:ParseConfigFileHook
+    - googlecloudsdk.command_lib.workspace_add_ons.chat_app_util:UpdateAllowlistedTestingPrincipalsHook
     - googlecloudsdk.command_lib.workspace_add_ons.chat_app_util:AddClearedFieldsToMaskHook
   arguments:
     resource:
@@ -118,6 +130,35 @@
               help_text: |
                 Whether people can add the app to spaces and group
                 conversations, not just direct messages.
+            - group:
+                help_text: |
+                  Users and groups in your Google Workspace organization who can
+                  find and use the app while you test it. These flags update the
+                  app's current testing principals list.
+                params:
+                - arg_name: add-allowlisted-testing-principals
+                  type: arg_list
+                  metavar: EMAIL
+                  help_text: |
+                    Email addresses of users or groups to add to the testing
+                    principals. Addresses that are already in the list are
+                    left as they are.
+                - group:
+                    mutex: true
+                    params:
+                    - arg_name: remove-allowlisted-testing-principals
+                      type: arg_list
+                      metavar: EMAIL
+                      help_text: |
+                        Email addresses of users or groups to remove from the
+                        testing principals. Addresses that aren't in the list
+                        are ignored.
+                    - arg_name: clear-allowlisted-testing-principals
+                      action: store_true
+                      help_text: |
+                        Remove all testing principals. To replace the list,
+                        combine this flag with
+                        `--add-allowlisted-testing-principals`.
             - group:
                 mutex: true
                 help_text: |

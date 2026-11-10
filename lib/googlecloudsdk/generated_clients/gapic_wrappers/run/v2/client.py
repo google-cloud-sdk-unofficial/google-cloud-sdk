@@ -41,6 +41,9 @@ class GapicWrapperClient(object):
     self.builds = gapic_util.MakeClient(
         run_v2.services.builds.client.BuildsClient,
         credentials, **kwargs)
+    self.domain = gapic_util.MakeClient(
+        run_v2.services.domain_mappings.client.DomainMappingsClient,
+        credentials, **kwargs)
     self.executions = gapic_util.MakeClient(
         run_v2.services.executions.client.ExecutionsClient,
         credentials, **kwargs)
@@ -68,6 +71,7 @@ class GapicWrapperClient(object):
 
   def __enter__(self):
     self._exit_stack.enter_context(self.builds)
+    self._exit_stack.enter_context(self.domain)
     self._exit_stack.enter_context(self.executions)
     self._exit_stack.enter_context(self.instances)
     self._exit_stack.enter_context(self.jobs)

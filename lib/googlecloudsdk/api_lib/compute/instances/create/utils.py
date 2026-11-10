@@ -335,11 +335,10 @@ def CreatePersistentCreateDiskMessages(
       the project name that has the image, * auto-delete - whether disks is
       deleted when VM is deleted, * device-name - device name on VM, *
       source-snapshot - the snapshot to initialize from, *
-      source-snapshot-csek-required - CSK protected snapshot, *
+      source-snapshot-csek-key-file - CSK file for snapshot, *
       source-instant-snapshot - the instant snapshot to initialize from, *
       disk-resource-policy - resource policies applied to disk. *
-      enable_source_snapshot_csek - CSK file for snapshot, * enable_image_csek -
-      CSK file for image
+      enable_image_csek - CSK file for image
     project: Project of instance that will own the new disks.
     location: Location of the instance that will own the new disks.
     scope: Location type of the instance that will own the new disks.
@@ -470,6 +469,19 @@ def CreatePersistentCreateDiskMessages(
       if attached_snapshot_uri:
         initialize_params.sourceImage = None
         initialize_params.sourceSnapshot = attached_snapshot_uri
+        if enable_source_snapshot_csek:
+          snapshot_csek_key_file = disk.get('source-snapshot-csek-key-file')
+          if snapshot_csek_key_file:
+            snapshot_csek_keys = csek_utils.CsekKeyStore.FromFile(
+                snapshot_csek_key_file, allow_rsa_encrypted=False
+            )
+            snapshot_ref = resources.Parse(attached_snapshot_uri)
+            snapshot_key = snapshot_csek_keys.LookupKey(
+                snapshot_ref, raise_if_missing=True
+            )
+            initialize_params.sourceSnapshotEncryptionKey = (
+                csek_utils.MaybeToMessage(snapshot_key, compute)
+            )
 
     policies = disk.get('disk-resource-policy')
     if policies:
@@ -479,11 +491,6 @@ def CreatePersistentCreateDiskMessages(
       image_key_file = disk.get('image_csek')
       if image_key_file:
         initialize_params.imageKeyFile = image_key_file
-
-    if enable_source_snapshot_csek:
-      snapshot_key_file = disk.get('source_snapshot_csek')
-      if snapshot_key_file:
-        initialize_params.snapshotKeyFile = snapshot_key_file
 
     if enable_source_instant_snapshots:
       instant_snapshot_name = disk.get('source-instant-snapshot')

@@ -57,6 +57,10 @@ class CreateCredConfig(base.CreateCommand):
 
             $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --credential-cert-path=$PATH_TO_CERTIFICATE_FILE --credential-cert-private-key-path=$PATH_TO_PRIVATE_KEY_FILE --output-file=credentials.json
 
+          To create a hybrid file-sourced and X.509 certificate-bound credential configuration with an actor token for your project, run:
+
+            $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --credential-source-file=$PATH_TO_JSON_TOKENS --credential-source-field-name=$SUBJECT_TOKEN_FIELD --actor-token-field-name=$ACTOR_TOKEN_FIELD --credential-cert-path=$PATH_TO_CERTIFICATE_FILE --credential-cert-private-key-path=$PATH_TO_PRIVATE_KEY_FILE --output-file=credentials.json
+
           To use the resulting file for any of these commands, set the GOOGLE_APPLICATION_CREDENTIALS environment variable to point to the generated file
           """),
   }
@@ -75,9 +79,21 @@ class CreateCredConfig(base.CreateCommand):
     credential_types = parser.add_group(
         mutex=True, required=True, help='Credential types.'
     )
-    credential_types.add_argument(
+    file_or_cert_types = credential_types.add_group(
+        help='File and/or X.509 certificate credential sources.'
+    )
+    file_or_cert_types.add_argument(
         '--credential-source-file',
         help='Location of the credential source file.',
+    )
+    file_or_cert_types.add_argument(
+        '--credential-cert-path',
+        help=(
+            'Path of the X.509 certificate file. Can be used standalone for'
+            ' X.509 certificate-based credentials or combined with'
+            ' `--credential-source-file` for certificate-bound token'
+            ' exchanges.'
+        ),
     )
     credential_types.add_argument(
         '--credential-source-url', help='URL to obtain the credential from.'
@@ -93,15 +109,27 @@ class CreateCredConfig(base.CreateCommand):
     credential_types.add_argument(
         '--azure', help='Use Azure.', action='store_true'
     )
-    credential_types.add_argument(
-        '--credential-cert-path', help='Path of the X.509 certificate file.'
-    )
 
     # Optional args.
     parser.add_argument(
         '--subject-token-type',
         help='The type of token being used for authorization. '
         + 'This defaults to urn:ietf:params:oauth:token-type:jwt.',
+    )
+    parser.add_argument(
+        '--actor-token-field-name',
+        help=(
+            'The field name in the JSON credential source file containing the'
+            ' actor token. Must be used with `--credential-source-file` and'
+            ' `--credential-source-field-name`.'
+        ),
+    )
+    parser.add_argument(
+        '--actor-token-type',
+        help=(
+            'The type of actor token being used for authorization. '
+            'This defaults to urn:ietf:params:oauth:token-type:jwt.'
+        ),
     )
     parser.add_argument(
         '--app-id-uri',
@@ -117,7 +145,7 @@ class CreateCredConfig(base.CreateCommand):
     )
 
     certificate_args = parser.add_group(
-        help='Arguments for an X.509 certificate type credential source.'
+        help='Arguments for configuring X.509 certificates.'
     )
     certificate_args.add_argument(
         '--credential-cert-private-key-path',
@@ -156,14 +184,39 @@ class CreateCredConfig(base.CreateCommand):
     )
 
   def _ValidateArgs(self, args):
+    if args.actor_token_type and not args.actor_token_field_name:
+      raise exceptions.RequiredArgumentException(
+          '--actor-token-field-name',
+          '--actor-token-field-name must be specified when --actor-token-type'
+          ' is provided.',
+      )
+    if args.actor_token_field_name:
+      if not args.credential_source_file:
+        raise exceptions.ConflictingArgumentsException(
+            '--actor-token-field-name can only be used with'
+            ' --credential-source-file.'
+        )
+      if (
+          args.credential_source_type
+          and args.credential_source_type.lower() != 'json'
+      ):
+        raise exceptions.ConflictingArgumentsException(
+            '--actor-token-field-name can only be used when'
+            ' --credential-source-type is "json".'
+        )
+      if not args.credential_source_field_name:
+        raise exceptions.RequiredArgumentException(
+            '--credential-source-field-name',
+            '--actor-token-field-name requires --credential-source-field-name.',
+        )
     if args.enable_imdsv2 and not args.aws:
       raise exceptions.ConflictingArgumentsException(
           '--enable-imdsv2 can be used only for AWS credential types'
       )
     if args.credential_cert_private_key_path and not args.credential_cert_path:
       raise exceptions.ConflictingArgumentsException(
-          '--credential-cert-private-key-path can be used only for X.509'
-          ' certificate credential types'
+          '--credential-cert-private-key-path can be used only when'
+          ' --credential-cert-path is specified'
       )
 
   def Run(self, args):

@@ -47,4 +47,6 @@
   output:
     format: |-
       table(name.basename():label=ID,
-            predicateType)
+            predicateType,
+            subjects,
+            createTime)

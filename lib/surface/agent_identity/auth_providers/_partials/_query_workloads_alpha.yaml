@@ -30,7 +30,7 @@
   arguments:
     params:
     - help_text: |-
-        The name of the auth_provider to query.
+        The name of the auth provider to query.
         Format:
         projects/{project}/locations/{location}/authProviders/{auth_provider}
       is_positional: true

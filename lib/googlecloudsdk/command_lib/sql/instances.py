@@ -348,9 +348,9 @@ def _ShowFailoverReplicaDeprecationWarning():
   )
 
 
-def _ShowAcceleratedReplicaModeWarning():
+def _ShowAcceleratedReplicationWarning():
   log.warning(
-      'Enabling accelerated replica mode on a replica may cause it to be '
+      'Enabling accelerated replication on a replica may cause it to be '
       'recreated in the event of an unplanned restart.'
   )
 
@@ -745,9 +745,10 @@ class _BaseInstances(object):
             args.enable_db_aligned_atomic_writes
         )
 
-      if args.IsKnownAndSpecified('enable_accelerated_replica_mode'):
-        _ShowAcceleratedReplicaModeWarning()
-        settings.acceleratedReplicaMode = args.enable_accelerated_replica_mode
+      if args.IsKnownAndSpecified('enable_accelerated_replication'):
+        if args.enable_accelerated_replication:
+          _ShowAcceleratedReplicationWarning()
+        settings.acceleratedReplicaMode = args.enable_accelerated_replication
 
     return settings
 

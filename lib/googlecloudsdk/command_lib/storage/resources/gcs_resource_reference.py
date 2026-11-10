@@ -182,6 +182,62 @@ class GcsRapidCacheResource(resource_reference.CloudResource):
     )
 
 
+class GcsObjectFullContextResource(resource_reference.CloudResource):
+  """Holds one object context, including its extended data."""
+
+  def __init__(
+      self,
+      storage_url,
+      create_time=None,
+      extended_data=None,
+      key=None,
+      kind=None,
+      metadata=None,
+      type_string=None,
+      update_time=None,
+      value=None,
+  ):
+    """Initializes resource.
+
+    Args:
+      storage_url (storage_url.CloudUrl): URL of the object that has the
+        context.
+      create_time (datetime.datetime|None): When the context was created.
+      extended_data (dict|None): Extended data of the context, including its
+        "@type" key.
+      key (str|None): Key of the context.
+      kind (str|None): Resource kind returned by the API.
+      metadata (messages.ObjectFullContext|None): Raw API response.
+      type_string (str|None): Type of the context, such as "CUSTOM".
+      update_time (datetime.datetime|None): When the context was last updated.
+      value (str|None): Value of the context.
+    """
+    self.storage_url = storage_url
+    self.create_time = create_time
+    self.extended_data = extended_data
+    self.key = key
+    self.kind = kind
+    self.metadata = metadata
+    self.type = type_string
+    self.update_time = update_time
+    self.value = value
+
+  def __eq__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return (
+        self.storage_url == other.storage_url
+        and self.create_time == other.create_time
+        and self.extended_data == other.extended_data
+        and self.key == other.key
+        and self.kind == other.kind
+        and self.metadata == other.metadata
+        and self.type == other.type
+        and self.update_time == other.update_time
+        and self.value == other.value
+    )
+
+
 class GcsBucketResource(resource_reference.BucketResource):
   """API-specific subclass for handling metadata.
 

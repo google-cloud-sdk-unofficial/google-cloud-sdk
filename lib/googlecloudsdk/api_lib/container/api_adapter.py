@@ -194,6 +194,11 @@ CONFIGCONNECTOR_ADDON_LAG_WARNING_MSG = (
     'https://cloud.google.com/config-connector/docs/how-to/install-manually#switch-add-on'
 )
 
+NO_ENABLE_IP_ALIAS_IGNORED_FOR_IPV6_WARNING_MSG = (
+    'IP aliases do not apply to IPv6-only clusters, so --no-enable-ip-alias '
+    'is ignored.'
+)
+
 CLOUDBUILD_STACKDRIVER_KUBERNETES_DISABLED_ERROR_MSG = """\
 Cloud Build for Anthos (--addons=CloudBuild) requires System Logging and Monitoring to be enabled via the --monitoring=SYSTEM and --logging=SYSTEM flags.
 """
@@ -354,10 +359,6 @@ Anonymous authentication mode '{mode}' is not supported.
 
 MEMBERSHIP_TYPE_NOT_SUPPORTED = """\
 Fleet membership type '{type}' is not supported.
-"""
-
-ROUTE_BASED_CLUSTERS_NOT_SUPPORTED_WITH_STACK_TYPE_IPV6 = """\
-Route-based clusters are not supported with stack type IPV6.
 """
 
 CONTROL_PLANE_EGRESS_NOT_SUPPORTED = """\
@@ -549,6 +550,14 @@ TPU_MACHINE_TYPES = frozenset({
 
 CLUSTER = 'cluster'
 NODEPOOL = 'nodepool'
+
+
+def _IsIPv6Cluster(options):
+  """Returns True if the create options request an IPv6-only cluster."""
+  return bool(
+      options.stack_type
+      and options.stack_type.lower() == gke_constants.IPV6_STACK_TYPE
+  )
 
 
 def CheckResponse(response):
@@ -2742,6 +2751,11 @@ class APIAdapter(object):
 
   def FindNodePool(self, cluster, pool_name=None):
     """Find the node pool with the given name in the cluster."""
+    if not cluster.nodePools:
+      raise util.Error(
+          'Cluster [{0}] has no node pools. To add nodes, create a node pool'
+          ' with `gcloud container node-pools create`.'.format(cluster.name)
+      )
     msg = ''
     if pool_name:
       for np in cluster.nodePools:
@@ -3295,11 +3309,7 @@ class APIAdapter(object):
           workloadPool=options.workload_pool
       )
 
-    is_cluster_ipv6 = (
-        options.stack_type
-        and options.stack_type.lower() == gke_constants.IPV6_STACK_TYPE
-    )
-    if not is_cluster_ipv6:
+    if not _IsIPv6Cluster(options):
       # IP Alias is a no-op for IPv6-only clusters.
       self.ParseIPAliasOptions(options, cluster)
 
@@ -4530,7 +4540,14 @@ class APIAdapter(object):
     if options.enable_private_nodes is None:
       options.enable_private_nodes = options.private_cluster
 
-    if options.enable_private_nodes and not options.enable_ip_alias:
+    # IP Alias does not apply to IPv6-only clusters, so --enable-ip-alias is
+    # not a prerequisite there. Whether private nodes are supported on an IPv6
+    # cluster is validated by the API.
+    if (
+        options.enable_private_nodes
+        and not options.enable_ip_alias
+        and not _IsIPv6Cluster(options)
+    ):
       raise util.Error(
           PREREQUISITE_OPTION_ERROR_MSG.format(
               prerequisite='enable-ip-alias', opt='enable-private-nodes'
@@ -11424,8 +11441,10 @@ class V1Beta1Adapter(V1Adapter):
 
   def _ParseIPv6Options(self, options, cluster):
     """Converts options for IPv6-only clusters."""
+    # The API ignores IPAllocationPolicy.useIpAliases/useRoutes when stackType
+    # is IPV6, so neither is sent, and --no-enable-ip-alias only gets a warning.
     if options.enable_ip_alias is not None and not options.enable_ip_alias:
-      raise util.Error(ROUTE_BASED_CLUSTERS_NOT_SUPPORTED_WITH_STACK_TYPE_IPV6)
+      log.warning(NO_ENABLE_IP_ALIAS_IGNORED_FOR_IPV6_WARNING_MSG)
 
     if options.subnetwork and options.create_subnetwork is not None:
       raise util.Error(CREATE_SUBNETWORK_WITH_SUBNETWORK_ERROR_MSG)

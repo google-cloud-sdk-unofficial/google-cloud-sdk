@@ -121,7 +121,7 @@ def _GetDefaultEvalSpecAndVariantsDicts(
   }
   variant_dict[variant_type] = expected_type(default_value)
 
-  return {'defaultTarget': 'default'}, variant_dict
+  return {'defaultVariant': 'default'}, variant_dict
 
 
 def _GetFlagMessagesFromManifest(

@@ -25,18 +25,7 @@ arguments:
 response:
   id_field: name
 output:
-  GA:
-    format: |
-     table(
-        name.basename():label=NAME, create_time, multicast_consumer_association, multicast_group_range_activation
-      )
-  ALPHA:
-    format: |
-     table(
-        name.basename():label=NAME, create_time, multicast_consumer_association, multicast_group
-      )
-  BETA:
-    format: |
+  format: |
      table(
         name.basename():label=NAME, create_time, multicast_consumer_association, multicast_group_range_activation
       )

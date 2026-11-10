@@ -64,6 +64,7 @@ class UpdateCatalog(base.UpdateCommand):
   _support_glue_catalog = True
   _support_snowflake_catalog = True
   _support_workday_api_client_client_id = False
+  _support_snowflake_user_identity_federation_role = False
   _support_identity_mode = True
   _support_generic_iceberg_federation = False
 
@@ -97,6 +98,8 @@ class UpdateCatalog(base.UpdateCommand):
       arguments.AddSnowflakeRoleArg(parser)
     if cls._support_workday_api_client_client_id:
       arguments.AddWorkdayApiClientClientIdArg(parser)
+    if cls._support_snowflake_user_identity_federation_role:
+      arguments.AddSnowflakeUserIdentityFederationRoleArg(parser)
     if cls._support_federated_catalog:
       arguments.AddUpdateFederatedCatalogArgs(parser)
     if cls._support_generic_iceberg_federation:
@@ -143,12 +146,28 @@ class UpdateCatalog(base.UpdateCommand):
       catalog.federated_catalog_options.glue_catalog_info = (
           messages.GlueCatalogInfo(aws_role_arn=args.glue_aws_role_arn)
       )
+    if args.IsKnownAndSpecified('snowflake_role') or args.IsKnownAndSpecified(
+        'snowflake_user_identity_federation_role'
+    ):
+      catalog.federated_catalog_options.snowflake_catalog_info = (
+          messages.SnowflakeCatalogInfo()
+      )
     if args.IsKnownAndSpecified('snowflake_role'):
       update_mask.append(
           'federated_catalog_options.snowflake_catalog_info.snowflake_role'
       )
-      catalog.federated_catalog_options.snowflake_catalog_info = (
-          messages.SnowflakeCatalogInfo(snowflake_role=args.snowflake_role)
+      catalog.federated_catalog_options.snowflake_catalog_info.snowflake_role = (
+          args.snowflake_role
+      )
+    # TODO(b/578987767): Investigate auto-clearing
+    # --snowflake-user-identity-federation-role when switching
+    # --federated-catalog-identity-mode to service-identity.
+    if args.IsKnownAndSpecified('snowflake_user_identity_federation_role'):
+      update_mask.append(
+          'federated_catalog_options.snowflake_catalog_info.snowflake_user_identity_federation_role'
+      )
+      catalog.federated_catalog_options.snowflake_catalog_info.snowflake_user_identity_federation_role = (
+          args.snowflake_user_identity_federation_role
       )
     if args.IsKnownAndSpecified('workday_api_client_client_id'):
       update_mask.append(
@@ -270,6 +289,7 @@ class UpdateCatalog(base.UpdateCommand):
         or args.IsKnownAndSpecified('metadata_service_directory_name')
         or args.IsKnownAndSpecified('snowflake_role')
         or args.IsKnownAndSpecified('workday_api_client_client_id')
+        or args.IsKnownAndSpecified('snowflake_user_identity_federation_role')
         or args.IsKnownAndSpecified('federated_catalog_identity_mode')
         or args.IsKnownAndSpecified('custom_headers')
         or args.IsKnownAndSpecified('oauth2_server_url')
@@ -331,6 +351,15 @@ class UpdateCatalog(base.UpdateCommand):
             ' federated catalogs.',
         )
 
+      if is_glue and args.IsKnownAndSpecified(
+          'snowflake_user_identity_federation_role'
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--snowflake-user-identity-federation-role',
+            '--snowflake-user-identity-federation-role is not supported for'
+            ' Glue federated catalogs.',
+        )
+
       if is_unity and args.IsKnownAndSpecified('glue_aws_role_arn'):
         raise exceptions.InvalidArgumentException(
             '--glue-aws-role-arn',
@@ -351,6 +380,15 @@ class UpdateCatalog(base.UpdateCommand):
             ' federated catalogs.',
         )
 
+      if is_unity and args.IsKnownAndSpecified(
+          'snowflake_user_identity_federation_role'
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--snowflake-user-identity-federation-role',
+            '--snowflake-user-identity-federation-role is not supported for'
+            ' Unity federated catalogs.',
+        )
+
       if is_snowflake and args.IsKnownAndSpecified(
           'unity_service_principal_application_id'
       ):
@@ -366,7 +404,6 @@ class UpdateCatalog(base.UpdateCommand):
             'Cannot specify Glue Catalog arguments when updating a Snowflake'
             ' federated catalog.',
         )
-
       if is_snowflake and args.IsKnownAndSpecified(
           'workday_api_client_client_id'
       ):
@@ -398,6 +435,15 @@ class UpdateCatalog(base.UpdateCommand):
             '--snowflake-role is not supported for Workday federated catalogs.',
         )
 
+      if is_workday and args.IsKnownAndSpecified(
+          'snowflake_user_identity_federation_role'
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--snowflake-user-identity-federation-role',
+            '--snowflake-user-identity-federation-role is not supported for'
+            ' Workday federated catalogs.',
+        )
+
       if is_generic and args.IsKnownAndSpecified(
           'unity_service_principal_application_id'
       ):
@@ -419,6 +465,15 @@ class UpdateCatalog(base.UpdateCommand):
             '--snowflake-role',
             '--snowflake-role is not supported for Generic Iceberg federated'
             ' catalogs.',
+        )
+
+      if is_generic and args.IsKnownAndSpecified(
+          'snowflake_user_identity_federation_role'
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--snowflake-user-identity-federation-role',
+            '--snowflake-user-identity-federation-role is not supported for'
+            ' Generic Iceberg federated catalogs.',
         )
 
       if is_generic and args.IsKnownAndSpecified(
@@ -495,6 +550,9 @@ class UpdateCatalog(base.UpdateCommand):
           or args.IsKnownAndSpecified('namespace_filters')
           or args.IsKnownAndSpecified('snowflake_role')
           or args.IsKnownAndSpecified('workday_api_client_client_id')
+          or args.IsKnownAndSpecified(
+              'snowflake_user_identity_federation_role'
+          )
           or args.IsKnownAndSpecified('federated_catalog_identity_mode')
           or args.IsKnownAndSpecified('custom_headers')
           or args.IsKnownAndSpecified('oauth2_server_url')
@@ -538,6 +596,7 @@ class UpdateBeta(UpdateCatalog):
   """Update a BigLake Iceberg REST catalog."""
 
   _support_workday_api_client_client_id = True
+  _support_snowflake_user_identity_federation_role = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

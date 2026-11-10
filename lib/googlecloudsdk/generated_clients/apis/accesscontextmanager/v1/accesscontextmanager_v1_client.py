@@ -854,7 +854,7 @@ class AccesscontextmanagerV1(base_api.BaseApiClient):
           }
 
     def LookupConfiguredServicePerimeter(self, request, global_params=None):
-      r"""Looks up the configured service perimeter for a given resource. Format: `['projects/{projectNumber}', 'folders/{folderNumber}']`.
+      r"""Looks up the configured ServicePerimeter for a given resource.
 
       Args:
         request: (AccesscontextmanagerFoldersLookupConfiguredServicePerimeterRequest) input message
@@ -1200,7 +1200,7 @@ class AccesscontextmanagerV1(base_api.BaseApiClient):
           }
 
     def LookupConfiguredServicePerimeter(self, request, global_params=None):
-      r"""Looks up the configured service perimeter for a given resource. Format: `['projects/{projectNumber}', 'folders/{folderNumber}']`.
+      r"""Looks up the configured ServicePerimeter for a given resource.
 
       Args:
         request: (AccesscontextmanagerProjectsLookupConfiguredServicePerimeterRequest) input message

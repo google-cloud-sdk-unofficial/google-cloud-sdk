@@ -225,6 +225,84 @@ def ValidateMigTargetSize(mig_id: str, target_size: int | None) -> None:
     )
 
 
+_EXISTING_INSTANCES_SOURCE_KEYS = (
+    "project",
+    "instanceGroupManager",
+    "regionInstanceGroupManager",
+    "reservation",
+    "reservationBlock",
+    "reservationSubBlock",
+)
+
+
+def ValidateExistingInstancesSource(
+    ei_id: str, existing_instance: dict[str, Any]
+) -> str:
+  """Validates that an existing instances config specifies exactly one source."""
+  specified_sources = [
+      key
+      for key in _EXISTING_INSTANCES_SOURCE_KEYS
+      if existing_instance.get(key)
+  ]
+  if len(specified_sources) != 1:
+    sources_str = ", ".join(_EXISTING_INSTANCES_SOURCE_KEYS)
+    raise ClusterDirectorError(
+        f"Existing instances '{ei_id}' must specify exactly one source from"
+        f" [{sources_str}]."
+    )
+  return specified_sources[0]
+
+
+def ValidateAdditionalDisk(device_name: str, disk: dict[str, Any]) -> None:
+  """Validates an additional disk device name and configuration."""
+  ValidateResourceID(device_name)
+  sources = [k for k in ("image", "snapshot", "existingDisk") if disk.get(k)]
+  if len(sources) > 1:
+    raise ClusterDirectorError(
+        "Only one of 'image', 'snapshot', or 'existingDisk' can be set for"
+        f" additional disk '{device_name}'."
+    )
+  existing_disk = disk.get("existingDisk")
+  if existing_disk:
+    if disk.get("type") is not None or disk.get("sizeGb") is not None:
+      raise ClusterDirectorError(
+          "Cannot specify 'type' or 'sizeGb' when 'existingDisk' is set for"
+          f" additional disk '{device_name}'."
+      )
+    if not re.match(r"^zones/[^/]+/disks/[^/]+$", existing_disk):
+      raise ClusterDirectorError(
+          f"Disk 'existingDisk' for additional disk '{device_name}' must be in"
+          f" the format 'zones/ZONE/disks/DISK', found '{existing_disk}'."
+      )
+    return
+  disk_type = disk.get("type")
+  if not disk_type or "/" in disk_type:
+    raise ClusterDirectorError(
+        "Disk 'type' is required as a short disk type ID (e.g., 'pd-balanced')"
+        " when 'existingDisk' is not set for additional disk"
+        f" '{device_name}'."
+    )
+  size_gb = disk.get("sizeGb")
+  if size_gb is None or size_gb <= 0:
+    raise ClusterDirectorError(
+        "Disk 'sizeGb' must be a positive integer when 'existingDisk' is not"
+        f" set for additional disk '{device_name}'."
+    )
+  image = disk.get("image")
+  if image and not re.match(r"^global/images/(family/)?[^/]+$", image):
+    raise ClusterDirectorError(
+        f"Disk 'image' for additional disk '{device_name}' must be in the"
+        " format 'global/images/IMAGE' or 'global/images/family/FAMILY', found"
+        f" '{image}'."
+    )
+  snapshot = disk.get("snapshot")
+  if snapshot and not re.match(r"^global/snapshots/[^/]+$", snapshot):
+    raise ClusterDirectorError(
+        f"Disk 'snapshot' for additional disk '{device_name}' must be in the"
+        f" format 'global/snapshots/SNAPSHOT', found '{snapshot}'."
+    )
+
+
 def ValidateSlurmNodeConfig(node_config: dict[str, Any]) -> None:
   """Validates Slurm node config."""
   if not node_config:

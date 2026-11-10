@@ -256,7 +256,7 @@ def _DetailedHelp():
 class InvalidateCdnCache(base.SilentCommand):
   """Invalidate specified objects for a URL map in Cloud CDN caches."""
 
-  _support_extended_matchers = False
+  _support_extended_matchers = True
 
   detailed_help = _DetailedHelp()
   URL_MAP_ARG = None
@@ -536,7 +536,7 @@ class InvalidateCdnCache(base.SilentCommand):
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class InvalidateCdnCacheBeta(InvalidateCdnCache):
-  _support_extended_matchers = True
+  pass
 
 
 @base.DefaultUniverseOnly

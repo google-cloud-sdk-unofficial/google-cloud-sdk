@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks: [ALPHA, BETA, GA]
+  hints:
+    read_only: true
+  help_text:
+    brief: Exports a Cluster Director resource
+    description: |
+      Exports a Cluster Director resource configuration to a YAML file.
+    examples: |-
+      To export a cluster `my-cluster` in location `us-central1` to a YAML file, run:
+
+        $ {command} my-cluster --location=us-central1 --destination=cluster-config.yaml
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.cluster_director.clusters.resources:projects_locations_clusters
+      help_text: |-
+        Identifier. Name of the cluster to export.
+        Format: cluster | projects/{project}/locations/{location}/clusters/{cluster}
+  request:
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
+    collection: hypercomputecluster.projects.locations.clusters
+    regional_endpoint_compatibility: SUPPORTED

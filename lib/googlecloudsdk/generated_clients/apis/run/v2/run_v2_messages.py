@@ -88,12 +88,12 @@ class GoogleCloudRunV2BuildConfig(_messages.Message):
       `projects/{projectId}/serviceAccounts/{serviceAccountEmail}`.
     sourceLocation: The Cloud Storage bucket URI where the function source
       code is located.
-    workerPool: Optional. Name of the Cloud Build Custom Worker Pool that
-      should be used to build the Cloud Run function. The format of this field
-      is `projects/{project}/locations/{region}/workerPools/{workerPool}`
-      where `{project}` and `{region}` are the project id and region
-      respectively where the worker pool is defined and `{workerPool}` is the
-      short name of the worker pool.
+    workerPool: Optional. Name of the Cloud Build private pool that should be
+      used to build the Cloud Run function. The format of this field is
+      `projects/{project}/locations/{region}/workerPools/{workerPool}` where
+      `{project}` and `{region}` are the project id and region respectively
+      where the worker pool is defined and `{workerPool}` is the short name of
+      the worker pool.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -718,6 +718,276 @@ class GoogleCloudRunV2DockerBuild(_messages.Message):
 
 
 
+class GoogleCloudRunV2DomainMapping(_messages.Message):
+  r"""Resource to hold the state and status of a user's domain mapping.
+
+  Enums:
+    LaunchStageValueValuesEnum: Optional. The launch stage as defined by
+      [Google Cloud Platform Launch
+      Stages](https://cloud.google.com/terms/launch-stages). Cloud Run
+      supports `ALPHA`, `BETA`, and `GA`. If no value is specified, GA is
+      assumed. Set the launch stage to a preview stage on input to allow use
+      of preview features in that stage. On read (or output), describes
+      whether the resource uses preview features. For example, if ALPHA is
+      provided as input, but only BETA and GA-level features are used, this
+      field will be BETA on output.
+
+  Messages:
+    AnnotationsValue: Optional. Unstructured key value map that may be set by
+      external tools to store and arbitrary metadata. They are not queryable
+      and should be preserved when modifying objects. Cloud Run API v2 does
+      not support annotations with `run.googleapis.com`,
+      `cloud.googleapis.com`, `serving.knative.dev`, or
+      `autoscaling.knative.dev` namespaces, and they will be rejected in new
+      resources. All system annotations in v1 now have a corresponding field
+      in v2 DomainMapping. This field follows Kubernetes annotations'
+      namespacing, limits, and rules.
+    LabelsValue: Optional. Unstructured key value map that can be used to
+      organize and categorize objects. User-provided labels are shared with
+      Google's billing system, so they can be used to filter, or break down
+      billing charges by team, component, environment, state, etc. For more
+      information, visit https://cloud.google.com/resource-
+      manager/docs/creating-managing-labels or
+      https://cloud.google.com/run/docs/configuring/labels. Cloud Run API v2
+      does not support labels with `run.googleapis.com`,
+      `cloud.googleapis.com`, `serving.knative.dev`, or
+      `autoscaling.knative.dev` namespaces, and they will be rejected. All
+      system labels in v1 now have a corresponding field in v2 DomainMapping.
+
+  Fields:
+    annotations: Optional. Unstructured key value map that may be set by
+      external tools to store and arbitrary metadata. They are not queryable
+      and should be preserved when modifying objects. Cloud Run API v2 does
+      not support annotations with `run.googleapis.com`,
+      `cloud.googleapis.com`, `serving.knative.dev`, or
+      `autoscaling.knative.dev` namespaces, and they will be rejected in new
+      resources. All system annotations in v1 now have a corresponding field
+      in v2 DomainMapping. This field follows Kubernetes annotations'
+      namespacing, limits, and rules.
+    client: Arbitrary identifier for the API client.
+    clientVersion: Arbitrary version identifier for the API client.
+    conditions: Output only. The Conditions of all other associated sub-
+      resources. They contain additional diagnostics information in case the
+      DomainMapping does not reach its Serving state. See comments in
+      `reconciling` for additional information on reconciliation process in
+      Cloud Run.
+    createTime: Output only. The creation time.
+    creator: Output only. Email address of the authenticated creator.
+    deleteTime: Output only. The deletion time. It is only populated as a
+      response to a Delete request.
+    etag: A system-generated fingerprint for this version of the resource. May
+      be used to detect modification conflict during updates.
+    expireTime: Output only. For a deleted resource, the time after which it
+      will be permanently deleted.
+    generation: Output only. A number that monotonically increases every time
+      the user modifies the desired state. Please note that unlike v1, this is
+      an int64 value. As with most Google APIs, its JSON representation will
+      be a `string` instead of an `integer`.
+    labels: Optional. Unstructured key value map that can be used to organize
+      and categorize objects. User-provided labels are shared with Google's
+      billing system, so they can be used to filter, or break down billing
+      charges by team, component, environment, state, etc. For more
+      information, visit https://cloud.google.com/resource-
+      manager/docs/creating-managing-labels or
+      https://cloud.google.com/run/docs/configuring/labels. Cloud Run API v2
+      does not support labels with `run.googleapis.com`,
+      `cloud.googleapis.com`, `serving.knative.dev`, or
+      `autoscaling.knative.dev` namespaces, and they will be rejected. All
+      system labels in v1 now have a corresponding field in v2 DomainMapping.
+    lastModifier: Output only. Email address of the last authenticated
+      modifier.
+    launchStage: Optional. The launch stage as defined by [Google Cloud
+      Platform Launch Stages](https://cloud.google.com/terms/launch-stages).
+      Cloud Run supports `ALPHA`, `BETA`, and `GA`. If no value is specified,
+      GA is assumed. Set the launch stage to a preview stage on input to allow
+      use of preview features in that stage. On read (or output), describes
+      whether the resource uses preview features. For example, if ALPHA is
+      provided as input, but only BETA and GA-level features are used, this
+      field will be BETA on output.
+    mappedService: Output only. The name of the service that the mapping
+      currently points to.
+    name: Identifier. The fully qualified name of this DomainMapping. In
+      CreateDomainMappingRequest, this field is ignored, and instead composed
+      from CreateDomainMappingRequest.parent and
+      CreateDomainMappingRequest.domain_mapping_id. Format:
+      projects/{project}/locations/{location}/domainMappings/{domain_mapping}
+    observedGeneration: Output only. The generation of this DomainMapping
+      currently serving traffic. See comments in `reconciling` for additional
+      information on reconciliation process in Cloud Run. Please note that
+      unlike v1, this is an int64 value. As with most Google APIs, its JSON
+      representation will be a `string` instead of an `integer`.
+    reconciling: Output only. Returns true if the DomainMapping is currently
+      being acted upon by the system to bring it into the desired state. When
+      a new DomainMapping is created, or an existing one is updated, Cloud Run
+      will asynchronously perform all necessary steps to bring the
+      DomainMapping to the desired serving state. This process is called
+      reconciliation. While reconciliation is in process,
+      `observed_generation` and `mapped_service` will have transient values
+      that might mismatch the intended state: Once reconciliation is over (and
+      this field is false), there are two possible outcomes: reconciliation
+      succeeded and the serving state matches the DomainMapping, or there was
+      an error, and reconciliation failed. This state can be found in
+      `terminal_condition.state`. If reconciliation succeeded, the following
+      fields will match: `service` and `mapped_service`, `observed_generation`
+      and `generation`. If reconciliation failed, `observed_generation` and
+      `mapped_service` will have the state of the last serving revision, or
+      empty for newly created DomainMappings. Additional information on the
+      failure can be found in `terminal_condition` and `conditions`.
+    resourceRecords: Output only. The resource records required to configure
+      this domain mapping. These records must be added to the domain's DNS
+      configuration in order to serve the application via this domain mapping.
+    service: Required. The name of the Service that this DomainMapping applies
+      to. The service must exist.
+    terminalCondition: Output only. The Condition of this DomainMapping,
+      containing its readiness status, and detailed error information in case
+      it did not reach a serving state. See comments in `reconciling` for
+      additional information on reconciliation process in Cloud Run.
+    uid: Output only. Server assigned unique identifier for the trigger. The
+      value is a UUID4 string and guaranteed to remain unchanged until the
+      resource is deleted.
+    updateTime: Output only. The last-modified time.
+  """
+
+  class LaunchStageValueValuesEnum(_messages.Enum):
+    r"""Optional. The launch stage as defined by [Google Cloud Platform Launch
+    Stages](https://cloud.google.com/terms/launch-stages). Cloud Run supports
+    `ALPHA`, `BETA`, and `GA`. If no value is specified, GA is assumed. Set
+    the launch stage to a preview stage on input to allow use of preview
+    features in that stage. On read (or output), describes whether the
+    resource uses preview features. For example, if ALPHA is provided as
+    input, but only BETA and GA-level features are used, this field will be
+    BETA on output.
+
+    Values:
+      LAUNCH_STAGE_UNSPECIFIED: Do not use this default value.
+      UNIMPLEMENTED: The feature is not yet implemented. Users can not use it.
+      PRELAUNCH: Prelaunch features are hidden from users and are only visible
+        internally.
+      EARLY_ACCESS: Early Access features are limited to a closed group of
+        testers. To use these features, you must sign up in advance and sign a
+        Trusted Tester agreement (which includes confidentiality provisions).
+        These features may be unstable, changed in backward-incompatible ways,
+        and are not guaranteed to be released.
+      ALPHA: Alpha is a limited availability test for releases before they are
+        cleared for widespread use. By Alpha, all significant design issues
+        are resolved and we are in the process of verifying functionality.
+        Alpha customers need to apply for access, agree to applicable terms,
+        and have their projects allowlisted. Alpha releases don't have to be
+        feature complete, no SLAs are provided, and there are no technical
+        support obligations, but they will be far enough along that customers
+        can actually use them in test environments or for limited-use tests --
+        just like they would in normal production cases.
+      BETA: Beta is the point at which we are ready to open a release for any
+        customer to use. There are no SLA or technical support obligations in
+        a Beta release. Products will be complete from a feature perspective,
+        but may have some open outstanding issues. Beta releases are suitable
+        for limited production use cases.
+      GA: GA features are open to all developers and are considered stable and
+        fully qualified for production use.
+      DEPRECATED: Deprecated features are scheduled to be shut down and
+        removed. For more information, see the "Deprecation Policy" section of
+        our [Terms of Service](https://cloud.google.com/terms/) and the
+        [Google Cloud Platform Subject to the Deprecation
+        Policy](https://cloud.google.com/terms/deprecation) documentation.
+    """
+    LAUNCH_STAGE_UNSPECIFIED = 0
+    UNIMPLEMENTED = 1
+    PRELAUNCH = 2
+    EARLY_ACCESS = 3
+    ALPHA = 4
+    BETA = 5
+    GA = 6
+    DEPRECATED = 7
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AnnotationsValue(_messages.Message):
+    r"""Optional. Unstructured key value map that may be set by external tools
+    to store and arbitrary metadata. They are not queryable and should be
+    preserved when modifying objects. Cloud Run API v2 does not support
+    annotations with `run.googleapis.com`, `cloud.googleapis.com`,
+    `serving.knative.dev`, or `autoscaling.knative.dev` namespaces, and they
+    will be rejected in new resources. All system annotations in v1 now have a
+    corresponding field in v2 DomainMapping. This field follows Kubernetes
+    annotations' namespacing, limits, and rules.
+
+    Messages:
+      AdditionalProperty: An additional property for a AnnotationsValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AnnotationsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AnnotationsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Unstructured key value map that can be used to organize and
+    categorize objects. User-provided labels are shared with Google's billing
+    system, so they can be used to filter, or break down billing charges by
+    team, component, environment, state, etc. For more information, visit
+    https://cloud.google.com/resource-manager/docs/creating-managing-labels or
+    https://cloud.google.com/run/docs/configuring/labels. Cloud Run API v2
+    does not support labels with `run.googleapis.com`, `cloud.googleapis.com`,
+    `serving.knative.dev`, or `autoscaling.knative.dev` namespaces, and they
+    will be rejected. All system labels in v1 now have a corresponding field
+    in v2 DomainMapping.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  annotations = _messages.MessageField('AnnotationsValue', 1)
+  client = _messages.StringField(2)
+  clientVersion = _messages.StringField(3)
+  conditions = _messages.MessageField('GoogleCloudRunV2Condition', 4, repeated=True)
+  createTime = _messages.StringField(5)
+  creator = _messages.StringField(6)
+  deleteTime = _messages.StringField(7)
+  etag = _messages.StringField(8)
+  expireTime = _messages.StringField(9)
+  generation = _messages.IntegerField(10)
+  labels = _messages.MessageField('LabelsValue', 11)
+  lastModifier = _messages.StringField(12)
+  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 13)
+  mappedService = _messages.StringField(14)
+  name = _messages.StringField(15)
+  observedGeneration = _messages.IntegerField(16)
+  reconciling = _messages.BooleanField(17)
+  resourceRecords = _messages.MessageField('GoogleCloudRunV2ResourceRecord', 18, repeated=True)
+  service = _messages.StringField(19)
+  terminalCondition = _messages.MessageField('GoogleCloudRunV2Condition', 20)
+  uid = _messages.StringField(21)
+  updateTime = _messages.StringField(22)
+
+
 class GoogleCloudRunV2EmptyDirVolumeSource(_messages.Message):
   r"""In memory (tmpfs) ephemeral storage. It is ephemeral in the sense that
   when the sandbox is taken down, the data is destroyed with it (it does not
@@ -1286,6 +1556,18 @@ class GoogleCloudRunV2ExportStatusResponse(_messages.Message):
   imageExportStatuses = _messages.MessageField('GoogleCloudRunV2ImageExportStatus', 1, repeated=True)
   operationId = _messages.StringField(2)
   operationState = _messages.EnumField('OperationStateValueValuesEnum', 3)
+
+
+class GoogleCloudRunV2FilestoreVolumeSource(_messages.Message):
+  r"""Represents a volume backed by a Filestore instance.
+
+  Fields:
+    volume: Required. The resource name of the Filestore volume. Format: `proj
+      ects/{project}/locations/{location}/volumePools/{volume_pool}/volumes/{v
+      olume}`
+  """
+
+  volume = _messages.StringField(1)
 
 
 class GoogleCloudRunV2GCSVolumeSource(_messages.Message):
@@ -2085,6 +2367,19 @@ class GoogleCloudRunV2Job(_messages.Message):
   updateTime = _messages.StringField(27)
 
 
+class GoogleCloudRunV2ListDomainMappingsResponse(_messages.Message):
+  r"""Response message containing a list of DomainMappings.
+
+  Fields:
+    domainMappings: The resulting list of DomainMappings.
+    nextPageToken: A token indicating there are more items than page_size. Use
+      it in the next ListDomainMappings request to continue.
+  """
+
+  domainMappings = _messages.MessageField('GoogleCloudRunV2DomainMapping', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class GoogleCloudRunV2ListExecutionsResponse(_messages.Message):
   r"""Response message containing a list of Executions.
 
@@ -2355,6 +2650,39 @@ class GoogleCloudRunV2PubSubScaling(_messages.Message):
   targetValue = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
+class GoogleCloudRunV2ResourceRecord(_messages.Message):
+  r"""A DNS resource record.
+
+  Enums:
+    TypeValueValuesEnum: Resource record type. Example: `AAAA`.
+
+  Fields:
+    data: Data for this record. Values vary by record type, as defined in RFC
+      1035 (section 5) and RFC 1034 (section 3.6.1).
+    name: Name of the resource record relative to its apex domain, e.g. `www`
+      for `www.example.com`. Omitted for apex records.
+    type: Resource record type. Example: `AAAA`.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Resource record type. Example: `AAAA`.
+
+    Values:
+      RECORD_TYPE_UNSPECIFIED: An unknown resource record.
+      A: An A resource record. Data is an IPv4 address.
+      AAAA: An AAAA resource record. Data is an IPv6 address.
+      CNAME: A CNAME resource record. Data is a domain name to be aliased.
+    """
+    RECORD_TYPE_UNSPECIFIED = 0
+    A = 1
+    AAAA = 2
+    CNAME = 3
+
+  data = _messages.StringField(1)
+  name = _messages.StringField(2)
+  type = _messages.EnumField('TypeValueValuesEnum', 3)
+
+
 class GoogleCloudRunV2ResourceRequirements(_messages.Message):
   r"""ResourceRequirements describes the compute resource requirements.
 
@@ -2475,6 +2803,9 @@ class GoogleCloudRunV2Revision(_messages.Message):
     conditions: Output only. The Condition of this Revision, containing its
       readiness status, and detailed error information in case it did not
       reach a serving state.
+    containerStatuses: Output only. Status information for each of the
+      specified containers. The status includes the resolved digest for
+      specified images.
     containers: Holds the list which define the units of execution for this
       Revision.
     createTime: Output only. The creation time.
@@ -2690,41 +3021,42 @@ class GoogleCloudRunV2Revision(_messages.Message):
   client = _messages.StringField(3)
   clientVersion = _messages.StringField(4)
   conditions = _messages.MessageField('GoogleCloudRunV2Condition', 5, repeated=True)
-  containers = _messages.MessageField('GoogleCloudRunV2Container', 6, repeated=True)
-  createTime = _messages.StringField(7)
-  creator = _messages.StringField(8)
-  deleteTime = _messages.StringField(9)
-  encryptionKey = _messages.StringField(10)
-  encryptionKeyRevocationAction = _messages.EnumField('EncryptionKeyRevocationActionValueValuesEnum', 11)
-  encryptionKeyShutdownDuration = _messages.StringField(12)
-  etag = _messages.StringField(13)
-  executionEnvironment = _messages.EnumField('ExecutionEnvironmentValueValuesEnum', 14)
-  expireTime = _messages.StringField(15)
-  generation = _messages.IntegerField(16)
-  gpuZonalRedundancyDisabled = _messages.BooleanField(17)
-  labels = _messages.MessageField('LabelsValue', 18)
-  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 19)
-  logUri = _messages.StringField(20)
-  maxInstanceRequestConcurrency = _messages.IntegerField(21, variant=_messages.Variant.INT32)
-  name = _messages.StringField(22)
-  nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 23)
-  observedGeneration = _messages.IntegerField(24)
-  reconciling = _messages.BooleanField(25)
-  sandboxes = _messages.MessageField('GoogleCloudRunV2SandboxConfiguration', 26)
-  satisfiesPzs = _messages.BooleanField(27)
-  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 28)
-  scalingStatus = _messages.MessageField('GoogleCloudRunV2RevisionScalingStatus', 29)
-  service = _messages.StringField(30)
-  serviceAccount = _messages.StringField(31)
-  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 32)
-  sessionAffinity = _messages.BooleanField(33)
-  terminationGracePeriod = _messages.StringField(34)
-  timeout = _messages.StringField(35)
-  uid = _messages.StringField(36)
-  updateTime = _messages.StringField(37)
-  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 38, repeated=True)
-  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 39)
-  workloadIdentityConfig = _messages.MessageField('GoogleCloudRunV2WorkloadIdentityConfig', 40)
+  containerStatuses = _messages.MessageField('GoogleCloudRunV2ContainerStatus', 6, repeated=True)
+  containers = _messages.MessageField('GoogleCloudRunV2Container', 7, repeated=True)
+  createTime = _messages.StringField(8)
+  creator = _messages.StringField(9)
+  deleteTime = _messages.StringField(10)
+  encryptionKey = _messages.StringField(11)
+  encryptionKeyRevocationAction = _messages.EnumField('EncryptionKeyRevocationActionValueValuesEnum', 12)
+  encryptionKeyShutdownDuration = _messages.StringField(13)
+  etag = _messages.StringField(14)
+  executionEnvironment = _messages.EnumField('ExecutionEnvironmentValueValuesEnum', 15)
+  expireTime = _messages.StringField(16)
+  generation = _messages.IntegerField(17)
+  gpuZonalRedundancyDisabled = _messages.BooleanField(18)
+  labels = _messages.MessageField('LabelsValue', 19)
+  launchStage = _messages.EnumField('LaunchStageValueValuesEnum', 20)
+  logUri = _messages.StringField(21)
+  maxInstanceRequestConcurrency = _messages.IntegerField(22, variant=_messages.Variant.INT32)
+  name = _messages.StringField(23)
+  nodeSelector = _messages.MessageField('GoogleCloudRunV2NodeSelector', 24)
+  observedGeneration = _messages.IntegerField(25)
+  reconciling = _messages.BooleanField(26)
+  sandboxes = _messages.MessageField('GoogleCloudRunV2SandboxConfiguration', 27)
+  satisfiesPzs = _messages.BooleanField(28)
+  scaling = _messages.MessageField('GoogleCloudRunV2RevisionScaling', 29)
+  scalingStatus = _messages.MessageField('GoogleCloudRunV2RevisionScalingStatus', 30)
+  service = _messages.StringField(31)
+  serviceAccount = _messages.StringField(32)
+  serviceMesh = _messages.MessageField('GoogleCloudRunV2ServiceMesh', 33)
+  sessionAffinity = _messages.BooleanField(34)
+  terminationGracePeriod = _messages.StringField(35)
+  timeout = _messages.StringField(36)
+  uid = _messages.StringField(37)
+  updateTime = _messages.StringField(38)
+  volumes = _messages.MessageField('GoogleCloudRunV2Volume', 39, repeated=True)
+  vpcAccess = _messages.MessageField('GoogleCloudRunV2VpcAccess', 40)
+  workloadIdentityConfig = _messages.MessageField('GoogleCloudRunV2WorkloadIdentityConfig', 41)
 
 
 class GoogleCloudRunV2RevisionScaling(_messages.Message):
@@ -3618,8 +3950,8 @@ class GoogleCloudRunV2SubmitBuildRequest(_messages.Message):
       used.
     storageSource: Required. Source for the build.
     tags: Optional. Additional tags to annotate the build.
-    workerPool: Optional. Name of the Cloud Build Custom Worker Pool that
-      should be used to build the function. The format of this field is
+    workerPool: Optional. Name of the Cloud Build private pool that should be
+      used to build the function. The format of this field is
       `projects/{project}/locations/{region}/workerPools/{workerPool}` where
       `{project}` and `{region}` are the project id and region respectively
       where the worker pool is defined and `{workerPool}` is the short name of
@@ -4089,6 +4421,13 @@ class GoogleCloudRunV2UploadSourceRequest(_messages.Message):
   r"""The request message for the UploadSource method.
 
   Fields:
+    containerId: Optional. The Container name the upload source archive will
+      be used for. When specified, the source archive will be uploaded to a
+      Cloud Storage object with the container name in the path. This field
+      helps to organize the uploaded source archive when a single Cloud Run
+      resource has multiple containers. Allowed characters are lowercase
+      letters, digits, hyphens, and periods; must begin and end with a letter
+      or digit; and must be no longer than 63 characters.
     encryptionKey: Optional. A reference to a customer managed encryption key
       (CMEK) to use to encrypt the uploaded source archive in Cloud Storage.
     instance: The name of Cloud Run Instance upload source archive will be
@@ -4100,11 +4439,12 @@ class GoogleCloudRunV2UploadSourceRequest(_messages.Message):
       be used for.
   """
 
-  encryptionKey = _messages.StringField(1)
-  instance = _messages.StringField(2)
-  job = _messages.StringField(3)
-  service = _messages.StringField(4)
-  workerPool = _messages.StringField(5)
+  containerId = _messages.StringField(1)
+  encryptionKey = _messages.StringField(2)
+  instance = _messages.StringField(3)
+  job = _messages.StringField(4)
+  service = _messages.StringField(5)
+  workerPool = _messages.StringField(6)
 
 
 class GoogleCloudRunV2UploadSourceResponse(_messages.Message):
@@ -4152,6 +4492,7 @@ class GoogleCloudRunV2Volume(_messages.Message):
       https://cloud.google.com/sql/docs/mysql/connect-run for more information
       on how to connect Cloud SQL and Cloud Run.
     emptyDir: Ephemeral storage used as a shared volume.
+    filestore: Optional. Represents a volume backed by a Filestore instance.
     gcs: Persistent storage backed by a Google Cloud Storage bucket.
     name: Required. Volume's name.
     nfs: For NFS Voumes, contains the path to the nfs Volume
@@ -4160,10 +4501,11 @@ class GoogleCloudRunV2Volume(_messages.Message):
 
   cloudSqlInstance = _messages.MessageField('GoogleCloudRunV2CloudSqlInstance', 1)
   emptyDir = _messages.MessageField('GoogleCloudRunV2EmptyDirVolumeSource', 2)
-  gcs = _messages.MessageField('GoogleCloudRunV2GCSVolumeSource', 3)
-  name = _messages.StringField(4)
-  nfs = _messages.MessageField('GoogleCloudRunV2NFSVolumeSource', 5)
-  secret = _messages.MessageField('GoogleCloudRunV2SecretVolumeSource', 6)
+  filestore = _messages.MessageField('GoogleCloudRunV2FilestoreVolumeSource', 3)
+  gcs = _messages.MessageField('GoogleCloudRunV2GCSVolumeSource', 4)
+  name = _messages.StringField(5)
+  nfs = _messages.MessageField('GoogleCloudRunV2NFSVolumeSource', 6)
+  secret = _messages.MessageField('GoogleCloudRunV2SecretVolumeSource', 7)
 
 
 class GoogleCloudRunV2VolumeMount(_messages.Message):
@@ -5320,8 +5662,8 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
         the same region as the build. The builder service account must have
         access to create and write to Cloud Storage buckets in the build
         project.
-      LEGACY_BUCKET: Bucket is located in a Google-owned project and is not
-        regionalized.
+      LEGACY_BUCKET: Deprecated: Use `REGIONAL_USER_OWNED_BUCKET` instead.
+        Bucket is located in a Google-owned project and is not regionalized.
     """
     DEFAULT_LOGS_BUCKET_BEHAVIOR_UNSPECIFIED = 0
     REGIONAL_USER_OWNED_BUCKET = 1
@@ -7282,6 +7624,111 @@ class RunProjectsLocationsBuildsSubmitRequest(_messages.Message):
 
   googleCloudRunV2SubmitBuildRequest = _messages.MessageField('GoogleCloudRunV2SubmitBuildRequest', 1)
   parent = _messages.StringField(2, required=True)
+
+
+class RunProjectsLocationsDomainMappingsCreateRequest(_messages.Message):
+  r"""A RunProjectsLocationsDomainMappingsCreateRequest object.
+
+  Fields:
+    domainMappingId: Required. The unique identifier for the DomainMapping. It
+      must be a valid domain name that the caller is authorized to map, and
+      must contain fewer than 254 characters. The name of the domain mapping
+      becomes `{parent}/domainMappings/{domain_mapping_id}`.
+    googleCloudRunV2DomainMapping: A GoogleCloudRunV2DomainMapping resource to
+      be passed as the request body.
+    parent: Required. The location and project in which this DomainMapping
+      should be created. Format: `projects/{project}/locations/{location}`,
+      where `{project}` can be project id or number. Only lowercase
+      characters, digits, and hyphens.
+    validateOnly: Optional. Indicates that the request should be validated and
+      default values populated, without persisting the request or creating any
+      resources.
+  """
+
+  domainMappingId = _messages.StringField(1)
+  googleCloudRunV2DomainMapping = _messages.MessageField('GoogleCloudRunV2DomainMapping', 2)
+  parent = _messages.StringField(3, required=True)
+  validateOnly = _messages.BooleanField(4)
+
+
+class RunProjectsLocationsDomainMappingsDeleteRequest(_messages.Message):
+  r"""A RunProjectsLocationsDomainMappingsDeleteRequest object.
+
+  Fields:
+    etag: Optional. A system-generated fingerprint for this version of the
+      resource. May be used to detect modification conflict during updates.
+    name: Required. The full name of the DomainMapping. Format:
+      `projects/{project}/locations/{location}/domainMappings/{domain_mapping}
+      `, where `{project}` can be project id or number.
+    validateOnly: Optional. Indicates that the request should be validated
+      without actually deleting any resources.
+  """
+
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  validateOnly = _messages.BooleanField(3)
+
+
+class RunProjectsLocationsDomainMappingsGetRequest(_messages.Message):
+  r"""A RunProjectsLocationsDomainMappingsGetRequest object.
+
+  Fields:
+    name: Required. The full name of the DomainMapping. Format:
+      `projects/{project}/locations/{location}/domainMappings/{domain_mapping}
+      `, where `{project}` can be project id or number.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class RunProjectsLocationsDomainMappingsListRequest(_messages.Message):
+  r"""A RunProjectsLocationsDomainMappingsListRequest object.
+
+  Fields:
+    pageSize: Optional. Maximum number of DomainMappings to return in this
+      call.
+    pageToken: Optional. A page token received from a previous call to
+      ListDomainMappings. All other parameters must match.
+    parent: Required. The location and project to list resources on. Location
+      must be a valid Google Cloud region, and cannot be the "-" wildcard.
+      Format: `projects/{project}/locations/{location}`, where `{project}` can
+      be project id or number.
+    showDeleted: Optional. If true, returns deleted (but unexpired) resources
+      along with active ones.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+  showDeleted = _messages.BooleanField(4)
+
+
+class RunProjectsLocationsDomainMappingsPatchRequest(_messages.Message):
+  r"""A RunProjectsLocationsDomainMappingsPatchRequest object.
+
+  Fields:
+    allowMissing: Optional. If set to true, and if the DomainMapping does not
+      exist, it will create a new one. The caller must have
+      `run.domainmappings.create` permissions if this is set to true and the
+      DomainMapping does not exist.
+    googleCloudRunV2DomainMapping: A GoogleCloudRunV2DomainMapping resource to
+      be passed as the request body.
+    name: Identifier. The fully qualified name of this DomainMapping. In
+      CreateDomainMappingRequest, this field is ignored, and instead composed
+      from CreateDomainMappingRequest.parent and
+      CreateDomainMappingRequest.domain_mapping_id. Format:
+      projects/{project}/locations/{location}/domainMappings/{domain_mapping}
+    updateMask: Optional. The list of fields to be updated.
+    validateOnly: Optional. Indicates that the request should be validated and
+      default values populated, without persisting the request or updating any
+      resources.
+  """
+
+  allowMissing = _messages.BooleanField(1)
+  googleCloudRunV2DomainMapping = _messages.MessageField('GoogleCloudRunV2DomainMapping', 2)
+  name = _messages.StringField(3, required=True)
+  updateMask = _messages.StringField(4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class RunProjectsLocationsExportImageMetadataRequest(_messages.Message):

@@ -396,7 +396,7 @@ def UpdateDataset(
   )
 
   # Get the existing dataset and associated ETag.
-  dataset = _ExecuteGetDatasetRequest(apiclient, reference, etag)
+  dataset = _ExecuteGetDatasetRequest(apiclient, reference, etag, update_mode)
 
   # Merge in the changes.
   if display_name is not None:
@@ -414,7 +414,11 @@ def UpdateDataset(
       dataset['defaultPartitionExpirationMs'] = default_partition_expiration_ms
   if default_kms_key is not None:
     dataset['defaultEncryptionConfiguration'] = {'kmsKeyName': default_kms_key}
-  if 'labels' not in dataset:
+  if 'labels' not in dataset and (
+      update_mode != bq_client_utils.UpdateMode.UPDATE_ACL
+      or labels_to_set
+      or label_keys_to_remove
+  ):
     dataset['labels'] = {}
   if labels_to_set:
     for label_key, label_value in labels_to_set.items():
@@ -461,6 +465,7 @@ def _ExecuteGetDatasetRequest(
     apiclient: discovery.Resource,
     reference,
     etag: Optional[str] = None,
+    update_mode: Optional[bq_client_utils.UpdateMode] = None,
 ):
   """Executes request to get dataset.
 
@@ -468,12 +473,17 @@ def _ExecuteGetDatasetRequest(
     apiclient: the apiclient used to make the request.
     reference: the DatasetReference to get.
     etag: if set, checks that etag in the existing dataset matches.
+    update_mode: Controls which dataset fields are fetched for update.
 
   Returns:
   The result of executing the request, if it succeeds.
   """
   args = dict(reference)
   args['accessPolicyVersion'] = bq_client_utils.MAX_SUPPORTED_IAM_POLICY_VERSION
+  if update_mode == bq_client_utils.UpdateMode.UPDATE_METADATA:
+    args['datasetView'] = 'METADATA'
+  elif update_mode == bq_client_utils.UpdateMode.UPDATE_ACL:
+    args['datasetView'] = 'ACL'
   get_request = apiclient.datasets().get(**args)
   if etag:
     get_request.headers['If-Match'] = etag

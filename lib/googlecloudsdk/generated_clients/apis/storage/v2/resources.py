@@ -145,6 +145,28 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_SMARTBUCKETS = (
+      'projects.locations.smartBuckets',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/smartBuckets/'
+              '{smartBucketsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_SMARTBUCKETS_VECTORINDEXES = (
+      'projects.locations.smartBuckets.vectorIndexes',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/smartBuckets/'
+              '{smartBucketsId}/vectorIndexes/{vectorIndexesId}',
+      },
+      ['name'],
+      True
+  )
 
   def __init__(self, collection_name, path, flat_paths, params,
                enable_uri_parsing):

@@ -22,6 +22,15 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import platforms
 
 
+_DEPRECATION_WARNING = (
+    '`gcloud cloud-shell get-mount-command` is deprecated and will be removed '
+    'in a future release. Please use `gcloud cloud-shell scp` or '
+    '`gcloud cloud-shell ssh` instead.'
+)
+
+
+@base.DefaultUniverseOnly
+@base.Deprecate(is_removed=False, warning=_DEPRECATION_WARNING)
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class GetMountCommand(base.Command):

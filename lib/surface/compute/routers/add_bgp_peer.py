@@ -192,14 +192,14 @@ class AddBgpPeerBeta(AddBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, support_linked_custom_hardware=False)
+    cls._Args(parser, support_linked_custom_hardware=True)
 
   def Run(self, args):
     """See base.UpdateCommand."""
     return self._Run(
         args,
         support_bfd_mode=False,
-        support_linked_custom_hardware=False,
+        support_linked_custom_hardware=True,
     )
 
 

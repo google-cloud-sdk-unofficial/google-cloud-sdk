@@ -217,20 +217,34 @@ def _AddAgentModeConfig(
     alloydb_messages: types.ModuleType,
     args: argparse.Namespace,
 ) -> None:
-  """Sets agentModeConfig on cluster if enable_agent_mode is specified in args.
+  """Sets agentModeConfig on cluster from the Agent Mode flags in args.
 
   Args:
     cluster: The cluster message to populate.
     alloydb_messages: The AlloyDB messages module.
     args: The parsed command-line arguments.
   """
-  if getattr(args, 'enable_agent_mode', None) is not None:
-    agent_mode = (
+  enable_agent_mode = getattr(args, 'enable_agent_mode', None)
+  enable_lakehouse = getattr(args, 'enable_lakehouse_integration', None)
+  if enable_agent_mode is None and enable_lakehouse is None:
+    return
+  config = alloydb_messages.AgentModeConfig()
+  if enable_agent_mode is not None:
+    config.mode = (
         alloydb_messages.AgentModeConfig.ModeValueValuesEnum.ENABLED
-        if args.enable_agent_mode
+        if enable_agent_mode
         else alloydb_messages.AgentModeConfig.ModeValueValuesEnum.DISABLED
     )
-    cluster.agentModeConfig = alloydb_messages.AgentModeConfig(mode=agent_mode)
+  if enable_lakehouse is not None:
+    lakehouse_enum = (
+        alloydb_messages.AgentModeConfig.LakehouseIntegrationValueValuesEnum
+    )
+    config.lakehouseIntegration = (
+        lakehouse_enum.LAKEHOUSE_INTEGRATION_ENABLED
+        if enable_lakehouse
+        else lakehouse_enum.LAKEHOUSE_INTEGRATION_DISABLED
+    )
+  cluster.agentModeConfig = config
 
 
 def _AddExpressConfig(
@@ -628,8 +642,10 @@ def _ConstructClusterAndMaskForPatchRequestBeta(alloydb_messages, args):
         )
     )
   if getattr(args, 'enable_agent_mode', None) is not None:
-    _AddAgentModeConfig(cluster, alloydb_messages, args)
     update_masks.append('agent_mode_config.mode')
+  if getattr(args, 'enable_lakehouse_integration', None) is not None:
+    update_masks.append('agent_mode_config.lakehouse_integration')
+  _AddAgentModeConfig(cluster, alloydb_messages, args)
   if getattr(args, 'enable_express', None) is not None:
     _AddExpressConfig(cluster, alloydb_messages, args)
     update_masks.append('express_config.enabled')

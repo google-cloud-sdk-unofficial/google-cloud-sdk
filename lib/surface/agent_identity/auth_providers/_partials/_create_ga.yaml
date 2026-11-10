@@ -30,7 +30,7 @@
   arguments:
     params:
     - help_text: |-
-        Identifier. The full resource name of the auth_provider. Format:
+        Identifier. The full resource name of the auth provider. Format:
         projects/{project}/locations/{location}/authProviders/{auth_provider}
       is_positional: true
       is_primary_resource: true
@@ -42,7 +42,7 @@
       required: false
       repeated: true
       help_text: |-
-        Labels as key value pairs
+        Labels as key-value pairs.
       spec:
       - api_field: key
       - api_field: value
@@ -50,8 +50,7 @@
         api_field: authProvider.authProviderTypeParams
         required: true
         help_text: |-
-          AuthProvider type specific parameters.
-          Required when creating an auth_provider.
+          Required. Parameters specific to the auth provider type.
         params:
         - group:
             mutex: true
@@ -62,7 +61,7 @@
                 api_field: authProvider.authProviderTypeParams.threeLeggedOauth
                 required: false
                 help_text: |-
-                  Message describing ThreeLeggedOAuth object.
+                  Configuration for 3-legged OAuth (3LO) authentication.
                 params:
                 - arg_name: three-legged-oauth-client-secret
                   api_field: authProvider.authProviderTypeParams.threeLeggedOauth.clientSecret
@@ -81,36 +80,36 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    The authorization endpoint to send users to for consenting to delegate
-                    to the agent.
-                    eg. "https://auth.atlassian.com/authorize"
+                    The authorization endpoint to send users to for consenting to
+                    delegate to the agent. For example, "https://auth.atlassian.com/authorize".
                 - arg_name: three-legged-oauth-token-url
                   api_field: authProvider.authProviderTypeParams.threeLeggedOauth.tokenUrl
                   required: false
                   repeated: false
                   help_text: |-
-                    The token endpoint for requesting tokens on behalf of an end user.
-                    eg. "https://auth.atlassian.com/oauth/token"
+                    The token endpoint for requesting tokens on behalf of an end
+                    user. For example, "https://auth.atlassian.com/oauth/token".
                 - arg_name: three-legged-oauth-enable-pkce
                   api_field: authProvider.authProviderTypeParams.threeLeggedOauth.enablePkce
                   action: store_true
                   required: false
                   type: bool
                   help_text: |-
-                    Enables Proof Key for Code Exchange (PKCE) for the OAuth flow to prevent
-                    authorization code interception attacks.
+                    Enables Proof Key for Code Exchange (PKCE) for the OAuth flow to
+                    prevent authorization code interception attacks.
                   default: null
                 - arg_name: three-legged-oauth-default-continue-uri
                   api_field: authProvider.authProviderTypeParams.threeLeggedOauth.defaultContinueUri
                   required: false
                   repeated: false
                   help_text: |-
-                    The default continue URI for 3LO flow to redirect end users after consent.
+                    The default continue URI for the 3LO flow, used when no continue
+                    URI is provided in the RetrieveCredentials request.
             - group:
                 api_field: authProvider.authProviderTypeParams.twoLeggedOauth
                 required: false
                 help_text: |-
-                  Message describing TwoLeggedOAuth object.
+                  Configuration for 2-legged OAuth (2LO) authentication.
                 params:
                 - arg_name: two-legged-oauth-client-secret
                   api_field: authProvider.authProviderTypeParams.twoLeggedOauth.clientSecret
@@ -134,14 +133,14 @@
                 api_field: authProvider.authProviderTypeParams.apiKey
                 required: false
                 help_text: |-
-                  Message describing ApiKeyParams object.
+                  Configuration for API key authentication.
                 params:
                 - arg_name: api-key
                   api_field: authProvider.authProviderTypeParams.apiKey.apiKey
                   required: false
                   repeated: false
                   help_text: |-
-                    The API key for this auth_provider.
+                    The API key for this auth provider.
             - group:
                 api_field: authProvider.authProviderTypeParams.geAuthProvider
                 arg_name: auth-provider-type-params-ge
@@ -149,16 +148,181 @@
                 required: false
                 hidden: true
                 help_text: |-
-                  Message describing GeminiEnterpriseAuthProviderParams object.
+                  Configuration for Gemini Enterprise authentication.
                 params: []
+            - group:
+                api_field: authProvider.authProviderTypeParams.xaaAuthProvider
+                required: false
+                help_text: |-
+                  Configuration parameters for the Cross-App Access auth provider.
+                params:
+                - group:
+                    mutex: true
+                    help_text: |-
+                      Arguments for the identity source.
+                    params:
+                    - group:
+                        api_field: authProvider.authProviderTypeParams.xaaAuthProvider.idTokenInput
+                        required: false
+                        help_text: |-
+                          Defines how to process an input ID token to obtain an ID-JAG.
+                        params:
+                        - group:
+                            mutex: true
+                            help_text: |-
+                              Arguments for the id jag source.
+                            params:
+                            - arg_name: xaa-auth-provider-id-token-input-jag
+                              help_text: |-
+                                The resource name of the ID-JAG auth provider.
+                                Format:
+                                "projects/{project}/locations/{location}/authProviders/{auth_provider}"
+                              is_positional: false
+                              is_primary_resource: false
+                              resource_spec: !REF googlecloudsdk.command_lib.agent_identity.v1_resources:projects_locations_auth_providers
+                              resource_method_params:
+                                authProvider.authProviderTypeParams.xaaAuthProvider.idTokenInput.idJagAuthProvider: '{__relative_name__}'
+                              required: false
+                            - group:
+                                api_field: authProvider.authProviderTypeParams.xaaAuthProvider.idTokenInput.agentIdentityPool
+                                arg_name: xaa-auth-provider-id-token-input-agent-identity-pool
+                                settable: true
+                                required: false
+                                hidden: true
+                                help_text: |-
+                                  Marker message to indicate the managed Agent Identity Pool is used.
+                                params: []
+                        - arg_name: xaa-auth-provider-id-token-input-jag-additional-claims
+                          api_field: authProvider.authProviderTypeParams.xaaAuthProvider.idTokenInput.idJagAdditionalClaims
+                          required: false
+                          repeated: false
+                          type: arg_json
+                          help_text: |-
+                            Optional additional claims to include when fetching an ID-JAG.
+                    - group:
+                        api_field: authProvider.authProviderTypeParams.xaaAuthProvider.idJagInput
+                        arg_name: xaa-auth-provider-id-jag-input
+                        settable: true
+                        required: false
+                        hidden: true
+                        help_text: |-
+                          Marker message indicating the input is already an ID-JAG, so no fetching is
+                          required.
+                        params: []
+                - group:
+                    mutex: true
+                    help_text: |-
+                      Arguments for the client authentication.
+                    params:
+                    - group:
+                        api_field: authProvider.authProviderTypeParams.xaaAuthProvider.clientSecretAuth
+                        required: false
+                        help_text: |-
+                          Configuration for client ID and client secret authentication.
+                        params:
+                        - arg_name: xaa-auth-provider-client-secret-id
+                          api_field: authProvider.authProviderTypeParams.xaaAuthProvider.clientSecretAuth.clientId
+                          required: true
+                          repeated: false
+                          help_text: |-
+                            The client identifier.
+                        - arg_name: xaa-auth-provider-client-secret
+                          api_field: authProvider.authProviderTypeParams.xaaAuthProvider.clientSecretAuth.clientSecret
+                          required: true
+                          repeated: false
+                          help_text: |-
+                            The client secret.
+                    - group:
+                        api_field: authProvider.authProviderTypeParams.xaaAuthProvider.clientAssertionJwtAuth
+                        required: false
+                        help_text: |-
+                          Configuration for client ID and client assertion JWT authentication.
+                        params:
+                        - arg_name: xaa-auth-provider-client-assertion-jwt-id
+                          api_field: authProvider.authProviderTypeParams.xaaAuthProvider.clientAssertionJwtAuth.clientId
+                          required: true
+                          repeated: false
+                          help_text: |-
+                            The client identifier.
+                - group:
+                    mutex: true
+                    help_text: |-
+                      Arguments for the issuer type.
+                    params:
+                    - group:
+                        api_field: authProvider.authProviderTypeParams.xaaAuthProvider.googleAccount
+                        arg_name: xaa-auth-provider-google-account
+                        settable: true
+                        required: false
+                        hidden: true
+                        help_text: |-
+                          Configuration for Google Account usage as the issuer.
+                        params: []
+                    - group:
+                        api_field: authProvider.authProviderTypeParams.xaaAuthProvider.workforceIdentityFederation
+                        arg_name: xaa-auth-provider-workforce-identity-federation
+                        settable: true
+                        required: false
+                        hidden: true
+                        help_text: |-
+                          Configuration for Workforce Identity Federation usage as the issuer.
+                        params: []
+                    - group:
+                        api_field: authProvider.authProviderTypeParams.xaaAuthProvider.customIssuer
+                        required: false
+                        help_text: |-
+                          Configuration for a custom or third-party authorization server issuer.
+                        params:
+                        - arg_name: xaa-auth-provider-custom-issuer-token-url
+                          api_field: authProvider.authProviderTypeParams.xaaAuthProvider.customIssuer.tokenUrl
+                          required: true
+                          repeated: false
+                          help_text: |-
+                            The token endpoint of the target OAuth authorization server to
+                            retrieve resource tokens.
+                        - arg_name: xaa-auth-provider-custom-issuer
+                          api_field: authProvider.authProviderTypeParams.xaaAuthProvider.customIssuer.issuer
+                          required: false
+                          repeated: false
+                          help_text: |-
+                            The issuer identifier of the target Authorization Server.
+                - arg_name: xaa-auth-provider-additional-parameters
+                  api_field: authProvider.authProviderTypeParams.xaaAuthProvider.additionalParameters
+                  required: false
+                  repeated: true
+                  help_text: |-
+                    Additional parameters to be passed to the token endpoint.
+                  spec:
+                  - api_field: key
+                  - api_field: value
+            - group:
+                api_field: authProvider.authProviderTypeParams.connectorReferenceAuthProvider
+                required: false
+                help_text: |-
+                  Configuration parameters for the Connector Reference auth provider.
+                params:
+                - arg_name: connector-reference-auth-provider
+                  api_field: authProvider.authProviderTypeParams.connectorReferenceAuthProvider.connector
+                  required: true
+                  repeated: false
+                  help_text: |-
+                    The name of the referenced connector.
+                - arg_name: connector-reference-auth-provider-authorization-details
+                  api_field: authProvider.authProviderTypeParams.connectorReferenceAuthProvider.authorizationDetails
+                  required: false
+                  repeated: true
+                  type: arg_json
+                  help_text: |-
+                    Rich Authorization Requests (RFC 9396) detailing targeted OAuth
+                    resources/scopes, formatted as a JSON array of JSON objects.
     - arg_name: allowed-scopes
       api_field: authProvider.allowedScopes
       required: false
       repeated: true
       help_text: |-
-        List of scopes that are allowed to be requested for this auth_provider.
-        If this list is non-empty, only scopes within this list may be requested.
-        If this list is empty, all scopes may be requested.
+        List of scopes that are allowed to be requested for this auth
+        provider. If this list is non-empty, only scopes within this list may be
+        requested. If this list is empty, all scopes may be requested.
         Scopes appearing in `blocked_scopes` are disallowed even if they appear in
         `allowed_scopes`.
         The number of allowed scopes is limited to 200.
@@ -168,7 +332,7 @@
       repeated: true
       help_text: |-
         List of scopes that are blocked from being requested for this
-        auth_provider. If a scope appears in this list, it will not be requested,
+        auth provider. If a scope appears in this list, it will not be requested,
         even if it also appears in `allowed_scopes`. `blocked_scopes` takes
         precedence over `allowed_scopes`. The number of blocked scopes is limited
         to 200.
@@ -184,18 +348,18 @@
       required: false
       repeated: true
       help_text: |-
-        Represents the workload identity in IAM `principal://` format of the
-        agent(s) that will use this AuthProvider. Example:
+        Identifiers for the agents that will use this auth provider,
+        starting with `principal://`. For example:
         `principal://agents.global.org-${ORG_ID}.system.id.goog/resources/aiplatform/projects/{PROJECT_ID}/locations/{LOCATIONS}/reasoningEngines/{ID}`
     - arg_name: request-id
       api_field: requestId
       required: false
       repeated: false
       help_text: |-
-        An optional request ID to identify requests. Specify a unique request ID
-        so that if you must retry your request, the server will know to ignore
-        the request if it has already been completed. The server will guarantee
-        that for at least 60 minutes since the first request.
+        An optional request ID to identify requests. Specify a unique
+        request ID so that if you must retry your request, the server will know to
+        ignore the request if it has already been completed. The server will
+        guarantee that for at least 60 minutes since the first request.
 
         For example, consider a situation where you make an initial request and the
         request times out. If you make the request again with the same request

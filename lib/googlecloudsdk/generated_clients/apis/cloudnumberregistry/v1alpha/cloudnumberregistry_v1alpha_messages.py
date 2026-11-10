@@ -36,7 +36,9 @@ class AggregatedData(_messages.Message):
 
 class Attribute(_messages.Message):
   r"""A key-value pair representing a custom attribute associated with a
-  resource.
+  resource. Attributes are resource metadata used to organize and search for
+  resources. Do not include sensitive information, such as personally
+  identifiable information or credentials, in attribute `key` or `value`.
 
   Fields:
     key: Required. The key of the attribute.
@@ -1018,7 +1020,9 @@ class CustomRange(_messages.Message):
 
   Fields:
     attributes: Optional. The attributes of the CustomRange.
-    description: Optional. The description of the CustomRange.
+    description: Optional. The description of the CustomRange. Do not include
+      sensitive information, such as personally identifiable information or
+      credentials, in the `description` field.
     ipv4CidrRange: Optional. The IPv4 CIDR range of the CustomRange.
     ipv6CidrRange: Optional. The IPv6 CIDR range of the CustomRange.
     labels: Optional. User-defined labels.
@@ -1397,7 +1401,7 @@ class ListCustomRangesResponse(_messages.Message):
     customRanges: The list of CustomRanges.
     nextPageToken: A token to retrieve the next page of results, or empty if
       there are no more results in the list.
-    unreachable: Locations that could not be reached.
+    unreachable: Unordered list. Locations that could not be reached.
   """
 
   customRanges = _messages.MessageField('CustomRange', 1, repeated=True)
@@ -1413,7 +1417,7 @@ class ListDiscoveredRangesResponse(_messages.Message):
     discoveredRanges: The list of DiscoveredRanges.
     nextPageToken: A token to retrieve the next page of results, or empty if
       there are no more results in the list.
-    unreachable: Locations that could not be reached.
+    unreachable: Unordered list. Locations that could not be reached.
   """
 
   discoveredRanges = _messages.MessageField('DiscoveredRange', 1, repeated=True)
@@ -1428,7 +1432,7 @@ class ListIpamAdminScopesResponse(_messages.Message):
     ipamAdminScopes: The list of IpamAdminScopes.
     nextPageToken: A token to retrieve the next page of results, or empty if
       there are no more results in the list.
-    unreachable: Locations that could not be reached.
+    unreachable: Unordered list. Locations that could not be reached.
   """
 
   ipamAdminScopes = _messages.MessageField('IpamAdminScope', 1, repeated=True)
@@ -1475,7 +1479,7 @@ class ListOrgNumberRegistriesResponse(_messages.Message):
     nextPageToken: A token to retrieve the next page of results, or empty if
       there are no more results in the list.
     orgNumberRegistries: The list of OrgNumberRegistries.
-    unreachable: Locations that could not be reached.
+    unreachable: Unordered list. Locations that could not be reached.
   """
 
   nextPageToken = _messages.StringField(1)
@@ -1490,7 +1494,7 @@ class ListRealmsResponse(_messages.Message):
     nextPageToken: A token identifying a page of results the server should
       return.
     realms: The list of Realms.
-    unreachable: Locations that could not be reached.
+    unreachable: Unordered list. Locations that could not be reached.
   """
 
   nextPageToken = _messages.StringField(1)
@@ -1505,7 +1509,7 @@ class ListRegistryBooksResponse(_messages.Message):
     nextPageToken: A token identifying a page of results the server should
       return.
     registryBooks: The list of RegistryBook
-    unreachable: Locations that could not be reached.
+    unreachable: Unordered list. Locations that could not be reached.
   """
 
   nextPageToken = _messages.StringField(1)
@@ -2080,7 +2084,7 @@ class SearchIpResourcesResponse(_messages.Message):
     ranges: Deprecated: Use results field instead. The list of Ranges matching
       the search query.
     results: The list of results matching the search query.
-    unreachable: Locations that could not be reached.
+    unreachable: Unordered list. Locations that could not be reached.
   """
 
   nextPageToken = _messages.StringField(1)

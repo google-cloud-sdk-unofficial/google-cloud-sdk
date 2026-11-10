@@ -275,6 +275,93 @@ class ComputeEngineNodeDetails(_messages.Message):
   state = _messages.StringField(4)
 
 
+class ComputeEngineOrchestrator(_messages.Message):
+  r"""When set in Orchestrator, indicates that the cluster should create nodes
+  using Compute Engine.
+
+  Messages:
+    ExistingInstancesValue: Optional. Existing instances that will be governed
+      by the orchestrator. Keys must conform to
+      [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+      alphanumeric, and at most 63 characters).
+    ManagedInstanceGroupsValue: Optional. Managed instance groups that should
+      be created by the orchestrator. Keys must conform to
+      [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+      alphanumeric, and at most 63 characters).
+
+  Fields:
+    existingInstances: Optional. Existing instances that will be governed by
+      the orchestrator. Keys must conform to
+      [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+      alphanumeric, and at most 63 characters).
+    managedInstanceGroups: Optional. Managed instance groups that should be
+      created by the orchestrator. Keys must conform to
+      [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+      alphanumeric, and at most 63 characters).
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ExistingInstancesValue(_messages.Message):
+    r"""Optional. Existing instances that will be governed by the
+    orchestrator. Keys must conform to
+    [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+    alphanumeric, and at most 63 characters).
+
+    Messages:
+      AdditionalProperty: An additional property for a ExistingInstancesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ExistingInstancesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ExistingInstancesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ExistingInstances attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ExistingInstances', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ManagedInstanceGroupsValue(_messages.Message):
+    r"""Optional. Managed instance groups that should be created by the
+    orchestrator. Keys must conform to
+    [RFC-1034](https://datatracker.ietf.org/doc/html/rfc1034) (lower-case,
+    alphanumeric, and at most 63 characters).
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        ManagedInstanceGroupsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ManagedInstanceGroupsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ManagedInstanceGroupsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ManagedInstanceGroup attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ManagedInstanceGroup', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  existingInstances = _messages.MessageField('ExistingInstancesValue', 1)
+  managedInstanceGroups = _messages.MessageField('ManagedInstanceGroupsValue', 2)
+
+
 class ComputeInstance(_messages.Message):
   r"""Details about a Compute Engine
   [instance](https://cloud.google.com/compute/docs/instances).
@@ -543,6 +630,30 @@ class DeleteStorageBucket(_messages.Message):
   bucket = _messages.StringField(1)
 
 
+class Disk(_messages.Message):
+  r"""Additional disk for managed instance groups.
+
+  Fields:
+    existingDisk: Optional. An existing persistent disk to attach read-only to
+      all VMs in the managed instance group, in the format
+      `projects/{project}/zones/{zone}/disks/{disk}`.
+    image: Optional. Source image for the disk.
+    sizeGb: Optional. Size of the disk in GB. This field is required when
+      creating a new disk.
+    snapshot: Optional. Source snapshot for the disk.
+    type: Optional. [Persistent disk
+      type](https://cloud.google.com/compute/docs/disks#disk-types), in the
+      format `projects/{project}/zones/{zone}/diskTypes/{disk_type}`. This
+      field is required when creating a new disk.
+  """
+
+  existingDisk = _messages.StringField(1)
+  image = _messages.StringField(2)
+  sizeGb = _messages.IntegerField(3)
+  snapshot = _messages.StringField(4)
+  type = _messages.StringField(5)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -574,6 +685,76 @@ class ExistingFilestoreConfig(_messages.Message):
   """
 
   filestore = _messages.StringField(1)
+
+
+class ExistingInstances(_messages.Message):
+  r"""ExistingInstances defines a list of existing VM instances to include in
+  the cluster.
+
+  Messages:
+    LabelsValue: Optional. Immutable. Labels specifying the instances to
+      include. Instances from the source will be included only if they contain
+      each of these labels. If no labels are specified, all instances from the
+      source will be included. Example: {"env": "prod", "app": "worker"}
+
+  Fields:
+    instanceGroupManager: Optional. Immutable. Managed instance group
+      containing the instances, in the format `projects/{project}/zones/{zone}
+      /instanceGroupManagers/{instanceGroupManager}`.
+    labels: Optional. Immutable. Labels specifying the instances to include.
+      Instances from the source will be included only if they contain each of
+      these labels. If no labels are specified, all instances from the source
+      will be included. Example: {"env": "prod", "app": "worker"}
+    project: Optional. Immutable. Project containing the instances, in the
+      format `projects/{project}`.
+    regionInstanceGroupManager: Optional. Immutable. Regional managed instance
+      group containing the instances, in the format `projects/{project}/region
+      s/{region}/instanceGroupManagers/{instanceGroupManager}`.
+    reservation: Optional. Immutable. Reservation containing the instances, in
+      the format `projects/{project}/zones/{zone}/reservations/{reservation}`.
+    reservationBlock: Optional. Immutable. Reservation block containing the
+      instances, in the format `projects/{project}/zones/{zone}/reservations/{
+      reservation}/reservationBlocks/{reservationBlock}`.
+    reservationSubBlock: Optional. Immutable. Reservation sub block containing
+      the instances, in the format `projects/{project}/zones/{zone}/reservatio
+      ns/{reservation}/reservationBlocks/{reservationBlock}/reservationSubBloc
+      ks/{reservationSubBlock}`.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. Immutable. Labels specifying the instances to include.
+    Instances from the source will be included only if they contain each of
+    these labels. If no labels are specified, all instances from the source
+    will be included. Example: {"env": "prod", "app": "worker"}
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  instanceGroupManager = _messages.StringField(1)
+  labels = _messages.MessageField('LabelsValue', 2)
+  project = _messages.StringField(3)
+  regionInstanceGroupManager = _messages.StringField(4)
+  reservation = _messages.StringField(5)
+  reservationBlock = _messages.StringField(6)
+  reservationSubBlock = _messages.StringField(7)
 
 
 class ExistingLustreConfig(_messages.Message):
@@ -1049,6 +1230,169 @@ class LustreReference(_messages.Message):
   """
 
   lustre = _messages.StringField(1)
+
+
+class ManagedInstanceGroup(_messages.Message):
+  r"""A managed instance group based on a compute resource.
+
+  Messages:
+    AdditionalDisksValue: Optional. Additional disks for the managed instance
+      group. Each VM of the MIG will have its own clone of each disk described
+      in the additional_disks map. The disks themselves live as long as the
+      MIG and if a VM is replaced by a new VM of the same name then the
+      replacement VM attaches to the same disks as the VM it replaced. Each
+      disk has a custom device name matching the key in the map.
+    LabelsValue: Optional.
+      [Labels](https://cloud.google.com/compute/docs/labeling-resources) that
+      should be applied to each VM instance in the managed instance group.
+    MetadataValue: Optional. Custom
+      [metadata](https://cloud.google.com/compute/docs/metadata/overview) key-
+      value pairs to be applied to each VM instance in the managed instance
+      group.
+
+  Fields:
+    additionalDisks: Optional. Additional disks for the managed instance
+      group. Each VM of the MIG will have its own clone of each disk described
+      in the additional_disks map. The disks themselves live as long as the
+      MIG and if a VM is replaced by a new VM of the same name then the
+      replacement VM attaches to the same disks as the VM it replaced. Each
+      disk has a custom device name matching the key in the map.
+    bootDisk: Optional. Boot disk for the managed instance group.
+    computeId: Required. ID of the compute resource used to create this
+      managed instance group.
+    enableOsLogin: Optional. Whether [OS
+      Login](https://cloud.google.com/compute/docs/oslogin) should be enabled
+      on instances in this managed instance group.
+    enablePublicIps: Optional. Whether to enable public IPs for the instances
+      in the managed instance group.
+    instanceGroupManager: Output only. Name of the managed instance group, in
+      the format `projects/{project}/zones/{zone}/instanceGroupManagers/{insta
+      nce_group_manager}`. or `projects/{project}/regions/{region}/instanceGro
+      upManagers/{instance_group_manager}`
+    instanceTemplate: Output only. Instance template used to create instances
+      in this group.
+    labels: Optional. [Labels](https://cloud.google.com/compute/docs/labeling-
+      resources) that should be applied to each VM instance in the managed
+      instance group.
+    metadata: Optional. Custom
+      [metadata](https://cloud.google.com/compute/docs/metadata/overview) key-
+      value pairs to be applied to each VM instance in the managed instance
+      group.
+    resourcePolicyConfig: Optional. Resource policy configuration for this
+      managed instance group.
+    serviceAccount: Required. Immutable. Service account to be used by the
+      instances in the managed instance group.
+    startupScript: Optional. Startup script to be run on each VM instance in
+      the nodeset.
+    startupScriptTimeout: Optional. The maximum time to wait for the startup
+      script to complete. If the script exceeds this duration, the instance
+      setup will be considered failed. This value must be positive. If this
+      value is unset, a default timeout of 5 minutes (300 seconds) will be
+      used by the system.
+    storageConfigs: Optional. How storage resources should be mounted on each
+      instance in this managed instance group.
+    targetSize: Optional. Target number of running instances for this managed
+      instance group.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AdditionalDisksValue(_messages.Message):
+    r"""Optional. Additional disks for the managed instance group. Each VM of
+    the MIG will have its own clone of each disk described in the
+    additional_disks map. The disks themselves live as long as the MIG and if
+    a VM is replaced by a new VM of the same name then the replacement VM
+    attaches to the same disks as the VM it replaced. Each disk has a custom
+    device name matching the key in the map.
+
+    Messages:
+      AdditionalProperty: An additional property for a AdditionalDisksValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type AdditionalDisksValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AdditionalDisksValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A Disk attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('Disk', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. [Labels](https://cloud.google.com/compute/docs/labeling-
+    resources) that should be applied to each VM instance in the managed
+    instance group.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Optional. Custom
+    [metadata](https://cloud.google.com/compute/docs/metadata/overview) key-
+    value pairs to be applied to each VM instance in the managed instance
+    group.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type MetadataValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  additionalDisks = _messages.MessageField('AdditionalDisksValue', 1)
+  bootDisk = _messages.MessageField('BootDisk', 2)
+  computeId = _messages.StringField(3)
+  enableOsLogin = _messages.BooleanField(4)
+  enablePublicIps = _messages.BooleanField(5)
+  instanceGroupManager = _messages.StringField(6)
+  instanceTemplate = _messages.StringField(7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  metadata = _messages.MessageField('MetadataValue', 9)
+  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 10)
+  serviceAccount = _messages.MessageField('ServiceAccount', 11)
+  startupScript = _messages.StringField(12)
+  startupScriptTimeout = _messages.StringField(13)
+  storageConfigs = _messages.MessageField('StorageConfig', 14, repeated=True)
+  targetSize = _messages.IntegerField(15)
 
 
 class NetworkReference(_messages.Message):
@@ -1696,11 +2040,38 @@ class Orchestrator(_messages.Message):
   cluster at runtime.
 
   Fields:
+    computeEngine: Optional. If set, indicates that the cluster should use
+      Compute Engine as the orchestrator.
     slurm: Optional. If set, indicates that the cluster should use Slurm as
       the orchestrator.
   """
 
-  slurm = _messages.MessageField('SlurmOrchestrator', 1)
+  computeEngine = _messages.MessageField('ComputeEngineOrchestrator', 1)
+  slurm = _messages.MessageField('SlurmOrchestrator', 2)
+
+
+class ResourcePolicyConfig(_messages.Message):
+  r"""Policy describing how VM instances should be created.
+
+  Fields:
+    acceleratorTopology: Optional. Specifies the topology required to create a
+      partition for VMs that have interconnected accelerators, in the format
+      `AxB` or `AxBxC`, where `A`, `B`, and `C` are integers.
+  """
+
+  acceleratorTopology = _messages.StringField(1)
+
+
+class ServiceAccount(_messages.Message):
+  r"""Service account email and scopes
+
+  Fields:
+    email: Optional. Service account email
+    scopes: Optional. Service account scopes
+  """
+
+  email = _messages.StringField(1)
+  scopes = _messages.StringField(2, repeated=True)
 
 
 class SlurmLoginNodes(_messages.Message):
@@ -1820,6 +2191,8 @@ class SlurmNodeSet(_messages.Message):
       dynamic node creation and limit the number of additional nodes the
       cluster can bring online. Leave empty if you do not want the cluster to
       create nodes dynamically, and instead rely only on static nodes.
+    resourcePolicyConfig: Optional. Resource policy configuration for the
+      nodeset.
     staticNodeCount: Optional. Number of nodes to be statically created for
       this nodeset. The cluster will attempt to ensure that at least this many
       nodes exist at all times.
@@ -1831,8 +2204,9 @@ class SlurmNodeSet(_messages.Message):
   computeInstance = _messages.MessageField('ComputeInstanceSlurmNodeSet', 2)
   id = _messages.StringField(3)
   maxDynamicNodeCount = _messages.IntegerField(4)
-  staticNodeCount = _messages.IntegerField(5)
-  storageConfigs = _messages.MessageField('StorageConfig', 6, repeated=True)
+  resourcePolicyConfig = _messages.MessageField('ResourcePolicyConfig', 5)
+  staticNodeCount = _messages.IntegerField(6)
+  storageConfigs = _messages.MessageField('StorageConfig', 7, repeated=True)
 
 
 class SlurmOrchestrator(_messages.Message):

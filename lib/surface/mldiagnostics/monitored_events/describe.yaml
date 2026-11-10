@@ -29,6 +29,19 @@
               "analyzerReports": [
                 {
                   "analyzer": "ICI Link Analyzer",
+                  "autoCaptureConfig": {
+                    "duration": "10s",
+                    "profilerTargets": [
+                      "projects/PROJECT_ID/locations/us-central1/machineLearningRuns/my-run-123/profilerTargets/target-0"
+                    ]
+                  },
+                  "autoCaptureDetails": [
+                    {
+                      "createTime": "2026-05-01T12:00:05Z",
+                      "profilerSession": "projects/PROJECT_ID/locations/us-central1/machineLearningRuns/my-run-123/profilerSessions/auto-capture-session-01",
+                      "state": "SUCCEEDED"
+                    }
+                  ],
                   "detectionState": "DETECTED",
                   "details": "ICI Link issues detected in <instance_ids>: This indicates networking issues on ICI links connected between TPU processors.",
                   "recommendedActions": [
@@ -46,6 +59,10 @@
               "type": "PERFORMANCE_DEGRADATION"
             }
           ```
+
+          To view the details and `dashboardUri` of an auto-captured profiler session from `autoCaptureDetails`, run:
+
+          $ gcloud alpha mldiagnostics profiler-session describe projects/PROJECT_ID/locations/us-central1/machineLearningRuns/my-run-123/profilerSessions/auto-capture-session-01 --format=json
   arguments:
     params:
     - help_text: |-

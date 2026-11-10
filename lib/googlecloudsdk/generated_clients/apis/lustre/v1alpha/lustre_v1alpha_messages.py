@@ -410,7 +410,11 @@ class ExportDataRequest(_messages.Message):
     requestId: Optional. UUID to identify requests.
     serviceAccount: Optional. User-specified service account used to perform
       the transfer. If unspecified, the Managed Lustre service agent is used.
-      Use one of the following formats: * `{EMAIL_ADDRESS_OR_UNIQUE_ID}` *
+      The caller must have the `iam.serviceAccounts.actAs` permission
+      (`roles/iam.serviceAccountUser`) on the specified service account. When
+      IAM-based access control (`iam_access_control_enabled`) is enabled on
+      the instance, specifying a custom service account is mandatory. Use one
+      of the following formats: * `{EMAIL_ADDRESS_OR_UNIQUE_ID}` *
       `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS_OR_UNIQUE_ID}` *
       `projects/-/serviceAccounts/{EMAIL_ADDRESS_OR_UNIQUE_ID}`
   """
@@ -490,7 +494,11 @@ class ImportDataRequest(_messages.Message):
     requestId: Optional. UUID to identify requests.
     serviceAccount: Optional. User-specified service account used to perform
       the transfer. If unspecified, the default Managed Lustre service agent
-      will be used. Use one of the following formats: *
+      will be used. The caller must have the `iam.serviceAccounts.actAs`
+      permission (`roles/iam.serviceAccountUser`) on the specified service
+      account. When IAM-based access control (`iam_access_control_enabled`) is
+      enabled on the instance, specifying a custom service account is
+      mandatory. Use one of the following formats: *
       `{EMAIL_ADDRESS_OR_UNIQUE_ID}` *
       `projects/{PROJECT_ID}/serviceAccounts/{EMAIL_ADDRESS_OR_UNIQUE_ID}` *
       `projects/-/serviceAccounts/{EMAIL_ADDRESS_OR_UNIQUE_ID}`

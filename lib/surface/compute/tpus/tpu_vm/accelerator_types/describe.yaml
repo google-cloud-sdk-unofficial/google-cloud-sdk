@@ -1,4 +1,6 @@
 - release_tracks: [GA, ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: Describe an accelerator type available for Cloud TPU VM nodes.
     description: Get details on an accelerator type.

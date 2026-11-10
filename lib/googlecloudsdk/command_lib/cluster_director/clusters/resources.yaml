@@ -31,6 +31,7 @@ projects_locations_clusters:
   name: cluster
   plural_name: clusters
   collection: hypercomputecluster.projects.locations.clusters
+  request_id_field: clusterId
   attributes:
   - *project
   - *location

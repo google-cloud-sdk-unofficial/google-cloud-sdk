@@ -2110,8 +2110,8 @@ class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message)
         the same region as the build. The builder service account must have
         access to create and write to Cloud Storage buckets in the build
         project.
-      LEGACY_BUCKET: Bucket is located in a Google-owned project and is not
-        regionalized.
+      LEGACY_BUCKET: Deprecated: Use `REGIONAL_USER_OWNED_BUCKET` instead.
+        Bucket is located in a Google-owned project and is not regionalized.
     """
     DEFAULT_LOGS_BUCKET_BEHAVIOR_UNSPECIFIED = 0
     REGIONAL_USER_OWNED_BUCKET = 1
@@ -5442,10 +5442,25 @@ class Layer(_messages.Message):
   directive = _messages.StringField(2)
 
 
+class LayerAttribute(_messages.Message):
+  r"""LayerAttribute represents a single attribute (such as a tag) that
+  applies to a layer, along with the plugin that generated it.
+
+  Fields:
+    plugin: The name of the plugin that generated this attribute.
+    value: The value of the attribute, with a meaning defined by the plugin.
+  """
+
+  plugin = _messages.StringField(1)
+  value = _messages.StringField(2)
+
+
 class LayerDetails(_messages.Message):
   r"""Details about the layer a package was found in.
 
   Fields:
+    attributes: Attributes that apply to the layer, such as buildpacks
+      metadata.
     baseImages: The base images the layer is found within.
     chainId: The layer chain ID (sha256 hash) of the layer in the container
       image. https://github.com/opencontainers/image-
@@ -5458,11 +5473,12 @@ class LayerDetails(_messages.Message):
     index: The index of the layer in the container image.
   """
 
-  baseImages = _messages.MessageField('BaseImage', 1, repeated=True)
-  chainId = _messages.StringField(2)
-  command = _messages.StringField(3)
-  diffId = _messages.StringField(4)
-  index = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  attributes = _messages.MessageField('LayerAttribute', 1, repeated=True)
+  baseImages = _messages.MessageField('BaseImage', 2, repeated=True)
+  chainId = _messages.StringField(3)
+  command = _messages.StringField(4)
+  diffId = _messages.StringField(5)
+  index = _messages.IntegerField(6, variant=_messages.Variant.INT32)
 
 
 class License(_messages.Message):

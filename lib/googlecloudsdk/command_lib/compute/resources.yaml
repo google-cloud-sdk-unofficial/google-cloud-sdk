@@ -261,6 +261,16 @@ network_attachment:
     attribute_name: network_attachment
     help: The name of the Google Compute Engine network attachment.
 
+network_location_binding:
+  name: network location binding
+  collection: compute.networkLocationBindings
+  attributes:
+  - *project
+  - *region
+  - parameter_name: networkLocationBinding
+    attribute_name: network_location_binding
+    help: The name of the Google Compute Engine network location binding.
+
 network_profile:
   name: network_profile
   collection: compute.networkProfiles

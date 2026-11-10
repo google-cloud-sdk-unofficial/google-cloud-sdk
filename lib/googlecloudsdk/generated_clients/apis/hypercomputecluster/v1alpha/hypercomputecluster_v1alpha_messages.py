@@ -1530,6 +1530,9 @@ class ExistingInstances(_messages.Message):
       Instances from the source will be included only if they contain each of
       these labels. If no labels are specified, all instances from the source
       will be included. Example: {"env": "prod", "app": "worker"}
+    networks: Output only. Networks stores the list of [VPC
+      networks](https://cloud.google.com/vpc/docs/vpc) attached to these
+      existing instances, discovered during the cluster creation and update.
     project: Optional. Immutable. Project containing the instances, in the
       format `projects/{project}`.
     regionInstanceGroupManager: Optional. Immutable. Regional managed instance
@@ -1575,11 +1578,12 @@ class ExistingInstances(_messages.Message):
 
   instanceGroupManager = _messages.StringField(1)
   labels = _messages.MessageField('LabelsValue', 2)
-  project = _messages.StringField(3)
-  regionInstanceGroupManager = _messages.StringField(4)
-  reservation = _messages.StringField(5)
-  reservationBlock = _messages.StringField(6)
-  reservationSubBlock = _messages.StringField(7)
+  networks = _messages.MessageField('NetworkReference', 3, repeated=True)
+  project = _messages.StringField(4)
+  regionInstanceGroupManager = _messages.StringField(5)
+  reservation = _messages.StringField(6)
+  reservationBlock = _messages.StringField(7)
+  reservationSubBlock = _messages.StringField(8)
 
 
 class ExistingLustreConfig(_messages.Message):
@@ -2705,7 +2709,8 @@ class MachineLearningRun(_messages.Message):
   Enums:
     OrchestratorValueValuesEnum: Required. The orchestrator used for the run.
     RunPhaseValueValuesEnum: Optional. RunPhase defines the phase of the run.
-    StateValueValuesEnum: Output only. State of the run.
+    StateValueValuesEnum: Output only. Deprecated: Use `run_phase` instead.
+      State of the run.
 
   Messages:
     LabelsValue: Optional. Any custom labels for this run Example:
@@ -2738,7 +2743,7 @@ class MachineLearningRun(_messages.Message):
     runPhase: Optional. RunPhase defines the phase of the run.
     runSet: Optional. Allows grouping of similar runs. * Helps improving UI
       rendering performance. * Allows comparing similar runs via fast filters.
-    state: Output only. State of the run.
+    state: Output only. Deprecated: Use `run_phase` instead. State of the run.
     tools: Required. List of tools enabled for this run example: XProf, SMon
     updateTime: Output only. Time when the run was last updated.
     workloadDetails: Optional. The metadata for the workload associated with
@@ -2776,7 +2781,7 @@ class MachineLearningRun(_messages.Message):
     FAILED = 3
 
   class StateValueValuesEnum(_messages.Enum):
-    r"""Output only. State of the run.
+    r"""Output only. Deprecated: Use `run_phase` instead. State of the run.
 
     Values:
       STATE_UNSPECIFIED: State is not specified.
@@ -2943,7 +2948,7 @@ class ManagedInstanceGroup(_messages.Message):
       group.
     resourcePolicyConfig: Optional. Resource policy configuration for this
       managed instance group.
-    serviceAccount: Optional. Immutable. Service account to be used by the
+    serviceAccount: Required. Immutable. Service account to be used by the
       instances in the managed instance group.
     startupScript: Optional. Startup script to be run on each VM instance in
       the nodeset.

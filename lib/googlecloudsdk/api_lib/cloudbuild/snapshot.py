@@ -86,8 +86,18 @@ class Snapshot(storage_util.Snapshot):
       tf = self._MakeTarball(archive_path)
       tf.close()
 
-  def MakeZipFile(self, archive_path):
-    zip_file = zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED)
+  def _MakeZipFile(self, archive_path):
+    """Constructs a zip file of snapshot contents.
+
+    The snapshot's file and directory paths are relative to src_dir, so the
+    current working directory must be src_dir when this is called.
+
+    Args:
+      archive_path: Path to place zip file.
+    """
+    zip_file = zipfile.ZipFile(
+        archive_path, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False
+    )
     try:
       for dpath in self.dirs:
         zip_file.write(dpath)
@@ -95,6 +105,15 @@ class Snapshot(storage_util.Snapshot):
         zip_file.write(path)
     finally:
       zip_file.close()
+
+  def MakeZipFile(self, archive_path):
+    """Constructs a zip file of snapshot contents.
+
+    Args:
+      archive_path: Path to place zip file.
+    """
+    with files.ChDir(self.src_dir):
+      self._MakeZipFile(archive_path)
 
   def CopyArchiveToGCS(
       self, storage_client, gcs_object, ignore_file=None, hide_logs=False
@@ -116,7 +135,7 @@ class Snapshot(storage_util.Snapshot):
         with files.TemporaryDirectory() as tmp:
           if gcs_object.Name().endswith('.zip'):
             archive_path = os.path.join(tmp, 'file.zip')
-            self.MakeZipFile(archive_path)
+            self._MakeZipFile(archive_path)
           else:
             archive_path = os.path.join(tmp, 'file.tgz')
             tf = self._MakeTarball(archive_path)

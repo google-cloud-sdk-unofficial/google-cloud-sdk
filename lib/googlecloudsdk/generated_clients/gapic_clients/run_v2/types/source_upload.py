@@ -66,6 +66,17 @@ class UploadSourceRequest(proto.Message):
             archive will be used for.
 
             This field is a member of `oneof`_ ``target``.
+        container_id (str):
+            Optional. The Container name the upload
+            source archive will be used for. When specified,
+            the source archive will be uploaded to a Cloud
+            Storage object with the container name in the
+            path. This field helps to organize the uploaded
+            source archive when a single Cloud Run resource
+            has multiple containers. Allowed characters are
+            lowercase letters, digits, hyphens, and periods;
+            must begin and end with a letter or digit; and
+            must be no longer than 63 characters.
         encryption_key (str):
             Optional. A reference to a customer managed
             encryption key (CMEK) to use to encrypt the
@@ -95,6 +106,10 @@ class UploadSourceRequest(proto.Message):
         proto.STRING,
         number=9,
         oneof='target',
+    )
+    container_id: str = proto.Field(
+        proto.STRING,
+        number=10,
     )
     encryption_key: str = proto.Field(
         proto.STRING,

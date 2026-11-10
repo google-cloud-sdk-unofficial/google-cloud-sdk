@@ -64,6 +64,8 @@ class CreateSecondary(base.CreateCommand):
     flags.AddAllowedPSCProjects(parser)
     flags.AddPSCNetworkAttachmentUri(parser)
     flags.AddPSCAutoConnections(parser)
+    flags.AddEnablePscAutoDns(parser)
+    flags.AddEnablePscAutoConnectionPolicy(parser)
     flags.AddAllocatedIPRangeOverride(parser)
 
     # Connection pooling flags.
@@ -132,8 +134,6 @@ class CreateSecondaryBeta(CreateSecondary):
   @classmethod
   def Args(cls, parser):
     super(CreateSecondaryBeta, CreateSecondaryBeta).Args(parser)
-    flags.AddEnablePscAutoDns(parser)
-    flags.AddEnablePscAutoConnectionPolicy(parser)
     flags.AddConnectionPoolingAuthproxyPoolerScalingType(parser)
 
   def ConstructSecondaryCreateRequestFromArgs(

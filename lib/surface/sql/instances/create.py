@@ -199,7 +199,7 @@ def AddBetaArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddEnableDbAlignedAtomicWrites(parser)
-  flags.AddEnableAcceleratedReplicaMode(parser)
+  flags.AddEnableAcceleratedReplication(parser)
   flags.AddUncMappings(parser)
   flags.AddMsdtcEnabled(parser)
   flags.AddMsdtcRpcAuthMode(parser)
@@ -299,12 +299,12 @@ def RunBaseCreateCommand(args, release_track):
     ):
       args.tier = master_instance_resource.settings.tier
 
-    if args.IsKnownAndSpecified('enable_accelerated_replica_mode'):
+    if args.IsKnownAndSpecified('enable_accelerated_replication'):
       if not (
           master_instance_resource.databaseVersion.name.startswith('MYSQL_')
       ):
         raise sql_exceptions.ArgumentError(
-            '--enable-accelerated-replica-mode is only supported for MySQL.'
+            '--enable-accelerated-replication is only supported for MySQL.'
         )
 
     # Validate master/replica CMEK configurations.
@@ -346,11 +346,11 @@ def RunBaseCreateCommand(args, release_track):
           '`--master-instance-name` is specified.',
       )
 
-    if args.IsKnownAndSpecified('enable_accelerated_replica_mode'):
+    if args.IsKnownAndSpecified('enable_accelerated_replication'):
       if args.IsSpecified('database_version'):
         if not args.database_version.startswith('MYSQL_'):
           raise sql_exceptions.ArgumentError(
-              '--enable-accelerated-replica-mode is only supported for MySQL.'
+              '--enable-accelerated-replication is only supported for MySQL.'
           )
 
   # --root-password is required when creating standard SQL Server instances

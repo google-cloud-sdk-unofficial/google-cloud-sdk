@@ -20,15 +20,15 @@
   auto_generated: true
   help_text:
     brief: Create a Software Delivery Trust policy binding.
-    description: Bind a policy to target deployment resources with an enforcement mode (e.g. DRY_RUN or DENY).
+    description: Bind a policy to target deployment resources with an enforcement mode (e.g. LOG_ONLY or DENY).
     examples: |-
-      To create policy binding 'prod-gke-binding' linking policy 'require-slsa-build' to a GKE cluster in location 'us-central1', run:
+      To create policy binding 'prod-ar-binding' linking policy 'require-slsa-build' to an Artifact Registry repository in location 'us-central1', run:
 
-        $ {command} prod-gke-binding \
+        $ {command} prod-ar-binding \
             --location=us-central1 \
             --policy=projects/my-project/locations/us-central1/policies/require-slsa-build \
             --enforcement-mode=DENY \
-            --resource-selectors="path=//container.googleapis.com/projects/my-project/locations/us-central1/clusters/prod-cluster,matchPattern=EXACT"
+            --resource-selectors="path=//artifactregistry.googleapis.com/projects/my-project/locations/us-central1/repositories/my-repo,matchPattern=EXACT"
   arguments:
     params:
     - group:

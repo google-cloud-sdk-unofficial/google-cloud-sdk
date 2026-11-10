@@ -673,8 +673,9 @@ class AccesscontextmanagerFoldersLookupConfiguredServicePerimeterRequest(_messag
   object.
 
   Fields:
-    resource: Required. The resource to resolve (for example, `projects/123`
-      or `folders/456`).
+    resource: Required. The resource name. Format: `projects/{project_number}`
+      or `folders/{folder_number}` (for example, `projects/123` or
+      `folders/456`)
   """
 
   resource = _messages.StringField(1, required=True)
@@ -858,8 +859,9 @@ class AccesscontextmanagerProjectsLookupConfiguredServicePerimeterRequest(_messa
   object.
 
   Fields:
-    resource: Required. The resource to resolve (for example, `projects/123`
-      or `folders/456`).
+    resource: Required. The resource name. Format: `projects/{project_number}`
+      or `folders/{folder_number}` (for example, `projects/123` or
+      `folders/456`)
   """
 
   resource = _messages.StringField(1, required=True)
@@ -1957,7 +1959,7 @@ class ListSupportedServicesResponse(_messages.Message):
 
 
 class LookupConfiguredServicePerimeterResponse(_messages.Message):
-  r"""A configured service perimeter returned by Access Context Manager.
+  r"""A configured ServicePerimeter returned by Access Context Manager.
 
   Fields:
     restrictedResource: The resource (for example, `projects/123` or
@@ -1967,13 +1969,12 @@ class LookupConfiguredServicePerimeterResponse(_messages.Message):
       `folders/456`) that directly owns or is restricted by the dry-run
       perimeter.
     servicePerimeter: Fully qualified name of the configured enforced
-      perimeter. Format:
-      `accessPolicies/{policy_id}/servicePerimeters/{perimeter_name}` This
-      field is empty if no enforced perimeter applies.
+      perimeter. This field is empty if no enforced perimeter applies. Format:
+      `accessPolicies/{policy_id}/servicePerimeters/{perimeter_name}`
     servicePerimeterDryRun: Fully qualified name of the configured dry-run
-      perimeter. Format:
-      `accessPolicies/{policy_id}/servicePerimeters/{perimeter_name}` This
-      field is empty if no dry-run perimeter configuration applies.
+      perimeter. This field is empty if no dry-run perimeter configuration
+      applies. Format:
+      `accessPolicies/{policy_id}/servicePerimeters/{perimeter_name}`
   """
 
   restrictedResource = _messages.StringField(1)

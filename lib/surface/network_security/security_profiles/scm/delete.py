@@ -74,8 +74,7 @@ class Delete(base.DeleteCommand):
           'You are about to delete security_profile'
           f' [{security_profile.Name()}]'
       )
-      if not console_io.PromptContinue(message=delete_warning):
-        return None
+      console_io.PromptContinue(message=delete_warning, cancel_on_no=True)
 
     operation = client.DeleteSecurityProfile(security_profile.RelativeName())
 

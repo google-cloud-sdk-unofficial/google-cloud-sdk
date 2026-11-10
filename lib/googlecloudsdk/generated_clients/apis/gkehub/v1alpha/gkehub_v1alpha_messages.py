@@ -2589,6 +2589,67 @@ class DeleteReferenceRequest(_messages.Message):
   requestId = _messages.StringField(2)
 
 
+class DowngradeRolloutSequenceRequest(_messages.Message):
+  r"""Request message for downgrading a rollout sequence.
+
+  Enums:
+    DowngradeTypeValueValuesEnum: Required. The type of downgrade.
+
+  Fields:
+    downgradeType: Required. The type of downgrade.
+    ignoreClusterDisruptionBudgets: Optional. If set to true, the rollout will
+      ignore the disruption budgets of the clusters.
+    ignoreMaintenancePolicies: Optional. If set to true, the rollout will
+      ignore any maintenance policies (Maintenance Windows and Maintenance
+      Exclusions) set on the clusters.
+    patchOnly: Optional. If set to true, the rollout will only downgrade
+      clusters that match the minor version of the `version` field and are on
+      a higher patch version. Must be set to true when `downgrade_type` is
+      `CONTROL_PLANE`.
+    prioritized: Optional. If set to true, conflicting rollouts will be
+      paused, to allow this rollout to progress through the sequence.
+      Conflicting rollouts running on the first stage will be canceled, to
+      allow this rollout to be created. Defaults to true when unset. Set
+      explicitly to false to create the downgrade rollout without pausing or
+      canceling conflicting rollouts.
+    soakDurationOverrideAllStages: Optional. Overrides the soak duration for
+      all stages of the rollout.
+    soakDurationOverridePerStage: Optional. Overrides the soak durations for
+      specific stages of the rollout.
+    version: Required. GKE version to downgrade to. Must be a valid, non-
+      deprecated GKE version available in the sequence's release channel or a
+      less conservative channel, and lower than the sequence's current target
+      version for the given `downgrade_type`. Control plane downgrades are
+      restricted to patch downgrades within the same minor version. Node pool
+      downgrades support both patch downgrades and minor-version downgrades
+      (up to 2 minor versions below the sequence's target control plane
+      version). Version aliases (such as `latest` or `-`) are not supported
+      for downgrades; a full GKE version string (e.g., `1.36.1-gke.1000`) is
+      required.
+  """
+
+  class DowngradeTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of downgrade.
+
+    Values:
+      DOWNGRADE_TYPE_UNSPECIFIED: Default unspecified value.
+      CONTROL_PLANE: Downgrade the control plane.
+      NODE: Downgrade the nodes.
+    """
+    DOWNGRADE_TYPE_UNSPECIFIED = 0
+    CONTROL_PLANE = 1
+    NODE = 2
+
+  downgradeType = _messages.EnumField('DowngradeTypeValueValuesEnum', 1)
+  ignoreClusterDisruptionBudgets = _messages.BooleanField(2)
+  ignoreMaintenancePolicies = _messages.BooleanField(3)
+  patchOnly = _messages.BooleanField(4)
+  prioritized = _messages.BooleanField(5)
+  soakDurationOverrideAllStages = _messages.StringField(6)
+  soakDurationOverridePerStage = _messages.MessageField('PerStageSoakDurationOverrides', 7)
+  version = _messages.StringField(8)
+
+
 class EdgeCluster(_messages.Message):
   r"""EdgeCluster contains information specific to Google Edge Clusters.
 
@@ -4480,6 +4541,20 @@ class GkehubProjectsLocationsRolloutSequencesDeleteRequest(_messages.Message):
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class GkehubProjectsLocationsRolloutSequencesDowngradeRequest(_messages.Message):
+  r"""A GkehubProjectsLocationsRolloutSequencesDowngradeRequest object.
+
+  Fields:
+    downgradeRolloutSequenceRequest: A DowngradeRolloutSequenceRequest
+      resource to be passed as the request body.
+    name: Required. The name of the rollout sequence. Format: projects/{projec
+      t}/locations/{location}/rolloutSequences/{rollout_sequence}
+  """
+
+  downgradeRolloutSequenceRequest = _messages.MessageField('DowngradeRolloutSequenceRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class GkehubProjectsLocationsRolloutSequencesGetRequest(_messages.Message):
@@ -8503,7 +8578,7 @@ class RolloutMembershipState(_messages.Message):
 
 
 class RolloutSequence(_messages.Message):
-  r"""RolloutSequence defines the desired order of upgrades. Next ID: 20
+  r"""RolloutSequence defines the desired order of upgrades. Next ID: 22
 
   Enums:
     ComputedReleaseChannelValueValuesEnum: Output only. The computed release
@@ -8519,6 +8594,21 @@ class RolloutSequence(_messages.Message):
     annotations: Optional. Internal-only annotations for development and
       testing purposes. This field is not intended for public use and will not
       be exposed in any public API version.
+    attemptedControlPlaneVersions: Output only. Control plane versions
+      targeted by rollouts previously created on this Rollout Sequence,
+      ordered from oldest to newest. Used internally to stop automatic rollout
+      creation from re-targeting a potentially defective version (e.g. one
+      that was rolled back) after a downgrade lowers
+      `target_control_plane_version`. User-initiated rollouts are not
+      restricted by this list. Bounded to the 100 most recent versions; the
+      oldest entries are evicted first.
+    attemptedNodeVersions: Output only. Node versions targeted by rollouts
+      previously created on this Rollout Sequence, ordered from oldest to
+      newest. Used internally to stop automatic rollout creation from re-
+      targeting a potentially defective version (e.g. one that was rolled
+      back) after a downgrade lowers `target_node_version`. User-initiated
+      rollouts are not restricted by this list. Bounded to the 100 most recent
+      versions; the oldest entries are evicted first.
     autoUpgradeConfig: Optional. Configuration for automatic upgrades. If this
       message is `unset`, the system applies default behavior.
     computedReleaseChannel: Output only. The computed release channel used for
@@ -8627,24 +8717,26 @@ class RolloutSequence(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   annotations = _messages.MessageField('AnnotationsValue', 1)
-  autoUpgradeConfig = _messages.MessageField('AutoUpgradeConfig', 2)
-  computedReleaseChannel = _messages.EnumField('ComputedReleaseChannelValueValuesEnum', 3)
-  createTime = _messages.StringField(4)
-  deleteTime = _messages.StringField(5)
-  displayName = _messages.StringField(6)
-  effectiveAutoUpgradeConfig = _messages.MessageField('AutoUpgradeConfig', 7)
-  etag = _messages.StringField(8)
-  ignoredClustersSelector = _messages.MessageField('ClusterSelector', 9)
-  labels = _messages.MessageField('LabelsValue', 10)
-  lastQualifiedControlPlaneVersion = _messages.StringField(11)
-  lastQualifiedNodeVersion = _messages.StringField(12)
-  name = _messages.StringField(13)
-  operationalState = _messages.MessageField('OperationalState', 14)
-  stages = _messages.MessageField('Stage', 15, repeated=True)
-  targetControlPlaneVersion = _messages.StringField(16)
-  targetNodeVersion = _messages.StringField(17)
-  uid = _messages.StringField(18)
-  updateTime = _messages.StringField(19)
+  attemptedControlPlaneVersions = _messages.StringField(2, repeated=True)
+  attemptedNodeVersions = _messages.StringField(3, repeated=True)
+  autoUpgradeConfig = _messages.MessageField('AutoUpgradeConfig', 4)
+  computedReleaseChannel = _messages.EnumField('ComputedReleaseChannelValueValuesEnum', 5)
+  createTime = _messages.StringField(6)
+  deleteTime = _messages.StringField(7)
+  displayName = _messages.StringField(8)
+  effectiveAutoUpgradeConfig = _messages.MessageField('AutoUpgradeConfig', 9)
+  etag = _messages.StringField(10)
+  ignoredClustersSelector = _messages.MessageField('ClusterSelector', 11)
+  labels = _messages.MessageField('LabelsValue', 12)
+  lastQualifiedControlPlaneVersion = _messages.StringField(13)
+  lastQualifiedNodeVersion = _messages.StringField(14)
+  name = _messages.StringField(15)
+  operationalState = _messages.MessageField('OperationalState', 16)
+  stages = _messages.MessageField('Stage', 17, repeated=True)
+  targetControlPlaneVersion = _messages.StringField(18)
+  targetNodeVersion = _messages.StringField(19)
+  uid = _messages.StringField(20)
+  updateTime = _messages.StringField(21)
 
 
 class RolloutStage(_messages.Message):

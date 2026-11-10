@@ -1405,6 +1405,12 @@ class CloudVmCluster(_messages.Message):
       of the CloudExadataInfrastructure. Example: us-east4-b-r2.
     identityConnector: Output only. The identity connector details which will
       allow OCI to securely access the resources in the customer project.
+    identityConnectorDisabled: Optional. Input only. Immutable. If set to
+      true, disables the automatic provisioning of the Workload Identity
+      Connector during creation. If set to false or omitted, the Workload
+      Identity Connector will be automatically provisioned by default. Note:
+      Provisioning the Workload Identity Connector is a prerequisite for
+      enabling Google Cloud CMEK.
     labels: Optional. Labels or tags associated with the VM Cluster.
     name: Identifier. The name of the VM Cluster resource with the format:
       projects/{project}/locations/{region}/cloudVmClusters/{cloud_vm_cluster}
@@ -1457,13 +1463,14 @@ class CloudVmCluster(_messages.Message):
   exascaleDbStorageVault = _messages.StringField(7)
   gcpOracleZone = _messages.StringField(8)
   identityConnector = _messages.MessageField('IdentityConnector', 9)
-  labels = _messages.MessageField('LabelsValue', 10)
-  name = _messages.StringField(11)
-  network = _messages.StringField(12)
-  odbDnsZone = _messages.StringField(13)
-  odbNetwork = _messages.StringField(14)
-  odbSubnet = _messages.StringField(15)
-  properties = _messages.MessageField('CloudVmClusterProperties', 16)
+  identityConnectorDisabled = _messages.BooleanField(10)
+  labels = _messages.MessageField('LabelsValue', 11)
+  name = _messages.StringField(12)
+  network = _messages.StringField(13)
+  odbDnsZone = _messages.StringField(14)
+  odbNetwork = _messages.StringField(15)
+  odbSubnet = _messages.StringField(16)
+  properties = _messages.MessageField('CloudVmClusterProperties', 17)
 
 
 class CloudVmClusterProperties(_messages.Message):
@@ -1683,6 +1690,44 @@ class Column(_messages.Message):
 
   name = _messages.StringField(1)
   type = _messages.StringField(2)
+
+
+class ComputePerformance(_messages.Message):
+  r"""Parameters detailing the compute performance for a specified DB system
+  shape.
+
+  Enums:
+    ComputeModelValueValuesEnum: Output only. The compute model for Base
+      Database Service.
+
+  Fields:
+    computeCount: Output only. The number of compute servers for the DB
+      system.
+    computeModel: Output only. The compute model for Base Database Service.
+    cpuCoreCount: Output only. The number of CPU cores available.
+    memoryInGbs: Output only. The amount of memory allocated for the VMDB
+      System in GBs.
+  """
+
+  class ComputeModelValueValuesEnum(_messages.Enum):
+    r"""Output only. The compute model for Base Database Service.
+
+    Values:
+      COMPUTE_MODEL_UNSPECIFIED: Unspecified compute model.
+      COMPUTE_MODEL_ECPU: Abstract measure of compute resources. ECPUs are
+        based on the number of cores elastically allocated from a pool of
+        compute and storage servers.
+      COMPUTE_MODEL_OCPU: Physical measure of compute resources. OCPUs are
+        based on the physical core of a processor.
+    """
+    COMPUTE_MODEL_UNSPECIFIED = 0
+    COMPUTE_MODEL_ECPU = 1
+    COMPUTE_MODEL_OCPU = 2
+
+  computeCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  computeModel = _messages.EnumField('ComputeModelValueValuesEnum', 2)
+  cpuCoreCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  memoryInGbs = _messages.FloatField(4)
 
 
 class ConfigureExascaleCloudExadataInfrastructureRequest(_messages.Message):
@@ -2602,6 +2647,23 @@ class DbSystem(_messages.Message):
   properties = _messages.MessageField('DbSystemProperties', 10)
 
 
+class DbSystemComputePerformance(_messages.Message):
+  r"""Details of the DbSystem compute performance resource.
+
+  Fields:
+    computePerformances: Output only. List of Compute performance details for
+      the specified DB system shape.
+    name: Identifier. The name of the DbSystemComputePerformance resource with
+      the format: projects/{project}/locations/{location}/dbSystemComputePerfo
+      rmances/{db_system_compute_performance}
+    shape: Output only. The shape of the DB system.
+  """
+
+  computePerformances = _messages.MessageField('ComputePerformance', 1, repeated=True)
+  name = _messages.StringField(2)
+  shape = _messages.StringField(3)
+
+
 class DbSystemInitialStorageSize(_messages.Message):
   r"""Summary of the DbSystem initial storage size.
 
@@ -2973,11 +3035,35 @@ class DeploymentDiagnosticData(_messages.Message):
   object = _messages.StringField(6)
 
 
+class DisableCloudVmClusterIdentityConnectorRequest(_messages.Message):
+  r"""The request for `CloudVmCluster.DisableCloudVmClusterIdentityConnector`.
+  """
+
+
+
+class DisableExadbVmClusterIdentityConnectorRequest(_messages.Message):
+  r"""The request for `ExadbVmCluster.DisableExadbVmClusterIdentityConnector`.
+  """
+
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
+  """
+
+
+
+class EnableCloudVmClusterIdentityConnectorRequest(_messages.Message):
+  r"""The request for `CloudVmCluster.EnableCloudVmClusterIdentityConnector`.
+  """
+
+
+
+class EnableExadbVmClusterIdentityConnectorRequest(_messages.Message):
+  r"""The request for `ExadbVmCluster.EnableExadbVmClusterIdentityConnector`.
   """
 
 
@@ -3093,6 +3179,12 @@ class ExadbVmCluster(_messages.Message):
       system will pick the zone assigned to the ExascaleDbStorageVault.
     identityConnector: Output only. The identity connector details which will
       allow OCI to securely access the resources in the customer project.
+    identityConnectorDisabled: Optional. Input only. Immutable. If set to
+      true, disables the automatic provisioning of the Workload Identity
+      Connector during creation. If set to false or omitted, the Workload
+      Identity Connector will be automatically provisioned by default. Note:
+      Provisioning the Workload Identity Connector is a prerequisite for
+      enabling Google Cloud CMEK.
     labels: Optional. The labels or tags associated with the ExadbVmCluster.
     name: Identifier. The name of the ExadbVmCluster resource in the following
       format:
@@ -3138,11 +3230,12 @@ class ExadbVmCluster(_messages.Message):
   entitlementId = _messages.StringField(4)
   gcpOracleZone = _messages.StringField(5)
   identityConnector = _messages.MessageField('IdentityConnector', 6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  name = _messages.StringField(8)
-  odbNetwork = _messages.StringField(9)
-  odbSubnet = _messages.StringField(10)
-  properties = _messages.MessageField('ExadbVmClusterProperties', 11)
+  identityConnectorDisabled = _messages.BooleanField(7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  name = _messages.StringField(9)
+  odbNetwork = _messages.StringField(10)
+  odbSubnet = _messages.StringField(11)
+  properties = _messages.MessageField('ExadbVmClusterProperties', 12)
 
 
 class ExadbVmClusterProperties(_messages.Message):
@@ -3551,6 +3644,95 @@ class FailoverAutonomousDatabaseRequest(_messages.Message):
   """
 
   peerAutonomousDatabase = _messages.StringField(1)
+
+
+class FlexComponent(_messages.Message):
+  r"""Details of the Flex Component resource.
+
+  Fields:
+    name: Identifier. Specifies the name of the Flex Component resource with
+      the format:
+      projects/{project}/locations/{region}/flexComponents/{flex_component}
+    properties: Output only. The properties of the Flex Component.
+  """
+
+  name = _messages.StringField(1)
+  properties = _messages.MessageField('FlexComponentProperties', 2)
+
+
+class FlexComponentProperties(_messages.Message):
+  r"""The properties of the Flex Component.
+
+  Enums:
+    ComputeModelValueValuesEnum: Output only. The compute model of the DB
+      Server for this Flex Component.
+    HardwareTypeValueValuesEnum: Output only. The hardware type of the DB
+      (Compute) or Storage (Cell) Server for this Flex Component.
+
+  Fields:
+    availableCoreCount: Output only. The maximum number of CPU cores that can
+      be enabled on the DB system for this shape.
+    availableDbNodeStoragePerNodeGb: Output only. The maximum storage that can
+      be enabled on the Storage Server for this Flex Component.
+    availableLocalStorageGb: Output only. The maximum local storage that can
+      be enabled on the DB Server for this Flex Component.
+    availableMemoryGb: Output only. The maximum memory size that can be
+      enabled on the DB Server for this Flex Component.
+    computeModel: Output only. The compute model of the DB Server for this
+      Flex Component.
+    descriptionSummary: Output only. The description summary for this Flex
+      Component.
+    hardwareType: Output only. The hardware type of the DB (Compute) or
+      Storage (Cell) Server for this Flex Component.
+    minimumCoreCount: Output only. The minimum number of CPU cores that can be
+      enabled on the DB Server for this Flex Component.
+    name: Output only. The name of the Flex Component used for the DB system.
+    runtimeMinimumCoreCount: Output only. The runtime minimum number of CPU
+      cores that can be enabled for this Flex Component.
+    shape: Output only. The name of the DB system shape for this Flex
+      Component.
+  """
+
+  class ComputeModelValueValuesEnum(_messages.Enum):
+    r"""Output only. The compute model of the DB Server for this Flex
+    Component.
+
+    Values:
+      COMPUTE_MODEL_UNSPECIFIED: Unspecified compute model.
+      COMPUTE_MODEL_ECPU: Abstract measure of compute resources. ECPUs are
+        based on the number of cores elastically allocated from a pool of
+        compute and storage servers.
+      COMPUTE_MODEL_OCPU: Physical measure of compute resources. OCPUs are
+        based on the physical core of a processor.
+    """
+    COMPUTE_MODEL_UNSPECIFIED = 0
+    COMPUTE_MODEL_ECPU = 1
+    COMPUTE_MODEL_OCPU = 2
+
+  class HardwareTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The hardware type of the DB (Compute) or Storage (Cell)
+    Server for this Flex Component.
+
+    Values:
+      HARDWARE_TYPE_UNSPECIFIED: Unspecified default
+      COMPUTE: COMPUTE
+      CELL: CELL
+    """
+    HARDWARE_TYPE_UNSPECIFIED = 0
+    COMPUTE = 1
+    CELL = 2
+
+  availableCoreCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  availableDbNodeStoragePerNodeGb = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  availableLocalStorageGb = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  availableMemoryGb = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  computeModel = _messages.EnumField('ComputeModelValueValuesEnum', 5)
+  descriptionSummary = _messages.StringField(6)
+  hardwareType = _messages.EnumField('HardwareTypeValueValuesEnum', 7)
+  minimumCoreCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  name = _messages.StringField(9)
+  runtimeMinimumCoreCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  shape = _messages.StringField(11)
 
 
 class GenerateAutonomousDatabaseWalletRequest(_messages.Message):
@@ -6317,10 +6499,22 @@ class IdentityConnector(_messages.Message):
   Fields:
     connectionState: Output only. The connection state of the identity
       connector.
+    identityConnectorId: Output only. The unique partner identifier for the
+      Identity Connector, used to establish secure cross-cloud access between
+      Google Cloud and OCI. This corresponds directly to the ID of the
+      OracleDbGcpIdentityConnector resource in Oracle Cloud Infrastructure
+      (OCI).
+    lifecycleStateDetails: Output only. Additional information about the
+      current lifecycle state.
     serviceAgentEmail: Output only. A google managed service account on which
       customers can grant roles to access resources in the customer project.
       Example: `p176944527254-55-75119d87fd8f@gcp-sa-
       oci.iam.gserviceaccount.com`
+    workloadIdentityPool: Output only. The resource name of the Workload
+      Identity Pool configured for identity federation with OCI. This exact
+      pool name can be used to configure VPC Service Controls (VPC-SC) egress
+      rules. Format: `projects/{project}/locations/global/workloadIdentityPool
+      s/{workload_identity_pool}`
   """
 
   class ConnectionStateValueValuesEnum(_messages.Enum):
@@ -6341,7 +6535,10 @@ class IdentityConnector(_messages.Message):
     UNKNOWN = 4
 
   connectionState = _messages.EnumField('ConnectionStateValueValuesEnum', 1)
-  serviceAgentEmail = _messages.StringField(2)
+  identityConnectorId = _messages.StringField(2)
+  lifecycleStateDetails = _messages.StringField(3)
+  serviceAgentEmail = _messages.StringField(4)
+  workloadIdentityPool = _messages.StringField(5)
 
 
 class IngressIp(_messages.Message):
@@ -6531,6 +6728,21 @@ class ListDbServersResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListDbSystemComputePerformancesResponse(_messages.Message):
+  r"""Message for response to listing DbSystemComputePerformances
+
+  Fields:
+    dbSystemComputePerformances: The list of DbSystemComputePerformance.
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  dbSystemComputePerformances = _messages.MessageField('DbSystemComputePerformance', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListDbSystemInitialStorageSizesResponse(_messages.Message):
   r"""The response for `DbSystemInitialStorageSizes.List`.
 
@@ -6629,6 +6841,21 @@ class ListExascaleDbStorageVaultsResponse(_messages.Message):
   """
 
   exascaleDbStorageVaults = _messages.MessageField('ExascaleDbStorageVault', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListFlexComponentsResponse(_messages.Message):
+  r"""Message for response to listing FlexComponents
+
+  Fields:
+    flexComponents: The list of FlexComponent
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  flexComponents = _messages.MessageField('FlexComponent', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -7142,7 +7369,8 @@ class OdbDnsZone(_messages.Message):
   Fields:
     createTime: Output only. The date and time that the OdbDnsZone was
       created.
-    domain: Required. The DNS suffix for the zone. Ex: abc.example.com.
+    domain: Required. Immutable. The DNS suffix for the zone. Ex:
+      abc.example.com.
     labels: Optional. Labels or tags associated with the resource.
     name: Identifier. The name of the OdbDnsZone resource in the following
       format: projects/{project}/locations/{location}/odbNetworks/{odb_network
@@ -7213,14 +7441,14 @@ class OdbNetwork(_messages.Message):
       created.
     entitlementId: Output only. The ID of the subscription entitlement
       associated with the OdbNetwork.
-    gcpOracleZone: Optional. The GCP Oracle zone where OdbNetwork is hosted.
-      Example: us-east4-b-r2. If not specified, the system will pick a zone
-      based on availability.
+    gcpOracleZone: Optional. Immutable. The GCP Oracle zone where OdbNetwork
+      is hosted. Example: us-east4-b-r2. If not specified, the system will
+      pick a zone based on availability.
     labels: Optional. Labels or tags associated with the resource.
     name: Identifier. The name of the OdbNetwork resource in the following
       format: projects/{project}/locations/{region}/odbNetworks/{odb_network}
-    network: Required. The name of the VPC network in the following format:
-      projects/{project}/global/networks/{network}
+    network: Required. Immutable. The name of the VPC network in the following
+      format: projects/{project}/global/networks/{network}
     reconciling: Output only. Indicates whether the OdbNetwork is currently
       reconciling changes.
     serviceConnectivityConfig: Optional. Configuration to enable the service
@@ -8061,6 +8289,41 @@ class OracledatabaseProjectsLocationsCloudVmClustersDeleteRequest(_messages.Mess
   requestId = _messages.StringField(3)
 
 
+class OracledatabaseProjectsLocationsCloudVmClustersDisableIdentityConnectorRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsCloudVmClustersDisableIdentityConnector
+  Request object.
+
+  Fields:
+    disableCloudVmClusterIdentityConnectorRequest: A
+      DisableCloudVmClusterIdentityConnectorRequest resource to be passed as
+      the request body.
+    name: Required. The name of the Cloud VM Cluster in the following format:
+      projects/{project}/locations/{location}/cloudVmClusters/{cloud_vm_cluste
+      r}
+  """
+
+  disableCloudVmClusterIdentityConnectorRequest = _messages.MessageField('DisableCloudVmClusterIdentityConnectorRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class OracledatabaseProjectsLocationsCloudVmClustersEnableIdentityConnectorRequest(_messages.Message):
+  r"""A
+  OracledatabaseProjectsLocationsCloudVmClustersEnableIdentityConnectorRequest
+  object.
+
+  Fields:
+    enableCloudVmClusterIdentityConnectorRequest: A
+      EnableCloudVmClusterIdentityConnectorRequest resource to be passed as
+      the request body.
+    name: Required. The name of the Cloud VM Cluster in the following format:
+      projects/{project}/locations/{location}/cloudVmClusters/{cloud_vm_cluste
+      r}
+  """
+
+  enableCloudVmClusterIdentityConnectorRequest = _messages.MessageField('EnableCloudVmClusterIdentityConnectorRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class OracledatabaseProjectsLocationsCloudVmClustersGetRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsCloudVmClustersGetRequest object.
 
@@ -8318,6 +8581,28 @@ class OracledatabaseProjectsLocationsDatabasesListRequest(_messages.Message):
       request that provided this page token.
     parent: Required. The parent resource name in the following format:
       projects/{project}/locations/{region}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
+class OracledatabaseProjectsLocationsDbSystemComputePerformancesListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsDbSystemComputePerformancesListRequest
+  object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Only the `db_system_shape` field is supported in the following format:
+      `db_system_shape="{db_system_shape}"`.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListDbSystemComputePerformancesRequest
+      Format: projects/{project}/locations/{location}
   """
 
   filter = _messages.StringField(1)
@@ -8593,6 +8878,41 @@ class OracledatabaseProjectsLocationsExadbVmClustersDeleteRequest(_messages.Mess
   requestId = _messages.StringField(2)
 
 
+class OracledatabaseProjectsLocationsExadbVmClustersDisableIdentityConnectorRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsExadbVmClustersDisableIdentityConnector
+  Request object.
+
+  Fields:
+    disableExadbVmClusterIdentityConnectorRequest: A
+      DisableExadbVmClusterIdentityConnectorRequest resource to be passed as
+      the request body.
+    name: Required. The name of the Exadb VM Cluster in the following format:
+      projects/{project}/locations/{location}/exadbVmClusters/{exadb_vm_cluste
+      r}
+  """
+
+  disableExadbVmClusterIdentityConnectorRequest = _messages.MessageField('DisableExadbVmClusterIdentityConnectorRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class OracledatabaseProjectsLocationsExadbVmClustersEnableIdentityConnectorRequest(_messages.Message):
+  r"""A
+  OracledatabaseProjectsLocationsExadbVmClustersEnableIdentityConnectorRequest
+  object.
+
+  Fields:
+    enableExadbVmClusterIdentityConnectorRequest: A
+      EnableExadbVmClusterIdentityConnectorRequest resource to be passed as
+      the request body.
+    name: Required. The name of the Exadb VM Cluster in the following format:
+      projects/{project}/locations/{location}/exadbVmClusters/{exadb_vm_cluste
+      r}
+  """
+
+  enableExadbVmClusterIdentityConnectorRequest = _messages.MessageField('EnableExadbVmClusterIdentityConnectorRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
 class OracledatabaseProjectsLocationsExadbVmClustersGetRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsExadbVmClustersGetRequest object.
 
@@ -8796,6 +9116,27 @@ class OracledatabaseProjectsLocationsExascaleDbStorageVaultsPatchRequest(_messag
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+
+
+class OracledatabaseProjectsLocationsFlexComponentsListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsFlexComponentsListRequest object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Only the `shape` field is supported in the following format:
+      `shape="{shape}"`.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListFlexComponentsRequest Format:
+      projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class OracledatabaseProjectsLocationsGetRequest(_messages.Message):

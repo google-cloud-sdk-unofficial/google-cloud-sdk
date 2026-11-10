@@ -376,6 +376,33 @@ class NotebooksV2(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def ReportTelemetry(self, request, global_params=None):
+      r"""Called by the telemetry agent on Workbench Instances to report usage events, such as notebook file actions in JupyterLab. Do not use this method directly. Design doc: go/wbi_telemetry.
+
+      Args:
+        request: (NotebooksProjectsLocationsInstancesReportTelemetryRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ReportInstanceTelemetryResponse) The response message.
+      """
+      config = self.GetMethodConfig('ReportTelemetry')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ReportTelemetry.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}:reportTelemetry',
+        http_method='POST',
+        method_id='notebooks.projects.locations.instances.reportTelemetry',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}:reportTelemetry',
+        request_field='reportInstanceTelemetryRequest',
+        request_type_name='NotebooksProjectsLocationsInstancesReportTelemetryRequest',
+        response_type_name='ReportInstanceTelemetryResponse',
+        supports_download=False,
+    )
+
     def Reset(self, request, global_params=None):
       r"""Resets a notebook instance.
 

@@ -28,12 +28,18 @@ from googlecloudsdk.core.util import files
 
 _DETAILED_HELP = {
     'DESCRIPTION': 'Generate a new Audit Scope.',
-    'EXAMPLES': """ \
+    'EXAMPLES': (
+        """ \
         To generate an Audit Scope in the `us-central1` region,
-        for a project with ID `123` for compliance framework `fedramp_moderate` in `odf` format, run:
+        for a project with ID `123` against the compliance framework `organizations/456/locations/global/frameworks/builtin-nist-800-53-revision5` in `odf` format, run:
 
-          $ {command} --project="123" --location="us-central1" --compliance-framework="fedramp_moderate" --report-format="odf" --output-directory="scopes/currentyear" --output-file-name="auditreport"
-        """,
+          $ {command} --project="123" --location="us-central1" --compliance-framework="organizations/456/locations/global/frameworks/builtin-nist-800-53-revision5" --report-format="odf" --output-directory="scopes/currentyear" --output-file-name="auditreport"
+
+        If the compliance framework is parameterized, to generate the same Audit Scope while overriding cloud control parameters defined in the file `overrides.json`, run:
+
+          $ {command} --project="123" --location="us-central1" --compliance-framework="organizations/456/locations/global/frameworks/builtin-nist-800-53-revision5" --report-format="odf" --output-directory="scopes/currentyear" --output-file-name="auditreport" --parameter-overrides="overrides.json"
+        """
+    ),
 }
 
 _SCOPE_REPORT_CONTENTS = 'scopeReportContents'
@@ -58,6 +64,7 @@ class Generate(base.CreateCommand):
     flags.AddScopeReportFormatFlag(parser)
     flags.AddOutputDirectoryFormatFlag(parser)
     flags.AddOutputFileNameFormatFlag(parser)
+    flags.AddParameterOverridesFlag(parser)
 
   def Run(self, args):
     """Run the generate command."""
@@ -82,6 +89,7 @@ class Generate(base.CreateCommand):
           report_format=args.report_format,
           is_parent_folder=is_parent_folder,
           is_parent_organization=is_parent_organization,
+          parameter_overrides=args.parameter_overrides,
       )
       self.SaveReport(
           response,

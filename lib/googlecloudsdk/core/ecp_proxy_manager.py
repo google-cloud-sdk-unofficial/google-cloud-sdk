@@ -20,7 +20,7 @@ import secrets
 import socket
 import subprocess
 import time
-from typing import Optional
+from typing import Dict, Optional
 
 from googlecloudsdk.core import context_aware
 from googlecloudsdk.core import execution_utils
@@ -31,6 +31,14 @@ import requests as pip_requests
 
 
 _CLOUDSDK_ECP_HTTP_PROXY_PORT = 'CLOUDSDK_ECP_HTTP_PROXY_PORT'
+# The environment variable the ecp_http_proxy binary reads its shared secret
+# from, and that nested gcloud invocations reuse to authenticate to the proxy.
+# Must match authTokenEnvVar in enterprise-certificate-proxy's
+# http_proxy/main.go.
+_ECP_HTTP_PROXY_AUTH_TOKEN = 'ECP_HTTP_PROXY_AUTH_TOKEN'
+# The proxy binds only to the IPv4 loopback interface, so it is addressed
+# explicitly rather than via 'localhost', which may resolve to ::1.
+_PROXY_HOST = '127.0.0.1'
 _ECP_HTTP_PROXY_MANAGER_INSTANCE = None
 
 
@@ -47,7 +55,7 @@ class ECPProxyError(Exception):
 def _find_free_port() -> int:
   """Dynamically finds and returns an available TCP port."""
   with socket.socket() as s:
-    s.bind(('', 0))
+    s.bind((_PROXY_HOST, 0))
     return s.getsockname()[1]
 
 
@@ -59,8 +67,14 @@ class _ECPHTTPProxyManager(object):
   ):
     self.certificate_config_file_path = certificate_config_file_path
     self.proxy_process = None
-    self.proxy_host = 'localhost'
+    self.proxy_host = _PROXY_HOST
+    # Startup verification token passed to the proxy via -nonce_token and
+    # echoed back by /readyz so gcloud can verify during startup that the
+    # process listening on proxy_port is the ECP proxy instance it launched.
     self.nonce_token = secrets.token_hex(16)
+    # Shared secret that clients must send on every proxied request. Unlike the
+    # nonce, it is never returned by the proxy's unauthenticated /readyz.
+    self.auth_token = secrets.token_hex(32)
     self.startup_timeout = startup_timeout
     self.gcloud_proxy_url = proxy_config.GetProxyInfo()
 
@@ -72,6 +86,9 @@ class _ECPHTTPProxyManager(object):
     )
     encoding.SetEncodedValue(
         os.environ, _CLOUDSDK_ECP_HTTP_PROXY_PORT, str(self.proxy_port)
+    )
+    encoding.SetEncodedValue(
+        os.environ, _ECP_HTTP_PROXY_AUTH_TOKEN, self.auth_token
     )
 
   def _start_ecp_proxy_with_retries(
@@ -133,6 +150,7 @@ class _ECPHTTPProxyManager(object):
     try:
       self.proxy_process = subprocess.Popen(
           proxy_args,
+          env=self._proxy_env(),
           stdout=None,
           stderr=None,
       )
@@ -141,6 +159,18 @@ class _ECPHTTPProxyManager(object):
       raise ECPProxyError(
           'Failed to start ECP proxy process', original_exception=e
       ) from e
+
+  def _proxy_env(self) -> Dict[str, str]:
+    """Returns the environment for the proxy process, including its secret.
+
+    The shared secret is passed via the environment rather than a command-line
+    flag so that it is not visible to other local users in the process list.
+    """
+    env = os.environ.copy()
+    encoding.SetEncodedValue(
+        env, _ECP_HTTP_PROXY_AUTH_TOKEN, self.auth_token
+    )
+    return env
 
   def _wait_for_proxy(self, *, proxy_port: int, timeout: int) -> None:
     """Waits for the proxy to become available and verifies its identity."""
@@ -208,7 +238,9 @@ def get_proxy_port() -> Optional[int]:
 
   If the proxy is already running (either initiated by a previous call or a
   parent process), this function immediately returns the cached port from
-  the environment variable without spawning any new processes.
+  the environment variable without spawning any new processes. A cached port
+  is only reused if the proxy's shared secret is cached too, since the proxy
+  rejects requests that do not carry it.
 
   If the proxy is not running, it evaluates the context-aware configuration to
   determine if an enterprise mTLS certificate offloading proxy is required.
@@ -223,10 +255,10 @@ def get_proxy_port() -> Optional[int]:
   """
   global _ECP_HTTP_PROXY_MANAGER_INSTANCE
 
-  # If the port is already set, the proxy was started by a parent process or
-  # a previous call.
+  # If the port and auth token are already set, the proxy was started by a
+  # parent process or a previous call.
   port_str = encoding.GetEncodedValue(os.environ, _CLOUDSDK_ECP_HTTP_PROXY_PORT)
-  if port_str:
+  if port_str and get_proxy_auth_token():
     try:
       return int(port_str)
     except ValueError:
@@ -260,3 +292,24 @@ def get_proxy_port() -> Optional[int]:
       return _ECP_HTTP_PROXY_MANAGER_INSTANCE.proxy_port
 
   return None
+
+
+def get_proxy_host() -> str:
+  """Returns the loopback host address that the local ECP HTTP Proxy binds to."""
+  return _PROXY_HOST
+
+
+def get_proxy_auth_token() -> Optional[str]:
+  """Returns the shared secret required by the local ECP HTTP Proxy.
+
+  The secret is set when the proxy is started by this process or by a parent
+  gcloud process. It must be sent in the x-goog-ecpproxy-auth-token header on
+  every proxied request.
+
+  Returns:
+    Optional[str]: The shared secret, or None if no proxy has been started.
+  """
+  return (
+      encoding.GetEncodedValue(os.environ, _ECP_HTTP_PROXY_AUTH_TOKEN)
+      or None
+  )

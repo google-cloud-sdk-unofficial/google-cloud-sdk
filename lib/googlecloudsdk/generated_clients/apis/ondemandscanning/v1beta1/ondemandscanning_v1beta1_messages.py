@@ -1455,10 +1455,25 @@ class GrafeasV1FileLocation(_messages.Message):
   lineNumber = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
+class GrafeasV1LayerAttribute(_messages.Message):
+  r"""LayerAttribute represents a single attribute (such as a tag) that
+  applies to a layer, along with the plugin that generated it.
+
+  Fields:
+    plugin: The name of the plugin that generated this attribute.
+    value: The value of the attribute, with a meaning defined by the plugin.
+  """
+
+  plugin = _messages.StringField(1)
+  value = _messages.StringField(2)
+
+
 class GrafeasV1LayerDetails(_messages.Message):
   r"""Details about the layer a package was found in.
 
   Fields:
+    attributes: Attributes that apply to the layer, such as buildpacks
+      metadata.
     baseImages: The base images the layer is found within.
     chainId: The layer chain ID (sha256 hash) of the layer in the container
       image. https://github.com/opencontainers/image-
@@ -1471,11 +1486,12 @@ class GrafeasV1LayerDetails(_messages.Message):
     index: The index of the layer in the container image.
   """
 
-  baseImages = _messages.MessageField('GrafeasV1BaseImage', 1, repeated=True)
-  chainId = _messages.StringField(2)
-  command = _messages.StringField(3)
-  diffId = _messages.StringField(4)
-  index = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  attributes = _messages.MessageField('GrafeasV1LayerAttribute', 1, repeated=True)
+  baseImages = _messages.MessageField('GrafeasV1BaseImage', 2, repeated=True)
+  chainId = _messages.StringField(3)
+  command = _messages.StringField(4)
+  diffId = _messages.StringField(5)
+  index = _messages.IntegerField(6, variant=_messages.Variant.INT32)
 
 
 class GrafeasV1SlsaProvenanceZeroTwoSlsaBuilder(_messages.Message):

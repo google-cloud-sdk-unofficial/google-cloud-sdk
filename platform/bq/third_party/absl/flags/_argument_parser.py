@@ -334,7 +334,8 @@ class EnumParser(ArgumentParser[str]):
     """Initializes EnumParser.
 
     Args:
-      enum_values: [str], a non-empty list of string values in the enum.
+      enum_values: Iterable[str], a non-empty collection of string values in the
+        enum.
       case_sensitive: bool, whether or not the enum is to be case-sensitive.
 
     Raises:
@@ -344,8 +345,10 @@ class EnumParser(ArgumentParser[str]):
       raise ValueError(f'enum_values cannot be empty, found "{enum_values}"')
     if isinstance(enum_values, str):
       raise ValueError(f'enum_values cannot be a str, found "{enum_values}"')
-    super().__init__()
     self.enum_values = list(enum_values)
+    if not self.enum_values:
+      raise ValueError(f'enum_values cannot be empty, found "{enum_values}"')
+    super().__init__()
     self.case_sensitive = case_sensitive
 
   def parse(self, argument: str) -> str:
@@ -446,7 +449,7 @@ class EnumClassParser(ArgumentParser[_ET]):
       ValueError: Raised when argument didn't match anything in enum.
     """
     if isinstance(argument, self.enum_class):
-      return argument  # pytype: disable=bad-return-type
+      return argument
     elif not isinstance(argument, str):
       raise ValueError(
           f'{argument} is not an enum member or a name of a member in '
@@ -514,15 +517,11 @@ class EnumClassListSerializer(ListSerializer[_ET]):
 class CsvListSerializer(ListSerializer[str]):
 
   def serialize(self, value: list[str]) -> str:
-    """Serializes a list as a CSV string or unicode."""
+    """Serializes a list as a CSV string."""
     output = io.StringIO()
     writer = csv.writer(output, delimiter=self.list_sep)
     writer.writerow([str(x) for x in value])
-    serialized_value = output.getvalue().strip()
-
-    # We need the returned value to be pure ascii or Unicodes so that
-    # when the xml help is generated they are usefully encodable.
-    return str(serialized_value)
+    return output.getvalue().strip()
 
 
 class EnumClassSerializer(ArgumentSerializer[_ET]):

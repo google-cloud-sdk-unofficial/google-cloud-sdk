@@ -28,6 +28,7 @@ class RunBatch(base.Command):
     """Validates run batch flags."""
     flag_validations.ValidateDecodingConfig(args)
     flag_validations.ValidateAudioSource(args, batch=True)
+    flag_validations.ValidateRecognizerResourceFlag(args)
 
   @staticmethod
   def Args(parser):
@@ -35,10 +36,10 @@ class RunBatch(base.Command):
     flags_v2.AddRecognizeRequestFlagsToParser(parser, add_async_flag=True)
 
   def Run(self, args):
-    resource = args.CONCEPTS.recognizer.Parse()
-    speech_client = client.SpeechV2Client()
-
     self.ValidateRunBatchFlags(args)
+    resource = args.CONCEPTS.recognizer.Parse()
+
+    speech_client = client.SpeechV2Client()
 
     recognition_config_update_mask = []
 

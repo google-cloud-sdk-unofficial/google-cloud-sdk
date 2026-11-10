@@ -496,16 +496,6 @@ class Make(bigquery_command.BigqueryCmd):
         flag_values=fv,
     )
     flags.DEFINE_boolean(
-        'multi_region_auxiliary',
-        False,
-        'If true, capacity commitment or reservation is placed in the '
-        'organization'
-        's auxiliary region which is designated for disaster '
-        'recovery purposes. Applicable only for US and EU locations. Available '
-        'only for allow-listed projects.',
-        flag_values=fv,
-    )
-    flags.DEFINE_boolean(
         'use_idle_slots',
         True,
         'If true, any query running in this reservation will be able to use '
@@ -667,6 +657,42 @@ class Make(bigquery_command.BigqueryCmd):
         '\nWhen a CEL expression is specified, it is recommended to enter'
         ' precedence explicitly to avoid collisions in the same assignee'
         ' scope.'
+        '\nUsed in conjunction with --reservation_assignment.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'condition_expression',
+        None,
+        'Common Expression Language (CEL) expression that defines the'
+        ' matching criteria for this assignment. The expression must resolve'
+        ' to a boolean value.'
+        '\nFormat:'
+        '\n--condition_expression="<CEL expression>"'
+        '\nExample:'
+        '\n--condition_expression="job.label[\\"env\\"]==\\"prod\\""'
+        '\nUsed in conjunction with --reservation_assignment.'
+        '\nSee https://cel.dev/ for more details.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'condition_title',
+        None,
+        'Title of the condition expression.'
+        '\nFormat:'
+        '\n--condition_title="<title>"'
+        '\nExample:'
+        '\n--condition_title="Prod Jobs"'
+        '\nUsed in conjunction with --reservation_assignment.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'condition_description',
+        None,
+        'Description of the condition expression.'
+        '\nFormat:'
+        '\n--condition_description="<description>"'
+        '\nExample:'
+        '\n--condition_description="Matches prod jobs"'
         '\nUsed in conjunction with --reservation_assignment.',
         flag_values=fv,
     )
@@ -1095,7 +1121,7 @@ class Make(bigquery_command.BigqueryCmd):
           'migration_workflows',
           'mk',
           identifier,
-          command_flags_for_this_resource={  # pyrefly: ignore[bad-argument-type]
+          command_flags_for_this_resource={
               'location': bq_flags.LOCATION.value,
               'config_file': self.config_file,
               'sync': bq_flags.SYNCHRONOUS_MODE.value,  # pyrefly: ignore[bad-assignment]
@@ -1162,7 +1188,6 @@ class Make(bigquery_command.BigqueryCmd):
             ignore_idle_slots=ignore_idle_arg,
             edition=self.edition,
             target_job_concurrency=concurrency,
-            multi_region_auxiliary=self.multi_region_auxiliary,
             autoscale_max_slots=self.autoscale_max_slots,
             max_slots=self.max_slots,
             scaling_mode=self.scaling_mode,
@@ -1193,7 +1218,6 @@ class Make(bigquery_command.BigqueryCmd):
             slots=self.slots,
             plan=self.plan,
             renewal_plan=self.renewal_plan,
-            multi_region_auxiliary=self.multi_region_auxiliary,
         )
       except BaseException as e:
         raise bq_error.BigqueryError(
@@ -1205,6 +1229,16 @@ class Make(bigquery_command.BigqueryCmd):
         )
     elif self.reservation_assignment:
       try:
+        if self.condition and (
+            self.condition_expression is not None
+            or self.condition_title is not None
+            or self.condition_description is not None
+        ):
+          raise bq_error.BigqueryError(
+              'Cannot specify --condition with its constituent flags:'
+              ' --condition_expression, --condition_title, or'
+              ' --condition_description.'
+          )
         reservation_ref = bq_client_utils.GetReservationReference(
             id_fallbacks=client,
             default_location=bq_flags.LOCATION.value,
@@ -1228,6 +1262,9 @@ class Make(bigquery_command.BigqueryCmd):
             principal=self.principal_flag.value,
             precedence=self.precedence,
             condition=self.condition,
+            condition_expression=self.condition_expression,
+            condition_title=self.condition_title,
+            condition_description=self.condition_description,
         )
         reference = bq_client_utils.GetReservationAssignmentReference(
             id_fallbacks=client, path=object_info['name']

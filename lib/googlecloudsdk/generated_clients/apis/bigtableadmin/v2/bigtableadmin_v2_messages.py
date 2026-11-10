@@ -74,6 +74,48 @@ class AppProfile(_messages.Message):
   standardIsolation = _messages.MessageField('StandardIsolation', 8)
 
 
+class ApplyDdlMetadata(_messages.Message):
+  r"""The metadata for the Operation returned by ApplyDdl.
+
+  Fields:
+    finishTime: The time at which the operation failed or was completed
+      successfully.
+    originalRequest: The request that prompted the initiation of this ApplyDdl
+      operation.
+    requestTime: The time at which the original request was received.
+    statementProgress: The progress of each statement in the ApplyDdl request.
+      The order of the statements is the same as in the original request. This
+      list will be populated as the operation progresses. An entry is added
+      when a statement starts processing.
+  """
+
+  finishTime = _messages.StringField(1)
+  originalRequest = _messages.MessageField('ApplyDdlRequest', 2)
+  requestTime = _messages.StringField(3)
+  statementProgress = _messages.MessageField('StatementProgress', 4, repeated=True)
+
+
+class ApplyDdlRequest(_messages.Message):
+  r"""Request message for BigtableInstanceAdmin.ApplyDdl.
+
+  Fields:
+    name: Required. The name of the instance where the ddl statements will be
+      applied. Format: `projects/{project}/instances/{instance}`.
+    statements: Required. The list of DDL statements to be applied
+      sequentially. Each statement is a string with a single DDL statement.
+      Example: "CREATE TABLE MyTable ( Family1 STRING(MAX), Family2
+      BYTES(4096) )" "ALTER TABLE MyTable ADD COLUMN Family3 INT64" "DROP
+      TABLE MyTable"
+  """
+
+  name = _messages.StringField(1)
+  statements = _messages.StringField(2, repeated=True)
+
+
+class ApplyDdlResponse(_messages.Message):
+  r"""Response message for BigtableInstanceAdmin.ApplyDdl."""
+
+
 class AuditConfig(_messages.Message):
   r"""Specifies the audit configuration for a service. The configuration
   determines which permission types are logged, and what identities, if any,
@@ -2242,6 +2284,9 @@ class ColumnFamily(_messages.Message):
       at most 500 bytes. NOTE: Garbage collection executes opportunistically
       in the background, and so it's possible for reads to return a cell even
       if it matches the active GC expression for its family.
+    sqlType: Immutable. The SQL type of the data stored in this column family.
+      This field is required if `Table.sql_schema` is set, and must be unset
+      otherwise. This field is mutually exclusive with `value_type`.
     stats: Output only. Only available with STATS_VIEW, this includes summary
       statistics about column family contents. For statistics over an entire
       table, see TableStats above.
@@ -2255,8 +2300,9 @@ class ColumnFamily(_messages.Message):
   """
 
   gcRule = _messages.MessageField('GcRule', 1)
-  stats = _messages.MessageField('ColumnFamilyStats', 2)
-  valueType = _messages.MessageField('Type', 3)
+  sqlType = _messages.MessageField('Type', 2)
+  stats = _messages.MessageField('ColumnFamilyStats', 3)
+  valueType = _messages.MessageField('Type', 4)
 
 
 class ColumnFamilyStats(_messages.Message):
@@ -3085,7 +3131,32 @@ class GoogleBigtableAdminV2TypeBool(_messages.Message):
 
 
 class GoogleBigtableAdminV2TypeBoolEncoding(_messages.Message):
-  r"""Defines rules used to convert to or from lower level types."""
+  r"""Defines rules used to convert to or from lower level types.
+
+  Fields:
+    sentinelBytes: Required. Use `SentinelBytes` encoding.
+  """
+
+  sentinelBytes = _messages.MessageField('GoogleBigtableAdminV2TypeBoolEncodingSentinelBytes', 1)
+
+
+class GoogleBigtableAdminV2TypeBoolEncodingSentinelBytes(_messages.Message):
+  r"""Sentinels used to encode `BOOL` values to `BYTES`. `true_value` and
+  `false_value` must be different if both are set. At least one of
+  `true_value` or `false_value` must be set. Sorted mode: - supported if
+  `false_value < true_value` - supported if one of `true_value` or
+  `false_value` is omitted. Distinct mode: all values are supported. `NULL` is
+  only supported if neither value is `""`.
+
+  Fields:
+    falseValue: Optional. The value to use for `FALSE`. If unset, `FALSE`
+      values cannot be encoded.
+    trueValue: Optional. The value to use for `TRUE`. If unset, `TRUE` values
+      cannot be encoded.
+  """
+
+  falseValue = _messages.BytesField(1)
+  trueValue = _messages.BytesField(2)
 
 
 class GoogleBigtableAdminV2TypeBytes(_messages.Message):
@@ -3966,6 +4037,9 @@ class LogicalView(_messages.Message):
   r"""A SQL logical view object that can be referenced in SQL queries.
 
   Fields:
+    ddl: Output only. A canonical data definition language representation of
+      the logical view. This server-generated representation may not be
+      identical to the DDL used to create or modify the logical view, if any.
     deletionProtection: Optional. Set to true to make the LogicalView
       protected against deletion.
     etag: Optional. The etag for this logical view. This may be sent on update
@@ -3976,10 +4050,11 @@ class LogicalView(_messages.Message):
     query: Required. The logical view's select query.
   """
 
-  deletionProtection = _messages.BooleanField(1)
-  etag = _messages.StringField(2)
-  name = _messages.StringField(3)
-  query = _messages.StringField(4)
+  ddl = _messages.StringField(1)
+  deletionProtection = _messages.BooleanField(2)
+  etag = _messages.StringField(3)
+  name = _messages.StringField(4)
+  query = _messages.StringField(5)
 
 
 class MaterializedView(_messages.Message):
@@ -3998,6 +4073,10 @@ class MaterializedView(_messages.Message):
       the materialized view has data in a particular cluster (for example, if
       its zone is unavailable), then there will be an entry for the cluster
       with `STATE_NOT_KNOWN` state. Views: `REPLICATION_VIEW`, `FULL`.
+    ddl: Output only. A canonical data definition language representation of
+      the materialized view. Views: `SCHEMA_VIEW`, `FULL`. This server-
+      generated representation may not be identical to the DDL used to create
+      or modify the materialized view, if any.
     deletionProtection: Set to true to make the MaterializedView protected
       against deletion. Views: `SCHEMA_VIEW`, `REPLICATION_VIEW`, `FULL`.
     etag: Optional. The etag for this materialized view. This may be sent on
@@ -4041,10 +4120,11 @@ class MaterializedView(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   clusterStates = _messages.MessageField('ClusterStatesValue', 1)
-  deletionProtection = _messages.BooleanField(2)
-  etag = _messages.StringField(3)
-  name = _messages.StringField(4)
-  query = _messages.StringField(5)
+  ddl = _messages.StringField(2)
+  deletionProtection = _messages.BooleanField(3)
+  etag = _messages.StringField(4)
+  name = _messages.StringField(5)
+  query = _messages.StringField(6)
 
 
 class MemoryConfig(_messages.Message):
@@ -4624,6 +4704,10 @@ class Split(_messages.Message):
   key = _messages.BytesField(1)
 
 
+class SqlSchema(_messages.Message):
+  r"""Options related to the SQL schema on this table, currently empty."""
+
+
 class StandardIsolation(_messages.Message):
   r"""Standard options for isolating this app profile's traffic from other use
   cases.
@@ -4727,6 +4811,22 @@ class StandardReadRemoteWrites(_messages.Message):
 
 
 
+class StatementProgress(_messages.Message):
+  r"""The progress of a single statement in the ApplyDdl request.
+
+  Fields:
+    finishTime: The time at which the statement finished processing or failed.
+    startTime: The time at which the statement started processing.
+    statement: The DDL statement that is being applied.
+    status: The status of the operation.
+  """
+
+  finishTime = _messages.StringField(1)
+  startTime = _messages.StringField(2)
+  statement = _messages.StringField(3)
+  status = _messages.MessageField('Status', 4)
+
+
 class Status(_messages.Message):
   r"""The `Status` type defines a logical error model that is suitable for
   different programming environments, including REST APIs and RPC APIs. It is
@@ -4812,6 +4912,11 @@ class Table(_messages.Message):
       `FULL`
     columnFamilies: The column families configured for this table, mapped by
       column family ID. Views: `SCHEMA_VIEW`, `STATS_VIEW`, `FULL`
+    ddl: Output only. A canonical data definition language representation of
+      the table. Views: `SCHEMA_VIEW`, `FULL`. This server-generated
+      representation may not be identical to the DDL used to create or modify
+      the table, if any. It also does not include all table attributes, such
+      as splits.
     deletionProtection: Set to true to make the table protected against data
       loss. i.e. deleting the following resources through Admin APIs are
       prohibited: * The table. * The column families in the table. * The
@@ -4867,6 +4972,14 @@ class Table(_messages.Message):
       an INVALID_ARGUMENT error. Any other row key schema update operation
       (e.g. update existing schema columns names or types) is currently
       unsupported.
+    sqlSchema: Immutable. If set, the table will have the following features:
+      * A special '_exists' column family is created to track row presence. *
+      All column families must have an immutable `ColumnFamily.sql_type`
+      defined. * All writes are validated against the `ColumnFamily.sql_type`
+      of the respective column family. * Currently `MutateRow` and
+      `MutateRows` Data APIs are not supported. This field can only be set at
+      table creation. Existing tables cannot be modified to add the SQL
+      schema.
     stats: Output only. Only available with STATS_VIEW, this includes summary
       statistics about the entire table contents. For statistics about a
       specific column family, see ColumnFamilyStats in the mapped ColumnFamily
@@ -4955,14 +5068,16 @@ class Table(_messages.Message):
   changeStreamConfig = _messages.MessageField('ChangeStreamConfig', 2)
   clusterStates = _messages.MessageField('ClusterStatesValue', 3)
   columnFamilies = _messages.MessageField('ColumnFamiliesValue', 4)
-  deletionProtection = _messages.BooleanField(5)
-  effectiveAutomatedBackupPolicy = _messages.MessageField('AutomatedBackupPolicy', 6)
-  granularity = _messages.EnumField('GranularityValueValuesEnum', 7)
-  name = _messages.StringField(8)
-  restoreInfo = _messages.MessageField('RestoreInfo', 9)
-  rowKeySchema = _messages.MessageField('GoogleBigtableAdminV2TypeStruct', 10)
-  stats = _messages.MessageField('TableStats', 11)
-  tieredStorageConfig = _messages.MessageField('TieredStorageConfig', 12)
+  ddl = _messages.StringField(5)
+  deletionProtection = _messages.BooleanField(6)
+  effectiveAutomatedBackupPolicy = _messages.MessageField('AutomatedBackupPolicy', 7)
+  granularity = _messages.EnumField('GranularityValueValuesEnum', 8)
+  name = _messages.StringField(9)
+  restoreInfo = _messages.MessageField('RestoreInfo', 10)
+  rowKeySchema = _messages.MessageField('GoogleBigtableAdminV2TypeStruct', 11)
+  sqlSchema = _messages.MessageField('SqlSchema', 12)
+  stats = _messages.MessageField('TableStats', 13)
+  tieredStorageConfig = _messages.MessageField('TieredStorageConfig', 14)
 
 
 class TableProgress(_messages.Message):

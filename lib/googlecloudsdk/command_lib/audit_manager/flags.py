@@ -16,6 +16,7 @@
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope.concepts import multitype
+from googlecloudsdk.command_lib.audit_manager import parameter_overrides
 from googlecloudsdk.command_lib.audit_manager import resource_args
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -232,4 +233,22 @@ def AddDisplayNameFlag(parser, required=False):
       '--display-name',
       required=required,
       help='Display name for the audit schedule.',
+  )
+
+
+def AddParameterOverridesFlag(parser, required=False):
+  """Adds the parameter overrides flag to the given parser.
+
+  Args:
+    parser: An argparse.ArgumentParser-like object. It is mocked out in tests.
+    required: bool, whether the flag is required. Default is False.
+  """
+  parser.add_argument(
+      '--parameter-overrides',
+      required=required,
+      type=parameter_overrides.ParameterOverridesType(),
+      help=(
+          'Overrides for the parameters of parameterized cloud controls,'
+          ' applied when the audit runs.'
+      ),
   )

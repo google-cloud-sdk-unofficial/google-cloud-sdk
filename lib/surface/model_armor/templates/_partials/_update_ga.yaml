@@ -218,6 +218,67 @@
         help_text: |-
           Message describing TemplateMetadata
         params:
+        - group:
+            mutex: true
+            help_text: |-
+              Arguments for the  filter version selector.
+            params:
+            - group:
+                api_field: template.templateMetadata.filterVersionSelector
+                required: false
+                help_text: |-
+                  Represents the configuration for selecting a Filter Version.
+                  Allows customers to choose to use either a specific version or a predefined
+                  alias.
+                params:
+                - group:
+                    mutex: true
+                    help_text: |-
+                      Arguments for the version spec.
+                    params:
+                    - arg_name: filter-version-selector
+                      api_field: template.templateMetadata.filterVersionSelector.version
+                      required: false
+                      repeated: false
+                      help_text: |-
+                        Allows customers to pin to a specific, immutable Filter Version.
+                        This provides stability, as this will not change after a version upgrade.
+                        Expected format is a case-sensitive string, e.g., "v1", "v2".
+                        Requests providing an invalid or non-existent version string will be
+                        rejected with an `INVALID_ARGUMENT` error.
+                    - arg_name: filter-version-selector-alias
+                      api_field: template.templateMetadata.filterVersionSelector.alias
+                      required: false
+                      help_text: |-
+                        Allows customers to use a predefined alias that dynamically
+                        points to a specific version based on internal upgrades.
+                        This offers flexibility and reduces the need for template updates.
+                      choices:
+                      - arg_value: filter-version-alias-stable
+                        enum_value: FILTER_VERSION_ALIAS_STABLE
+                        help_text: |-
+                          `STABLE` alias points to the most recent stable model version.
+                          Using this alias means no code changes are required when a new model
+                          becomes the stable version.
+                      - arg_value: filter-version-alias-latest
+                        enum_value: FILTER_VERSION_ALIAS_LATEST
+                        help_text: |-
+                          `LATEST` alias points to the newest model version available.
+                          This version is subject to frequent revisions and offers SLO guarantees
+                          but does not assure stability, providing the most current security
+                          protections.
+                      - arg_value: filter-version-alias-legacy
+                        enum_value: FILTER_VERSION_ALIAS_LEGACY
+                        help_text: |-
+                          `LEGACY` alias could be used for sanitization operations for a
+                          transition period. New templates cannot be created with this version.
+                      - arg_value: filter-version-alias-retired
+                        enum_value: FILTER_VERSION_ALIAS_RETIRED
+                        help_text: |-
+                          `RETIRED` alias could be used for versions that are no longer available
+                          to be used. While new templates cannot be created with this alias, any
+                          existing template or request using `RETIRED` version will fall back to
+                          the current `STABLE` version for sanitization operations.
         - arg_name: template-metadata-ignore-partial-invocation-failures
           api_field: template.templateMetadata.ignorePartialInvocationFailures
           action: store_true_false

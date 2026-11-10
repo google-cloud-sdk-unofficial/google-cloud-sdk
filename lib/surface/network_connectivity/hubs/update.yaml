@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, GA]
+- release_tracks: [ALPHA]
   hints:
     read_only: false
 
@@ -20,7 +20,6 @@
       api_field: hub.description
       help_text: New description of the hub.
     - arg_name: labels
-      release_tracks: [ALPHA]
       api_field: hub.labels.additionalProperties
       metavar: KEY=VALUE
       help_text: |
@@ -31,18 +30,6 @@
           spec:
           - api_field: key
           - api_field: value
-    - group:
-        release_tracks: [GA]
-        mutex: true
-        required: false
-        params:
-        - arg_name: export-psc
-          release_tracks: [GA]
-          api_field: hub.exportPsc
-          help_text: Whether Private Service Connect transitivity is enabled for the hub.
-    GA:
-      labels:
-        api_field: hub.labels
 
   update:
     read_modify_update: true
@@ -51,14 +38,11 @@
     collection: networkconnectivity.projects.locations.operations
 
   request:
-    ALPHA:
-      api_version: v1alpha1
-    GA:
-      api_version: v1
+    api_version: v1alpha1
     collection: networkconnectivity.projects.locations.global.hubs
     method: patch
 
-- release_tracks: [BETA]
+- release_tracks: [BETA, GA]
   is_python_command: true
   hints:
     read_only: false

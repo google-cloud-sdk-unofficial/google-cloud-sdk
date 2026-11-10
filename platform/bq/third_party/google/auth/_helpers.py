@@ -18,17 +18,16 @@
 import base64
 import calendar
 import datetime
-import os
-from email.message import Message
 import hashlib
+import os
 import json
 import logging
 import sys
-from typing import Any, Dict, Mapping, Optional, Union
 import urllib
+from email.message import Message
+from typing import Any, Dict, Mapping, Optional, Union
 
 from google.auth import exceptions
-
 
 DEFAULT_UNIVERSE_DOMAIN = "googleapis.com"
 
@@ -551,8 +550,8 @@ _IS_HERMETIC_TEST = (
 
 
 def is_hermetic_test():
-  """Returns True if running inside a downstream Bazel/Blaze hermetic test sandbox,
+    """Returns True if running inside a downstream Bazel/Blaze hermetic test sandbox,
 
-  exempting google.auth's own unit tests.
-  """
-  return _IS_HERMETIC_TEST
+    exempting google.auth's own unit tests.
+    """
+    return _IS_HERMETIC_TEST

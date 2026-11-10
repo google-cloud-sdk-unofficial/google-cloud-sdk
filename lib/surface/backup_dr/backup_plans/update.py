@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.backupdr import backup_plans
 from googlecloudsdk.api_lib.backupdr import util
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.backupdr import flags
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
@@ -181,8 +182,8 @@ class Update(base.UpdateCommand):
         The name must be unique for a project and location.
         """,
     )
-    flags.AddUpdateBackupRule(parser)
-    flags.AddAddBackupRule(parser)
+    flags.AddUpdateBackupRule(parser, release_track=cls.ReleaseTrack())
+    flags.AddAddBackupRule(parser, release_track=cls.ReleaseTrack())
     flags.AddRemoveBackupRule(parser)
     flags.AddBackupRulesFromFile(parser)
     flags.AddDiskBackupPlanProperties(parser)
@@ -206,11 +207,23 @@ class Update(base.UpdateCommand):
     """Parses the backup rules from the file content."""
     try:
       backup_rules = yaml.load(backup_rules_file_content)
-      return backup_rules.get('backup-rules')
+      rules = backup_rules.get('backup-rules')
     except Exception as exc:  # pylint: disable=broad-except
       raise self.YamlOrJsonLoadError(
           'Could not parse content in the backup rules file: {0}'.format(exc)
       ) from exc
+    if (
+        rules
+        and self.ReleaseTrack() != base.ReleaseTrack.ALPHA
+        and any(
+            isinstance(rule, dict) and 'storage-tier' in rule for rule in rules
+        )
+    ):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--backup-rules-from-file',
+          'storage-tier is only supported in the alpha release track.',
+      )
+    return rules
 
   def Run(self, args) -> any:
     """Constructs and sends request.
@@ -254,6 +267,14 @@ class Update(base.UpdateCommand):
         new_backup_rules_from_file = self._GetBackupRulesFromFile(
             backup_rules_file_content
         )
+        if self.ReleaseTrack() != base.ReleaseTrack.ALPHA and any(
+            isinstance(rule, dict) and 'backup-labels' in rule
+            for rule in new_backup_rules_from_file or []
+        ):
+          raise calliope_exceptions.InvalidArgumentException(
+              '--backup-rules-from-file',
+              '`backup-labels` is only supported in the alpha release track.',
+          )
       updated_backup_plan = client.ParseUpdate(
           description,
           new_backup_rules_from_file,

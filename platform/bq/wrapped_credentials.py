@@ -70,7 +70,7 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
       self.store.locked_put(self)
 
   @property
-  def access_token(self) -> str:  # pyrefly: ignore[bad-override]
+  def access_token(self) -> str:
     return self._base.token  # pyrefly: ignore[bad-return]
 
   @access_token.setter
@@ -78,7 +78,7 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
     self._base.token = value
 
   @property
-  def token_expiry(self) -> datetime.datetime:  # pyrefly: ignore[bad-override]
+  def token_expiry(self) -> datetime.datetime:
     return self._base.expiry  # pyrefly: ignore[bad-return]
 
   @token_expiry.setter

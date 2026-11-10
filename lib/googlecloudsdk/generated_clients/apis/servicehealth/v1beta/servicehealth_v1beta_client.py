@@ -43,6 +43,7 @@ class ServicehealthV1beta(base_api.BaseApiClient):
     self.organizations = self.OrganizationsService(self)
     self.projects_locations_artifacts = self.ProjectsLocationsArtifactsService(self)
     self.projects_locations_events = self.ProjectsLocationsEventsService(self)
+    self.projects_locations_impacts = self.ProjectsLocationsImpactsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
 
@@ -346,6 +347,70 @@ class ServicehealthV1beta(base_api.BaseApiClient):
         request_field='',
         request_type_name='ServicehealthProjectsLocationsEventsListRequest',
         response_type_name='ListEventsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsImpactsService(base_api.BaseApiService):
+    """Service class for the projects_locations_impacts resource."""
+
+    _NAME = 'projects_locations_impacts'
+
+    def __init__(self, client):
+      super(ServicehealthV1beta.ProjectsLocationsImpactsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves an impact.
+
+      Args:
+        request: (ServicehealthProjectsLocationsImpactsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Impact) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/impacts/{impactsId}',
+        http_method='GET',
+        method_id='servicehealth.projects.locations.impacts.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1beta/{+name}',
+        request_field='',
+        request_type_name='ServicehealthProjectsLocationsImpactsGetRequest',
+        response_type_name='Impact',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists impacts under a given project and location.
+
+      Args:
+        request: (ServicehealthProjectsLocationsImpactsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListImpactsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta/projects/{projectsId}/locations/{locationsId}/impacts',
+        http_method='GET',
+        method_id='servicehealth.projects.locations.impacts.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1beta/{+parent}/impacts',
+        request_field='',
+        request_type_name='ServicehealthProjectsLocationsImpactsListRequest',
+        response_type_name='ListImpactsResponse',
         supports_download=False,
     )
 

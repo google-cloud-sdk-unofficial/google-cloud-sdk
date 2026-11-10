@@ -18,6 +18,8 @@
 - release_tracks:
   - GA
   auto_generated: true
+  hints:
+    read_only: false
   help_text:
     brief: Create a new ExadbVmCluster.
     description: Create a new ExadbVmCluster.
@@ -275,6 +277,18 @@
         The display name for the ExadbVmCluster. The name does not have to
         be unique within your project. The name must be 1-255 characters long and
         can only contain alphanumeric characters.
+    - arg_name: identity-connector-disabled
+      api_field: exadbVmCluster.identityConnectorDisabled
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        If set to true, disables the automatic provisioning
+        of the Workload Identity Connector during creation. If set to false or
+        omitted, the Workload Identity Connector will be automatically provisioned
+        by default. Note: Provisioning the Workload Identity Connector is a
+        prerequisite for enabling Google Cloud CMEK.
+      default: null
     - arg_name: request-id
       api_field: requestId
       required: false

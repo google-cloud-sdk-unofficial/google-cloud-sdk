@@ -7521,7 +7521,8 @@ class OdbDnsZone(_messages.Message):
   Fields:
     createTime: Output only. The date and time that the OdbDnsZone was
       created.
-    domain: Required. The DNS suffix for the zone. Ex: abc.example.com.
+    domain: Required. Immutable. The DNS suffix for the zone. Ex:
+      abc.example.com.
     labels: Optional. Labels or tags associated with the resource.
     name: Identifier. The name of the OdbDnsZone resource in the following
       format: projects/{project}/locations/{location}/odbNetworks/{odb_network
@@ -7592,14 +7593,14 @@ class OdbNetwork(_messages.Message):
       created.
     entitlementId: Output only. The ID of the subscription entitlement
       associated with the OdbNetwork.
-    gcpOracleZone: Optional. The GCP Oracle zone where OdbNetwork is hosted.
-      Example: us-east4-b-r2. If not specified, the system will pick a zone
-      based on availability.
+    gcpOracleZone: Optional. Immutable. The GCP Oracle zone where OdbNetwork
+      is hosted. Example: us-east4-b-r2. If not specified, the system will
+      pick a zone based on availability.
     labels: Optional. Labels or tags associated with the resource.
     name: Identifier. The name of the OdbNetwork resource in the following
       format: projects/{project}/locations/{region}/odbNetworks/{odb_network}
-    network: Required. The name of the VPC network in the following format:
-      projects/{project}/global/networks/{network}
+    network: Required. Immutable. The name of the VPC network in the following
+      format: projects/{project}/global/networks/{network}
     reconciling: Output only. Indicates whether the OdbNetwork is currently
       reconciling changes.
     serviceConnectivityConfig: Optional. Configuration to enable the service
@@ -10297,6 +10298,36 @@ class OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesListRequest(_messages
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesPatchRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesPatchRequest
+  object.
+
+  Fields:
+    name: Identifier. The name of the OdbDnsZone resource in the following
+      format: projects/{project}/locations/{location}/odbNetworks/{odb_network
+      }/odbDnsZones/{odb_dns_zone}
+    odbDnsZone: A OdbDnsZone resource to be passed as the request body.
+    requestId: Optional. An optional ID to identify the request. This value is
+      used to identify duplicate requests. If you make a request with the same
+      request ID and the original request is still in progress or completed,
+      the server ignores the second request. This prevents clients from
+      accidentally creating duplicate commitments. The request ID must be a
+      valid UUID with the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+    updateMask: Optional. A mask specifying which fields in the OdbDnsZone
+      should be updated. A field specified in the mask is updated. If a mask
+      isn't provided, the service treats this as an implied field mask
+      equivalent to all fields that are populated (have a non-empty value). To
+      clear or unset a field, the field must be explicitly specified in the
+      `update_mask`.
+  """
+
+  name = _messages.StringField(1, required=True)
+  odbDnsZone = _messages.MessageField('OdbDnsZone', 2)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class OracledatabaseProjectsLocationsOdbNetworksOdbSubnetsCreateRequest(_messages.Message):

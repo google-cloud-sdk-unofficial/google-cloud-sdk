@@ -101,3 +101,27 @@ def GetCancelBuildHandler(client, messages, build_ref):
 
     log.status.Print('Cancelled [{r}].'.format(r=six.text_type(build_ref)))
   return _CancelBuildHandler
+
+
+def GetCancelPipelineRunHandler(watcher):
+  """Returns a SIGINT handler that asks `watcher` to cancel its PipelineRun.
+
+  Unlike `GetCancelBuildHandler`, the returned handler performs no I/O. Signal
+  handlers run on the main thread between bytecodes of whatever
+  `PipelineRunWatcher.Watch()` was executing, so any lock acquired or output
+  written here would race (or self-deadlock against) the interrupted frame.
+  The handler only records the request; `Watch()` stops its ticker and log
+  tailer, issues `projects.locations.pipelineRuns.cancel`, and prints the
+  outcome once it is back on its normal path with no locks held.
+
+  Args:
+    watcher: pipeline_logs.PipelineRunWatcher instance driving the run.
+
+  Returns:
+    A signal handler function suitable for MashHandler.
+  """
+
+  def _CancelPipelineRunHandler(unused_signal_number, unused_stack_frame):
+    watcher.RequestCancel()
+
+  return _CancelPipelineRunHandler

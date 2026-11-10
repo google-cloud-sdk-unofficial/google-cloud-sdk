@@ -1,7 +1,6 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
-  hidden: true
   help_text:
     brief: Describe a restore verification plan.
     description: |
@@ -11,10 +10,12 @@
 
         $ {command} sample-plan --location=us-central1
   request:
-    ALPHA:
-      api_version: v1alpha
+    GA:
+      api_version: v1
     BETA:
       api_version: v1beta
+    ALPHA:
+      api_version: v1alpha
     collection: backupdr.projects.locations.restoreVerificationPlans
 
   response:

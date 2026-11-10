@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.dataflow import config_store_util
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Resolve(base.Command):
   """Resolve the effective value of a Dataflow ConfigStore setting."""
 
@@ -81,3 +81,35 @@ class Resolve(base.Command):
         ),
     )
     return service.Resolve(request)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ResolveAlpha(Resolve):
+  """Resolve the effective value of a Dataflow ConfigStore setting."""
+
+  detailed_help = {
+      'DESCRIPTION': (
+          'Resolve the effective value of a Dataflow ConfigStore setting.'
+      ),
+      'EXAMPLES': (
+          """\
+          To resolve a setting on a project (use either project ID or
+          project number):
+
+            $ {command} default_launcher_machine_type \\
+              --project=my-project --location=us-central1
+
+            $ {command} default_launcher_machine_type \\
+              --project=123456789 --location=us-central1
+
+          To resolve the same setting on a folder or an organization:
+
+            $ {command} default_launcher_machine_type \\
+              --folder=123456 --location=us-central1
+
+            $ {command} default_launcher_machine_type \\
+              --organization=789012 --location=us-central1
+          """
+      ),
+  }

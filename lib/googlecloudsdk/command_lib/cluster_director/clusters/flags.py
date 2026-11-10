@@ -1152,34 +1152,30 @@ def AddSlurmConfig(
     help_text = f"""
         Parameters to update slurm cluster config.
 
-        Supports both dot-notation (e.g. `schedulerParameters.bfBusyNodes=true` or `schedulerParameters.bf_busy_nodes=true`, `additionalSettings.MaxArraySize=10000`)
-        and sub-dictionary notation (e.g. `schedulerParameters="{{bfBusyNodes=true,bfInterval=30}}"` or `schedulerParameters="{{bf_busy_nodes=true,bf_interval=30}}"`, `additionalSettings="{{MaxArraySize=10000,TreeWidth=50}}"`).
-        Both camelCase and snake_case (matching native Slurm parameter names)
-        are supported for nested parameters.
+        Unspecified fields are preserved. To clear a string or repeated field
+        (or an individual key in `schedulerParameters`, `preemptParameters`, or
+        `additionalSettings`), set its value to `""` or `[]`. To clear an
+        integer field, set its value to `0`. To clear an entire nested
+        submessage or map (such as `schedulerParameters`), set it to `{{}}`. To
+        clear the entire Slurm config, pass `--{flag_name}=""`.
 
         For example:
-        --{flag_name} defMemPerCpu=2048,healthCheckInterval=10,schedulerParameters.bf_busy_nodes=true,preemptParameters.youngest_first=true,additionalSettings.MaxArraySize=10000
-        or
-        --{flag_name} defMemPerCpu=2048,schedulerParameters="{{bf_busy_nodes=true,bf_interval=30}}",preemptParameters="{{youngest_first=true,suspend_grace_time=60}}"
+
+            --{flag_name} healthCheckInterval=10,healthCheckNodeState=IDLE,healthCheckProgram=/usr/bin/true
     """
   else:
     help_text = f"""
         Parameters to define slurm cluster config.
 
-        Supports both dot-notation (e.g. `schedulerParameters.bfBusyNodes=true` or `schedulerParameters.bf_busy_nodes=true`, `additionalSettings.MaxArraySize=10000`)
-        and sub-dictionary notation (e.g. `schedulerParameters="{{bfBusyNodes=true,bfInterval=30}}"` or `schedulerParameters="{{bf_busy_nodes=true,bf_interval=30}}"`, `additionalSettings="{{MaxArraySize=10000,TreeWidth=50}}"`).
-        Both camelCase and snake_case (matching native Slurm parameter names)
-        are supported for nested parameters.
-
         For example:
-        --{flag_name} defMemPerCpu=2048,healthCheckInterval=10,schedulerParameters.bf_busy_nodes=true,preemptParameters.youngest_first=true,additionalSettings.MaxArraySize=10000
-        or
-        --{flag_name} defMemPerCpu=2048,schedulerParameters="{{bf_busy_nodes=true,bf_interval=30}}",preemptParameters="{{youngest_first=true,suspend_grace_time=60}}"
+
+            --{flag_name} healthCheckInterval=10,healthCheckNodeState=IDLE,healthCheckProgram=/usr/bin/true
     """
   parser.add_argument(
       f"--{flag_name}",
       help=textwrap.dedent(help_text),
-      type=arg_parsers.ArgDict(),
+      type=flag_types.SLURM_CONFIG_TYPE,
+      metavar="SLURM_CONFIG",
       hidden=hidden,
   )
 
@@ -1235,7 +1231,7 @@ def AddManagedInstanceGroups(
     include_update_flags=False,
 ):
   """Adds a managed instance groups flag for the given API version."""
-  if api_version not in ["v1alpha"]:
+  if api_version not in ["v1alpha", "v1beta"]:
     raise ValueError(
         f"Unsupported API version for managed-instance-groups: {api_version!r}"
     )
@@ -1243,7 +1239,13 @@ def AddManagedInstanceGroups(
   remove_flag_name = f"remove-{name}"
   if include_update_flags:
     name = f"add-{name}"
-  help_text = textwrap.dedent(f"""
+  example_flag = (
+      f"--{name}=id=mig1,computeId=c1,targetSize=2,"
+      "acceleratorTopology=2x4,enablePublicIps=true,"
+      'startupScript="echo hello",'
+      'bootDisk="{type=pd-balanced,sizeGb=100}"'
+  )
+  beta_help = textwrap.dedent(f"""\
         Parameters to define Compute Engine orchestrator managed instance group
         config.
 
@@ -1251,38 +1253,66 @@ def AddManagedInstanceGroups(
         - id
         - computeId
 
-        For example --{name} id=mig1,computeId=c1,targetSize=2,\\
-        acceleratorTopology=2x4,enablePublicIps=true,\\
-        startupScript="echo hello",bootDisk="{{type=pd-balanced,sizeGb=100}}"
+        For example: `{example_flag}`.
 
         Note:
+        - enableOsLogin:
+          - Boolean (`true` or `false`) enabling or disabling OS Login on VM
+            instances in the group.
+        - labels:
+          - Map of `KEY=VALUE` user labels applied to VM instances.
+        - metadata:
+          - Map of `KEY=VALUE` custom Compute Engine instance metadata entries.
         - startupScript:
-          - Either str or file_path
+          - Either str or file_path.
           - For file_path, only bash file format (.sh or .bash) is supported.
           - For file_path, only absolute path is supported.
+        - additionalDisks:
+          - Map keyed by custom disk device name matching
+            `^[a-z]([-a-z0-9]{{0,61}}[a-z0-9])?$`.
+          - Specify `type` (short ID such as `pd-balanced`) and `sizeGb` (with
+            optional `image` in `global/images/IMAGE` or
+            `global/images/family/FAMILY` format, or `snapshot` in
+            `global/snapshots/SNAPSHOT` format) to create a new disk, or
+            `existingDisk` in `zones/ZONE/disks/DISK` format to attach an
+            existing disk in the cluster project read-only.
+        """)
+  alpha_storage_pools_note = textwrap.dedent("""\
         - bootDisk.storagePools:
           - At most 1 storage pool is supported.
           - storagePools: The name of the storage pool to use, in the format
             zones/us-central1-a/storagePools/pool1.
-      """)
+        """)
   parser.add_argument(
       f"--{name}",
-      help=help_text,
+      help=(
+          f"{beta_help.rstrip()}\n{alpha_storage_pools_note}"
+          if api_version == "v1alpha"
+          else beta_help
+      ),
       type=flag_types.FlagTypes(api_version).GetManagedInstanceGroupsObject(),
       action=arg_parsers.FlattenAction(),
       required=required,
       hidden=hidden,
   )
   if include_update_flags:
-    update_help = textwrap.dedent(f"""
-          Parameters to update Compute Engine orchestrator managed instance
-          group config.
+    update_example = (
+        f"--{update_flag_name}=id=mig1,targetSize=4,"
+        'startupScript="echo updated"'
+    )
+    update_help = textwrap.dedent(f"""\
+        Parameters to update Compute Engine orchestrator managed instance
+        group config.
 
-          Required fields:
-          - id
+        Required fields:
+        - id
 
-          For example --{update_flag_name} id=mig1,targetSize=4,\\
-          startupScript="echo updated"
+        For example: `{update_example}`.
+
+        Note:
+        - For `labels`, `metadata`, and `additionalDisks`, entries are merged
+          into existing maps; pass `key=""` or `disk1={{}}` to remove a key,
+          or `{{}}` to clear the map.
         """)
     parser.add_argument(
         f"--{update_flag_name}",
@@ -1296,10 +1326,71 @@ def AddManagedInstanceGroups(
     )
     parser.add_argument(
         f"--{remove_flag_name}",
-        help=textwrap.dedent(f"""
-          Parameters to remove managed instance group config by id.
+        help=textwrap.dedent(f"""\
+            Parameters to remove managed instance group config by id.
 
-          For example --{remove_flag_name} mig1,mig2,...
+            For example: `--{remove_flag_name}=mig1,mig2`.
+            """),
+        type=arg_parsers.ArgList(element_type=str),
+        action=arg_parsers.FlattenAction(),
+        required=required,
+        hidden=hidden,
+    )
+
+
+def AddExistingInstances(
+    parser,
+    name="existing-instances",
+    api_version=None,
+    required=False,
+    hidden=False,
+    include_update_flags=False,
+):
+  """Adds an existing instances flag for the given API version."""
+  if api_version not in ["v1alpha"]:
+    raise ValueError(
+        f"Unsupported API version for existing-instances: {api_version!r}"
+    )
+  remove_flag_name = f"remove-{name}"
+  if include_update_flags:
+    name = f"add-{name}"
+  help_text = textwrap.dedent(f"""
+        Parameters to define Compute Engine orchestrator existing instances
+        config for Imported Clusters.
+
+        This flag corresponds to the Imported Clusters product for Cluster
+        Director, allowing existing Compute Engine instances to be imported into
+        the cluster.
+
+        Required fields:
+        - id
+        - Exactly one source field: project, instanceGroupManager,
+          regionInstanceGroupManager, reservation, reservationBlock, or
+          reservationSubBlock.
+
+        Optional fields:
+        - labels: Key-value labels that instances from the source must match.
+
+        For example --{name} id=ei1,\\
+        instanceGroupManager=zones/us-central1-a/instanceGroupManagers/mig1,\\
+        labels="{{env=prod,tier=gpu}}"
+      """)
+  parser.add_argument(
+      f"--{name}",
+      help=help_text,
+      type=flag_types.FlagTypes(api_version).GetExistingInstancesObject(),
+      action=arg_parsers.FlattenAction(),
+      required=required,
+      hidden=hidden,
+  )
+  if include_update_flags:
+    parser.add_argument(
+        f"--{remove_flag_name}",
+        help=textwrap.dedent(f"""
+          Parameters to remove existing instances config by id for Imported
+          Clusters.
+
+          For example --{remove_flag_name} ei1,ei2,...
         """),
         type=arg_parsers.ArgList(element_type=str),
         action=arg_parsers.FlattenAction(),

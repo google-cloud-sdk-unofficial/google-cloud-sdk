@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 
 @base.UniverseCompatible
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class WorkforcePoolInstalledApps(base.Group):
   """Create and manage Workforce Pool Installed Apps.
 

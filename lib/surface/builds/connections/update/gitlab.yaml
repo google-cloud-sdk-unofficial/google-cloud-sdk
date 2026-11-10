@@ -48,6 +48,7 @@
     - api_field: connection.disabled
       arg_name: disabled
       action: store_true_false
+      inverted_help_text: true
       required: false
       type: bool
       release_tracks: [ALPHA]

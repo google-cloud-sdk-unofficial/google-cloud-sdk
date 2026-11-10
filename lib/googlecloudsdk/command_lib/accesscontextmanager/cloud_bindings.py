@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command line processing utilities for cloud access bindings."""
 
-
-import re
-
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.accesscontextmanager import util
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
@@ -27,7 +24,6 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import times
 
-_WEB_APP_NAMES_14_DAY_SESSION_LENGTH = frozenset(['Cloud Console'])
 
 def AddUpdateMask(ref, args, req):
   """Hook to add update mask."""
@@ -184,12 +180,6 @@ def ProcessSessionLength(string):
       times.ParseDuration(string) if string else iso_duration.Duration(hours=-1)
   )
 
-  # TODO(b/346781832)
-  if duration.total_seconds > iso_duration.Duration(days=1).total_seconds:
-    raise calliope_exceptions.InvalidArgumentException(
-        '--session-length',
-        'The session length cannot be greater than one day.',
-    )
   # Format for Google protobuf Duration
   return '{}s'.format(int(duration.total_seconds))
 
@@ -238,19 +228,23 @@ def ProcessSessionSettings(unused_ref, args, req):
   return req
 
 
-def _CamelCase2SnakeCase(name):
-  s1 = re.compile('([a-z0-9])([A-Z])').sub(r'\1_\2', name)
-  return re.sub('_[A-Z]+', lambda m: m.group(0).lower(), s1)
-
-
 def ProcessFilter(unused_ref, args, req):
-  """Hook to process filter. Covert camel case to snake case."""
+  """Hook to send --filter to the server.
+
+  The server validates the filter and rejects unsupported expressions.
+
+  Args:
+    unused_ref: Unused
+    args: The command line arguments
+    req: The request object
+
+  Returns:
+    The modified request object.
+  """
   del unused_ref
   if args.IsKnownAndSpecified('filter'):
-    # Only pass filter to handler if it contains principal
-    if 'principal' in args.filter:
-      filter_str = _CamelCase2SnakeCase(args.filter)
-      req.filter = filter_str
+    req.filter = args.filter
+    args.filter = None
   return req
 
 
@@ -619,55 +613,6 @@ def _ProcessAccessLevelsInScopedAccessSettings(args, req):
 def _ProcessSessionSettingsInScopedAccessSettings(req):
   """Process the session settings in the scoped access settings."""
 
-  is_update_request = hasattr(req, 'name')
-  # For update requests, we don't know if a binding is for a federated
-  # principal without making a GET request first. To avoid this, we assume it
-  # could be federated and allow session lengths > 1d, and rely on backend
-  # validation to enforce 1d max for non-federated principals.
-  has_federated_principal = is_update_request or (
-      hasattr(req.gcpUserAccessBinding, 'principal')
-      and req.gcpUserAccessBinding.principal
-      and req.gcpUserAccessBinding.principal.federatedPrincipal
-  )
-
-  def _ValidateSessionSettings(session_settings, scope):
-    if session_settings is None:
-      return
-    if session_settings.sessionLength is None:
-      raise calliope_exceptions.InvalidArgumentException(
-          '--binding-file',
-          'SessionSettings within ScopedAccessSettings must include a session'
-          'length.',
-      )
-    session_length_sec = times.ParseDuration(
-        session_settings.sessionLength
-    ).total_seconds
-    max_session_length = iso_duration.Duration(days=1)
-    # TODO(b/486106966): Investigate if we can do a better check for v1alpha.
-    if scope and scope.clientScope:
-      if has_federated_principal:
-        if (
-            scope.clientScope.restrictedClientApplication
-            and scope.clientScope.restrictedClientApplication.name
-            in _WEB_APP_NAMES_14_DAY_SESSION_LENGTH
-        ):
-          max_session_length = iso_duration.Duration(days=14)
-        else:
-          max_session_length = iso_duration.Duration(days=90)
-
-    if session_length_sec > max_session_length.total_seconds:
-      raise calliope_exceptions.InvalidArgumentException(
-          '--binding-file',
-          'SessionLength within ScopedAccessSettings must not be greater than'
-          ' {} second(s)'.format(max_session_length.total_seconds),
-      )
-    if session_length_sec < 3600 and session_length_sec != 0:
-      raise calliope_exceptions.InvalidArgumentException(
-          '--binding-file',
-          'SessionLength within ScopedAccessSettings must not be less than '
-          '1 hour, unless it is zero',
-      )
-
   def _InferEmptySessionSettingsFields(session_settings):
     # When sessionReauthMethod is absent, infer LOGIN
     if session_settings.sessionReauthMethod is None:
@@ -683,13 +628,12 @@ def _ProcessSessionSettingsInScopedAccessSettings(req):
     # When sessionLengthEnabled is absent, infer True if SessionLength is
     # greater than zero, otherwise infer false.
     if session_settings.sessionLengthEnabled is None:
-      session_length = times.ParseDuration(
-          session_settings.sessionLength
-      ).total_seconds
-      if session_length > 0:
-        session_settings.sessionLengthEnabled = True
-      else:
-        session_settings.sessionLengthEnabled = False
+      session_length = (
+          times.ParseDuration(session_settings.sessionLength).total_seconds
+          if session_settings.sessionLength is not None
+          else 0
+      )
+      session_settings.sessionLengthEnabled = session_length > 0
     # When useOidcMaxAge is absent, infer False
     if session_settings.useOidcMaxAge is None:
       session_settings.useOidcMaxAge = False
@@ -702,65 +646,9 @@ def _ProcessSessionSettingsInScopedAccessSettings(req):
       session_settings = s.activeSettings.sessionSettings
       if not session_settings:
         continue
-      _ValidateSessionSettings(session_settings, s.scope)
       _InferEmptySessionSettingsFields(session_settings)
 
   _Start(req)
-
-
-def _ValidateRestrictedProjectScope(args, req):
-  """Validate restricted project scope."""
-  if (
-      not req.gcpUserAccessBinding
-      or not req.gcpUserAccessBinding.scopedAccessSettings
-  ):
-    return
-
-  has_restricted_project = False
-  for sas in req.gcpUserAccessBinding.scopedAccessSettings:
-    if (
-        sas.scope
-        and sas.scope.clientScope
-        and getattr(sas.scope.clientScope, 'restrictedProject', None)
-    ):
-      has_restricted_project = True
-      # If restrictedProject is present:
-      # group_key must not be used.
-      if hasattr(args, 'group_key') and args.IsKnownAndSpecified('group_key'):
-        raise calliope_exceptions.InvalidArgumentException(
-            '--group-key',
-            'Restricted project scope cannot be used with --group-key; use'
-            ' --federated-principal instead.',
-        )
-      # active_settings.session_settings must be present.
-      if not sas.activeSettings or not sas.activeSettings.sessionSettings:
-        raise calliope_exceptions.InvalidArgumentException(
-            '--binding-file',
-            'Restricted project scope must have active session settings set.',
-        )
-      # access_levels and dry_run_access_levels must be empty
-      if sas.activeSettings and sas.activeSettings.accessLevels:
-        raise calliope_exceptions.InvalidArgumentException(
-            '--binding-file',
-            'Restricted project scope cannot be used with access levels in'
-            ' activeSettings.',
-        )
-      if sas.dryRunSettings and sas.dryRunSettings.accessLevels:
-        raise calliope_exceptions.InvalidArgumentException(
-            '--binding-file',
-            'Restricted project scope cannot be used with access levels in'
-            ' dryRunSettings.',
-        )
-  if has_restricted_project:
-    # federated_principal must be used with restricted project scope.
-    if hasattr(args, 'federated_principal') and not args.IsKnownAndSpecified(
-        'federated_principal'
-    ):
-      raise calliope_exceptions.InvalidArgumentException(
-          '--binding-file',
-          'When using a restricted project scope, --federated-principal must'
-          ' be specified.',
-      )
 
 
 def ProcessScopedAccessSettings(unused_ref, args, req):
@@ -772,7 +660,6 @@ def ProcessScopedAccessSettings(unused_ref, args, req):
       return req
 
     _ProcessScopesInScopedAccessSettings(req)
-    _ValidateRestrictedProjectScope(args, req)
     _ProcessAccessSettingsInScopedAccessSettings(req)
     _ProcessAccessLevelsInScopedAccessSettings(args, req)
     _ProcessSessionSettingsInScopedAccessSettings(req)

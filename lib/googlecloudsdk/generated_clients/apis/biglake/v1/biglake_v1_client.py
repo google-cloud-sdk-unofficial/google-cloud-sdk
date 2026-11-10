@@ -48,6 +48,7 @@ class BiglakeV1(base_api.BaseApiClient):
     self.iceberg_v1_restcatalog_extensions_projects = self.IcebergV1RestcatalogExtensionsProjectsService(self)
     self.iceberg_v1_restcatalog_extensions = self.IcebergV1RestcatalogExtensionsService(self)
     self.iceberg_v1_restcatalog_v1_projects_catalogs_namespaces_tables = self.IcebergV1RestcatalogV1ProjectsCatalogsNamespacesTablesService(self)
+    self.iceberg_v1_restcatalog_v1_projects_catalogs_namespaces_views = self.IcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsService(self)
     self.iceberg_v1_restcatalog_v1_projects_catalogs_namespaces = self.IcebergV1RestcatalogV1ProjectsCatalogsNamespacesService(self)
     self.iceberg_v1_restcatalog_v1_projects_catalogs = self.IcebergV1RestcatalogV1ProjectsCatalogsService(self)
     self.iceberg_v1_restcatalog_v1_projects = self.IcebergV1RestcatalogV1ProjectsService(self)
@@ -1058,6 +1059,151 @@ class BiglakeV1(base_api.BaseApiClient):
         relative_path='iceberg/v1/restcatalog/v1/{+name}',
         request_field='updateIcebergTableRequest',
         request_type_name='BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesTablesUpdateIcebergTableRequest',
+        response_type_name='HttpBody',
+        supports_download=False,
+    )
+
+  class IcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsService(base_api.BaseApiService):
+    """Service class for the iceberg_v1_restcatalog_v1_projects_catalogs_namespaces_views resource."""
+
+    _NAME = 'iceberg_v1_restcatalog_v1_projects_catalogs_namespaces_views'
+
+    def __init__(self, client):
+      super(BiglakeV1.IcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates an Iceberg view in the namespace.
+
+      Args:
+        request: (BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HttpBody) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='iceberg/v1/restcatalog/v1/projects/{projectsId}/catalogs/{catalogsId}/namespaces/{namespacesId}/views',
+        http_method='POST',
+        method_id='biglake.iceberg.v1.restcatalog.v1.projects.catalogs.namespaces.views.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='iceberg/v1/restcatalog/v1/{+parent}/views',
+        request_field='createIcebergViewRequest',
+        request_type_name='BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsCreateRequest',
+        response_type_name='HttpBody',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a view in the namespace.
+
+      Args:
+        request: (BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='iceberg/v1/restcatalog/v1/projects/{projectsId}/catalogs/{catalogsId}/namespaces/{namespacesId}/views/{viewsId}',
+        http_method='DELETE',
+        method_id='biglake.iceberg.v1.restcatalog.v1.projects.catalogs.namespaces.views.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='iceberg/v1/restcatalog/v1/{+name}',
+        request_field='',
+        request_type_name='BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a view in the namespace.
+
+      Args:
+        request: (BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HttpBody) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='iceberg/v1/restcatalog/v1/projects/{projectsId}/catalogs/{catalogsId}/namespaces/{namespacesId}/views/{viewsId}',
+        http_method='GET',
+        method_id='biglake.iceberg.v1.restcatalog.v1.projects.catalogs.namespaces.views.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='iceberg/v1/restcatalog/v1/{+name}',
+        request_field='',
+        request_type_name='BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsGetRequest',
+        response_type_name='HttpBody',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists view identifiers (not *views*) in the namespace.
+
+      Args:
+        request: (BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListIcebergViewIdentifiersResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='iceberg/v1/restcatalog/v1/projects/{projectsId}/catalogs/{catalogsId}/namespaces/{namespacesId}/views',
+        http_method='GET',
+        method_id='biglake.iceberg.v1.restcatalog.v1.projects.catalogs.namespaces.views.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='iceberg/v1/restcatalog/v1/{+parent}/views',
+        request_field='',
+        request_type_name='BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsListRequest',
+        response_type_name='ListIcebergViewIdentifiersResponse',
+        supports_download=False,
+    )
+
+    def UpdateIcebergView(self, request, global_params=None):
+      r"""Updates a view in the namespace. This is CommitView Iceberg API, which maps to `UpdateIcebergView` in the Google API nomenclature.
+
+      Args:
+        request: (BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsUpdateIcebergViewRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HttpBody) The response message.
+      """
+      config = self.GetMethodConfig('UpdateIcebergView')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdateIcebergView.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='iceberg/v1/restcatalog/v1/projects/{projectsId}/catalogs/{catalogsId}/namespaces/{namespacesId}/views/{viewsId}',
+        http_method='POST',
+        method_id='biglake.iceberg.v1.restcatalog.v1.projects.catalogs.namespaces.views.updateIcebergView',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='iceberg/v1/restcatalog/v1/{+name}',
+        request_field='updateIcebergViewRequest',
+        request_type_name='BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsUpdateIcebergViewRequest',
         response_type_name='HttpBody',
         supports_download=False,
     )

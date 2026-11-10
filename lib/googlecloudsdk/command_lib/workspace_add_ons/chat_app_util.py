@@ -34,6 +34,9 @@ _DIALOGFLOW_PATH = (
 # The resource name is immutable and comes from --project.
 _IGNORED_FILE_FIELDS = frozenset(['name'])
 
+_TESTING_PRINCIPALS_PATH = (
+    'interactiveFeatureConfig.allowlistedTestingPrincipals')
+
 
 def _MaskPaths(data, prefix=''):
   """Returns the update mask paths for the fields present in a config dict.
@@ -166,4 +169,102 @@ def AddClearedFieldsToMaskHook(unused_ref, args, request):
   if args.IsSpecified('clear_avatar_uri'):
     paths.add('avatarUri')
   request.updateMask = ','.join(sorted(_NormalizeMask(paths)))
+  return request
+
+
+def _GetAllowlistedTestingPrincipals(name):
+  """Returns the testing principals of the current Chat app configuration.
+
+  Args:
+    name: str, resource name of the Chat app configuration.
+
+  Returns:
+    A list of email addresses. It's empty if the project doesn't have a Chat
+    app yet or the app doesn't have testing principals.
+  """
+  client = apis.GetClientInstance(_API_NAME, _API_VERSION)
+  get_request_type = (
+      client.MESSAGES_MODULE.GsuiteaddonsProjectsChatAppConfigGetRequest)
+  # The API's default BASIC view leaves out interactiveFeatureConfig.
+  config = client.projects_chatAppConfig.Get(
+      get_request_type(
+          name=name, view=get_request_type.ViewValueValuesEnum.FULL))
+  if config.interactiveFeatureConfig is None:
+    return []
+  return list(config.interactiveFeatureConfig.allowlistedTestingPrincipals)
+
+
+def _PrincipalKey(principal):
+  """Returns the key that identifies a testing principal.
+
+  Google Workspace treats email addresses as case-insensitive, and the API can
+  return addresses with leading spaces.
+
+  Args:
+    principal: str, an email address.
+
+  Returns:
+    The address without surrounding spaces, in lowercase.
+  """
+  return principal.strip().lower()
+
+
+def UpdateAllowlistedTestingPrincipalsHook(unused_ref, args, request):
+  """Applies the flags that add, remove, or clear testing principals.
+
+  The API replaces a list as a whole, so the request carries the complete new
+  list, and only this field is added to the update mask. The new list starts
+  from the app's current list, which is read first, unless
+  --clear-allowlisted-testing-principals is passed, in which case it starts
+  empty. Principals in --remove-allowlisted-testing-principals are then
+  dropped, and principals in --add-allowlisted-testing-principals that aren't
+  in the list yet are appended.
+
+  Args:
+    unused_ref: reference to the Chat app configuration.
+    args: command line arguments.
+    request: API request to be issued.
+
+  Returns:
+    The modified request.
+  """
+  del unused_ref  # Unused.
+  add_specified = args.IsSpecified('add_allowlisted_testing_principals')
+  remove_specified = args.IsSpecified('remove_allowlisted_testing_principals')
+  clear_specified = args.IsSpecified('clear_allowlisted_testing_principals')
+  if not (add_specified or remove_specified or clear_specified):
+    return request
+
+  if clear_specified:
+    principals = []
+  else:
+    removed = {
+        _PrincipalKey(principal)
+        for principal in (args.remove_allowlisted_testing_principals or [])
+    }
+    principals = [
+        principal
+        for principal in _GetAllowlistedTestingPrincipals(request.name)
+        if _PrincipalKey(principal) not in removed
+    ]
+  present = {_PrincipalKey(principal) for principal in principals}
+  for principal in args.add_allowlisted_testing_principals or []:
+    principal = principal.strip()
+    if principal and _PrincipalKey(principal) not in present:
+      principals.append(principal)
+      present.add(_PrincipalKey(principal))
+
+  messages = apis.GetMessagesModule(_API_NAME, _API_VERSION)
+  if request.googleCloudGsuiteaddonsV1ChatAppConfig is None:
+    request.googleCloudGsuiteaddonsV1ChatAppConfig = (
+        messages.GoogleCloudGsuiteaddonsV1ChatAppConfig())
+  config = request.googleCloudGsuiteaddonsV1ChatAppConfig
+  if config.interactiveFeatureConfig is None:
+    config.interactiveFeatureConfig = (
+        messages.GoogleCloudGsuiteaddonsV1InteractiveFeatureConfig())
+  config.interactiveFeatureConfig.allowlistedTestingPrincipals = principals
+
+  paths = _SplitMask(request.updateMask)
+  paths.add(_TESTING_PRINCIPALS_PATH)
+  request.updateMask = ','.join(sorted(paths))
   return request

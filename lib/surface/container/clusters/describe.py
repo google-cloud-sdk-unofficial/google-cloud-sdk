@@ -64,7 +64,12 @@ class Describe(base.DescribeCommand):
     self._upgrade_hint = None
     vv = VersionVerifier()
     c = adapter.GetCluster(adapter.ParseCluster(args.name, location))
-    ver_status = vv.Compare(c.currentMasterVersion, c.currentNodeVersion)
+    if c.nodePools:
+      ver_status = vv.Compare(c.currentMasterVersion, c.currentNodeVersion)
+    else:
+      # currentNodeVersion is the cluster api version for clusters without node
+      # pools, so there are no nodes to upgrade.
+      ver_status = VersionVerifier.UP_TO_DATE
 
     if ver_status == VersionVerifier.UPGRADE_AVAILABLE:
       self._upgrade_hint = UpgradeHelpText.UPGRADE_AVAILABLE

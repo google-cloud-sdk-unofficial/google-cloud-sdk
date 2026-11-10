@@ -288,7 +288,7 @@
     # Group for Auth Type
     - group:
         required: false
-        release_tracks: [ALPHA]
+        release_tracks: [ALPHA, GA]
         help_text: |
           Auth Type - Authentication configuration for the Looker instance.
         params:
@@ -454,6 +454,7 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateCatalogIntegrationOptOut
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateReleaseChannel
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateAcceleratedSecurityPatch
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateAuthType
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateLinkedLspProjectNumber
     collection: looker.projects.locations.instances
     regional_endpoint_compatibility: SUPPORTED

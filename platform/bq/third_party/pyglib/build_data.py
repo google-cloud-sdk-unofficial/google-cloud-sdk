@@ -119,7 +119,13 @@ def BuildID() -> str:
 
 
 def Changelist() -> int:
-  """Return client workspace changelist, as int."""
+  """Return client workspace changelist, as int.
+
+  Returns:
+    The changelist the binary was built from, or -1 if no changelist is known:
+    A stamped value of 0 also means the changelist is unknown (see
+    `ClientInfo()`), so callers should treat any value <= 0 as "no changelist".
+  """
   cl = _GetBuildData().get('CHANGELIST', '')
   try:
     changelist = int(cl.strip())
@@ -245,7 +251,6 @@ def BuildDebugMode() -> Optional[bool]:
 
 def ClientInfo() -> str:
   """Return Perforce client changelist and status as descriptive string."""
-  info = ''
   cl = Changelist()
   vm = VersionMap()
   citc_snapshot = CitcSnapshot()
@@ -324,7 +329,7 @@ def BuildData() -> str:
     gil_enabled_str = ''
   else:
     gil_enabled_str = ' (Python free-threading - no GIL)'
-  python_executable = sys.executable if sys.executable else 'embedded.'
+  python_executable = sys.executable if sys.executable else 'embedded'
   buf.write(
       f'Currently running under Python {sys.version}:'
       f' {python_executable}{gil_enabled_str}.\n'

@@ -512,6 +512,7 @@
     - arg_name: disabled
       api_field: connection.disabled
       action: store_true_false
+      inverted_help_text: true
       required: false
       type: bool
       help_text: |-

@@ -98752,6 +98752,10 @@ class RouterBgpPeer(_messages.Message):
       Platform.
     ipv6NexthopAddress: IPv6 address of the interface inside Google Cloud
       Platform.
+    linkedCustomHardware: The linked custom hardware resource. The URI of the
+      custom hardware link attachment is where you will establish the BGP
+      session from the Cloud Router. This link attachment must reside in the
+      same subnetwork as the associated router interface.
     managementType: Output only. [Output Only] The resource that configures
       and manages this BGP peer.        -  MANAGED_BY_USER is the default
       value and can be managed by you    or other users    -
@@ -98855,14 +98859,15 @@ class RouterBgpPeer(_messages.Message):
   ipAddress = _messages.StringField(14)
   ipv4NexthopAddress = _messages.StringField(15)
   ipv6NexthopAddress = _messages.StringField(16)
-  managementType = _messages.EnumField('ManagementTypeValueValuesEnum', 17)
-  md5AuthenticationKeyName = _messages.StringField(18)
-  name = _messages.StringField(19)
-  peerAsn = _messages.IntegerField(20, variant=_messages.Variant.UINT32)
-  peerIpAddress = _messages.StringField(21)
-  peerIpv4NexthopAddress = _messages.StringField(22)
-  peerIpv6NexthopAddress = _messages.StringField(23)
-  routerApplianceInstance = _messages.StringField(24)
+  linkedCustomHardware = _messages.StringField(17)
+  managementType = _messages.EnumField('ManagementTypeValueValuesEnum', 18)
+  md5AuthenticationKeyName = _messages.StringField(19)
+  name = _messages.StringField(20)
+  peerAsn = _messages.IntegerField(21, variant=_messages.Variant.UINT32)
+  peerIpAddress = _messages.StringField(22)
+  peerIpv4NexthopAddress = _messages.StringField(23)
+  peerIpv6NexthopAddress = _messages.StringField(24)
+  routerApplianceInstance = _messages.StringField(25)
 
 
 class RouterBgpPeerBfd(_messages.Message):
@@ -99744,6 +99749,10 @@ class RouterStatusBgpPeerStatus(_messages.Message):
     ipAddress: Output only. IP address of the local BGP interface.
     ipv4NexthopAddress: Output only. IPv4 address of the local BGP interface.
     ipv6NexthopAddress: Output only. IPv6 address of the local BGP interface.
+    linkedCustomHardware: Output only. The URI of the linked custom hardware
+      resource, CustomHardwareLinkAttachment. This
+      CustomHardwareLinkAttachment resource is the one that will establish the
+      BGP session from the Cloud Router.
     linkedVpnTunnel: Output only. URL of the VPN tunnel that this BGP peer
       controls.
     md5AuthEnabled: Informs whether MD5 authentication is enabled on this BGP
@@ -99809,19 +99818,20 @@ class RouterStatusBgpPeerStatus(_messages.Message):
   ipAddress = _messages.StringField(6)
   ipv4NexthopAddress = _messages.StringField(7)
   ipv6NexthopAddress = _messages.StringField(8)
-  linkedVpnTunnel = _messages.StringField(9)
-  md5AuthEnabled = _messages.BooleanField(10)
-  name = _messages.StringField(11)
-  numLearnedRoutes = _messages.IntegerField(12, variant=_messages.Variant.UINT32)
-  peerIpAddress = _messages.StringField(13)
-  peerIpv4NexthopAddress = _messages.StringField(14)
-  peerIpv6NexthopAddress = _messages.StringField(15)
-  routerApplianceInstance = _messages.StringField(16)
-  state = _messages.StringField(17)
-  status = _messages.EnumField('StatusValueValuesEnum', 18)
-  statusReason = _messages.EnumField('StatusReasonValueValuesEnum', 19)
-  uptime = _messages.StringField(20)
-  uptimeSeconds = _messages.StringField(21)
+  linkedCustomHardware = _messages.StringField(9)
+  linkedVpnTunnel = _messages.StringField(10)
+  md5AuthEnabled = _messages.BooleanField(11)
+  name = _messages.StringField(12)
+  numLearnedRoutes = _messages.IntegerField(13, variant=_messages.Variant.UINT32)
+  peerIpAddress = _messages.StringField(14)
+  peerIpv4NexthopAddress = _messages.StringField(15)
+  peerIpv6NexthopAddress = _messages.StringField(16)
+  routerApplianceInstance = _messages.StringField(17)
+  state = _messages.StringField(18)
+  status = _messages.EnumField('StatusValueValuesEnum', 19)
+  statusReason = _messages.EnumField('StatusReasonValueValuesEnum', 20)
+  uptime = _messages.StringField(21)
+  uptimeSeconds = _messages.StringField(22)
 
 
 class RouterStatusNatStatus(_messages.Message):

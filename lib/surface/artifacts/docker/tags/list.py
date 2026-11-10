@@ -29,19 +29,20 @@ TAG_LIST_FORMAT = """\
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List all tags associated with a container image in Artifact Registry.
 
   A valid Docker top layer image has the format of
 
-    [<location>-]docker.pkg.dev/PROJECT-ID/REPOSITORY-ID/IMAGE_PATH
+    LOCATION-docker.pkg.dev/PROJECT-ID/REPOSITORY-ID/IMAGE_PATH
 
   A valid container image can be referenced by tag or digest, has the format of
 
-    [<location>-]docker.pkg.dev/PROJECT-ID/REPOSITORY-ID/IMAGE_PATH:tag
-    [<location>-]docker.pkg.dev/PROJECT-ID/REPOSITORY-ID/IMAGE_PATH@sha256:digest
+    LOCATION-docker.pkg.dev/PROJECT-ID/REPOSITORY-ID/IMAGE_PATH:tag
+    LOCATION-docker.pkg.dev/PROJECT-ID/REPOSITORY-ID/IMAGE_PATH@sha256:digest
 
-  To specify the maximum number of repositories to list, use the --limit flag.
+  To specify the maximum number of tags to list, use the --limit flag.
   """
 
   detailed_help = {
@@ -49,13 +50,10 @@ class List(base.ListCommand):
           '{description}',
       'EXAMPLES':
           """\
-  To list all tags under the current project, repository, and location:
+  To list all tags in the default repository, as specified by the
+  `core/project`, `artifacts/location`, and `artifacts/repository` properties:
 
     $ {command}
-
-  To list all tags under the `my-project`, `my-repository`, across all locations:
-
-    $ {command} docker.pkg.dev/my-project/my-repository
 
   To list all tags in repository `my-repository` in `us-west1`:
 

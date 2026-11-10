@@ -20,6 +20,8 @@ __version__ = package_version.__version__
 
 from .services.builds import BuildsClient
 from .services.builds import BuildsAsyncClient
+from .services.domain_mappings import DomainMappingsClient
+from .services.domain_mappings import DomainMappingsAsyncClient
 from .services.executions import ExecutionsClient
 from .services.executions import ExecutionsAsyncClient
 from .services.instances import InstancesClient
@@ -40,9 +42,17 @@ from .services.worker_pools import WorkerPoolsAsyncClient
 from .types.build import StorageSource
 from .types.build import SubmitBuildRequest
 from .types.build import SubmitBuildResponse
+from .types.common_domain_mapping import ResourceRecord
 from .types.condition import Condition
 from .types.container_status import BuildStatus
 from .types.container_status import ContainerStatus
+from .types.domain_mapping import CreateDomainMappingRequest
+from .types.domain_mapping import DeleteDomainMappingRequest
+from .types.domain_mapping import DomainMapping
+from .types.domain_mapping import GetDomainMappingRequest
+from .types.domain_mapping import ListDomainMappingsRequest
+from .types.domain_mapping import ListDomainMappingsResponse
+from .types.domain_mapping import UpdateDomainMappingRequest
 from .types.execution import CancelExecutionRequest
 from .types.execution import DeleteExecutionRequest
 from .types.execution import Execution
@@ -80,6 +90,7 @@ from .types.k8s_min import ContainerPort
 from .types.k8s_min import EmptyDirVolumeSource
 from .types.k8s_min import EnvVar
 from .types.k8s_min import EnvVarSource
+from .types.k8s_min import FilestoreVolumeSource
 from .types.k8s_min import GCSVolumeSource
 from .types.k8s_min import GRPCAction
 from .types.k8s_min import HTTPGetAction
@@ -150,6 +161,7 @@ from .types.worker_pool_revision_template import WorkerPoolRevisionTemplate
 
 __all__ = (
     'BuildsAsyncClient',
+    'DomainMappingsAsyncClient',
     'ExecutionsAsyncClient',
     'InstancesAsyncClient',
     'JobsAsyncClient',
@@ -173,16 +185,20 @@ __all__ = (
 'ContainerPort',
 'ContainerStatus',
 'CpuScaling',
+'CreateDomainMappingRequest',
 'CreateInstanceRequest',
 'CreateJobRequest',
 'CreateServiceRequest',
 'CreateWorkerPoolRequest',
+'DeleteDomainMappingRequest',
 'DeleteExecutionRequest',
 'DeleteInstanceRequest',
 'DeleteJobRequest',
 'DeleteRevisionRequest',
 'DeleteServiceRequest',
 'DeleteWorkerPoolRequest',
+'DomainMapping',
+'DomainMappingsClient',
 'EmptyDirVolumeSource',
 'EncryptionKeyRevocationAction',
 'EnvVar',
@@ -192,9 +208,11 @@ __all__ = (
 'ExecutionReference',
 'ExecutionTemplate',
 'ExecutionsClient',
+'FilestoreVolumeSource',
 'FunctionalType',
 'GCSVolumeSource',
 'GRPCAction',
+'GetDomainMappingRequest',
 'GetExecutionRequest',
 'GetInstanceRequest',
 'GetJobRequest',
@@ -213,6 +231,8 @@ __all__ = (
 'InstancesClient',
 'Job',
 'JobsClient',
+'ListDomainMappingsRequest',
+'ListDomainMappingsResponse',
 'ListExecutionsRequest',
 'ListExecutionsResponse',
 'ListInstancesRequest',
@@ -231,6 +251,7 @@ __all__ = (
 'NodeSelector',
 'Probe',
 'PubSubScaling',
+'ResourceRecord',
 'ResourceRequirements',
 'RestartInstanceRequest',
 'Revision',
@@ -262,6 +283,7 @@ __all__ = (
 'TrafficTarget',
 'TrafficTargetAllocationType',
 'TrafficTargetStatus',
+'UpdateDomainMappingRequest',
 'UpdateInstanceRequest',
 'UpdateJobRequest',
 'UpdateServiceRequest',

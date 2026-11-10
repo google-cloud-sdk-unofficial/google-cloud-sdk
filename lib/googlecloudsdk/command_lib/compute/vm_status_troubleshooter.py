@@ -92,6 +92,7 @@ class VMStatusTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
     self.compute_message = apis.GetMessagesModule(_API_COMPUTE_CLIENT_NAME,
                                                   _API_CLIENT_VERSION_V1)
     self.issues = {}
+    self.skip_troubleshoot = False
 
   def check_prerequisite(self):
     log.status.Print('---- Checking VM status ----')
@@ -120,12 +121,36 @@ class VMStatusTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
   def cleanup_resources(self):
     return
 
+  def FindVMStatusIssues(
+      self, check_cpu: bool, sc_log: str | None = None
+  ) -> list[ssh_troubleshooter.Finding]:
+    """Returns a list of Finding(cause, message), in check order.
+
+    Args:
+      check_cpu: Whether to query Cloud Monitoring for CPU utilisation; the
+        caller decides because that API may need enabling.
+      sc_log: Serial port 1 output; None fetches it with GetSerialConsoleLog,
+        an empty string skips the fetch and finds no disk error.
+
+    Returns:
+      list[ssh_troubleshooter.Finding], detected VM status issues in check
+      order.
+    """
+    findings = []
+    if self._CheckVMStatus():
+      findings.append(
+          ssh_troubleshooter.Finding('vm_status', VM_STATUS_MESSAGE))
+    if check_cpu and self._CheckCpuStatus():
+      findings.append(ssh_troubleshooter.Finding('cpu', CPU_MESSAGE))
+    disk_message = self._CheckDiskStatus(sc_log=sc_log)
+    if disk_message:
+      findings.append(ssh_troubleshooter.Finding('disk', disk_message))
+    return findings
+
   def troubleshoot(self):
     if self.skip_troubleshoot:
       return
-    self._CheckVMStatus()
-    self._CheckCpuStatus()
-    self._CheckDiskStatus()
+    self.issues = dict(self.FindVMStatusIssues(check_cpu=True))
     log.status.Print('VM status: {0} issue(s) found.\n'.format(
         len(self.issues)))
     # Prompt appropriate messages to user.
@@ -134,13 +159,15 @@ class VMStatusTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
 
   def _CheckVMStatus(self):
     if self.instance.status != self.compute_message.Instance.StatusValueValuesEnum.RUNNING:  # pylint: disable=line-too-long
-      self.issues['vm_status'] = VM_STATUS_MESSAGE
+      return True
+    return False
 
   def _CheckCpuStatus(self):
     """Check cpu utilization."""
     cpu_utilizatian = self._GetCpuUtilization()
     if cpu_utilizatian > CPU_THRESHOLD:
-      self.issues['cpu'] = CPU_MESSAGE
+      return True
+    return False
 
   def _GetCpuUtilization(self):
     """Get CPU utilization from Cloud Monitoring API."""
@@ -152,13 +179,15 @@ class VMStatusTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
       return sum(point.value.doubleValue for point in points) / len(points)
     return 0.0
 
-  def _CheckDiskStatus(self):
-    sc_log = ssh_troubleshooter_utils.GetSerialConsoleLog(
-        self.compute_client, self.compute_message, self.instance.name,
-        self.project.name, self.zone)
+  def _CheckDiskStatus(self, sc_log=None):
+    if sc_log is None:
+      sc_log = ssh_troubleshooter_utils.GetSerialConsoleLog(
+          self.compute_client, self.compute_message, self.instance.name,
+          self.project.name, self.zone)
     if ssh_troubleshooter_utils.SearchPatternErrorInLog(DISK_ERROR_PATTERN,
                                                         sc_log):
-      self.issues['disk'] = DISK_MESSAGE.format(self.instance.disks[0].source)
+      return DISK_MESSAGE.format(self.instance.disks[0].source)
+    return None
 
   def _CreateTimeSeriesListRequest(self, metrics_type):
     """Create a MonitoringProjectsTimeSeriesListRequest.

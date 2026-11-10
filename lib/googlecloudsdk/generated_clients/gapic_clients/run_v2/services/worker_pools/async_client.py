@@ -88,6 +88,8 @@ class WorkerPoolsAsyncClient:
     parse_secret_path = staticmethod(WorkerPoolsClient.parse_secret_path)
     secret_version_path = staticmethod(WorkerPoolsClient.secret_version_path)
     parse_secret_version_path = staticmethod(WorkerPoolsClient.parse_secret_version_path)
+    volume_path = staticmethod(WorkerPoolsClient.volume_path)
+    parse_volume_path = staticmethod(WorkerPoolsClient.parse_volume_path)
     worker_pool_path = staticmethod(WorkerPoolsClient.worker_pool_path)
     parse_worker_pool_path = staticmethod(WorkerPoolsClient.parse_worker_pool_path)
     common_billing_account_path = staticmethod(WorkerPoolsClient.common_billing_account_path)

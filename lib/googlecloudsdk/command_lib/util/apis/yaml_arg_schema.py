@@ -391,6 +391,9 @@ class Argument(YAMLArgument):
       generated.
     clearable: True to automatically generate update flags such as `clear`,
       `update`, `remove`, and `add`
+    inverted_help_text: True to describe a `store_true_false` flag as
+      disabling (and its `--no-` variant as enabling) in the generated help
+      text. Only applicable when action is `store_true_false`.
   """
 
   @classmethod
@@ -445,6 +448,7 @@ class Argument(YAMLArgument):
         repeated=data.get('repeated'),
         disable_unused_arg_check=disable_unused_arg_check,
         clearable=data.get('clearable', False),
+        inverted_help_text=data.get('inverted_help_text', False),
     )
 
   # pylint:disable=redefined-builtin, type param needs to match the schema.
@@ -469,6 +473,7 @@ class Argument(YAMLArgument):
       generate=True,
       disable_unused_arg_check=False,
       clearable=False,
+      inverted_help_text=False,
   ):
     super(Argument, self).__init__()
     self.api_field = api_field
@@ -490,6 +495,7 @@ class Argument(YAMLArgument):
     self.repeated = repeated
     self.generate = generate
     self.clearable = clearable
+    self.inverted_help_text = inverted_help_text
 
   @property
   def api_fields(self):

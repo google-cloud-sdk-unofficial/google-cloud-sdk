@@ -90,6 +90,8 @@ class InstancesAsyncClient:
     parse_secret_path = staticmethod(InstancesClient.parse_secret_path)
     secret_version_path = staticmethod(InstancesClient.secret_version_path)
     parse_secret_version_path = staticmethod(InstancesClient.parse_secret_version_path)
+    volume_path = staticmethod(InstancesClient.volume_path)
+    parse_volume_path = staticmethod(InstancesClient.parse_volume_path)
     common_billing_account_path = staticmethod(InstancesClient.common_billing_account_path)
     parse_common_billing_account_path = staticmethod(InstancesClient.parse_common_billing_account_path)
     common_folder_path = staticmethod(InstancesClient.common_folder_path)

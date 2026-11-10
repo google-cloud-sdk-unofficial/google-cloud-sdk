@@ -134,7 +134,7 @@ class Create(base.CreateCommand):
         * `compute.<UNIVERSE_DOMAIN>/Instance` for Compute Engine instances.
         * `file.<UNIVERSE_DOMAIN>/Instance` for Filestore instances.""")
     )
-    flags.AddBackupRule(parser)
+    flags.AddBackupRule(parser, release_track=cls.ReleaseTrack())
     flags.AddMaxCustomOnDemandRetentionDays(parser)
     flags.AddDiskBackupPlanProperties(parser)
     flags.AddComputeInstanceBackupPlanProperties(parser, release_track=cls.ReleaseTrack())

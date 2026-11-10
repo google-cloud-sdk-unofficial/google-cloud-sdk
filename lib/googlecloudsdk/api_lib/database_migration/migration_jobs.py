@@ -376,27 +376,6 @@ class MigrationJobsClient(object):
         objectsSelectionType=self.messages.SourceObjectsConfig.ObjectsSelectionTypeValueValuesEnum.ALL_OBJECTS
     )
 
-  def _GetSourceObjectsConfigForSpecifiedDatabases(self, databases_filter):
-    """Returns the source objects config."""
-    source_objects_conifg = self.messages.SourceObjectsConfig(
-        objectsSelectionType=self.messages.SourceObjectsConfig.ObjectsSelectionTypeValueValuesEnum.SPECIFIED_OBJECTS
-    )
-    source_object_configs = []
-    for database in databases_filter:
-      source_object_identifier = self.messages.SourceObjectIdentifier(
-          database=database,
-          type=self.messages.SourceObjectIdentifier.TypeValueValuesEnum.lookup_by_name(
-              'DATABASE'
-          ),
-      )
-      source_object_configs.append(
-          self.messages.SourceObjectConfig(
-              objectIdentifier=source_object_identifier,
-          ),
-      )
-    source_objects_conifg.objectConfigs = source_object_configs
-    return source_objects_conifg
-
   def _GetSourceObjectsConfigForSpecifiedTables(self, object_filters):
     """Returns the source objects config."""
     source_objects_config = self.messages.SourceObjectsConfig(
@@ -421,6 +400,191 @@ class MigrationJobsClient(object):
       )
     return source_objects_config
 
+  def _IsObjectsConfigKnownAndSpecified(self, args):
+    """Checks if at least one objects config flag is specified.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      True if at least one of the objects config flags is known and specified.
+    """
+    return (
+        args.IsKnownAndSpecified('all_databases')
+        or args.IsKnownAndSpecified('databases_filter')
+        or args.IsKnownAndSpecified('schemas_filter')
+        or args.IsKnownAndSpecified('tables_filter')
+        or args.IsKnownAndSpecified('excluded_schemas_filter')
+        or args.IsKnownAndSpecified('excluded_tables_filter')
+    )
+
+  @staticmethod
+  def _SplitObjectIdentifier(identifier):
+    r"""Splits a dot-separated object identifier into its components.
+
+    Supports PostgreSQL-style double-quoted identifiers (e.g. `db1."my.schema"`,
+    where `""` inside quotes unescapes to `"`) and backslash-escaped dots
+    (e.g. `db1.my\.schema`).
+
+    Args:
+      identifier: str, the dot-separated object identifier.
+
+    Returns:
+      list[str] of components, or None if the identifier format is invalid.
+    """
+    if not identifier:
+      return None
+
+    components = []
+    current_chars = []
+    in_quotes = False
+    quote_closed = False
+    i = 0
+    n = len(identifier)
+
+    while i < n:
+      char = identifier[i]
+      if in_quotes:
+        if char == '"' and i + 1 < n and identifier[i + 1] == '"':
+          current_chars.append('"')
+          i += 2
+        elif char == '"':
+          in_quotes = False
+          quote_closed = True
+          i += 1
+        elif char == '\\' and i + 1 < n:
+          current_chars.append(identifier[i + 1])
+          i += 2
+        elif char == '\\':
+          return None
+        else:
+          current_chars.append(char)
+          i += 1
+        continue
+
+      if char == '"':
+        if current_chars or quote_closed:
+          return None
+        in_quotes = True
+        i += 1
+        continue
+
+      if char == '.':
+        if not current_chars:
+          return None
+        components.append(''.join(current_chars))
+        current_chars = []
+        quote_closed = False
+        i += 1
+        continue
+
+      if quote_closed:
+        return None
+
+      if char == '\\':
+        if i + 1 >= n:
+          return None
+        current_chars.append(identifier[i + 1])
+        i += 2
+        continue
+
+      current_chars.append(char)
+      i += 1
+
+    if in_quotes or not current_chars:
+      return None
+
+    components.append(''.join(current_chars))
+    return components
+
+  def _ParseSchemasFilter(self, schemas_filter, args, is_excluded=False):
+    """Parses schema filter arguments into SourceObjectConfig messages."""
+    flag_name = (
+        '--excluded-schemas-filter' if is_excluded else '--schemas-filter'
+    )
+    filter_label = 'Excluded schema filter' if is_excluded else 'Schema filter'
+    schema_object_configs = []
+    databases = []
+    for item in schemas_filter:
+      parts = self._SplitObjectIdentifier(item)
+      if parts and len(parts) == 2:
+        database, schema = parts
+      elif (
+          parts
+          and len(parts) == 1
+          and args.IsKnownAndSpecified('databases_filter')
+          and len(args.databases_filter) == 1
+      ):
+        database = args.databases_filter[0]
+        schema = parts[0]
+      else:
+        raise exceptions.InvalidArgumentException(
+            flag_name,
+            f'{filter_label} "{item}" must be in the format DATABASE.SCHEMA, or'
+            ' SCHEMA when a single database is specified in --databases-filter.'
+            ' Names containing dots must be enclosed in double quotes (e.g.'
+            ' db."schema.name") or escaped with a backslash (e.g.'
+            r' db.schema\.name).',
+        )
+      databases.append(database)
+      source_object_identifier = self.messages.SourceObjectIdentifier(
+          database=database,
+          schema=schema,
+          type=self.messages.SourceObjectIdentifier.TypeValueValuesEnum.lookup_by_name(
+              'SCHEMA'
+          ),
+      )
+      schema_object_configs.append(
+          self.messages.SourceObjectConfig(
+              objectIdentifier=source_object_identifier,
+          )
+      )
+    return schema_object_configs, databases
+
+  def _ParseTablesFilter(self, tables_filter, args, is_excluded=False):
+    """Parses table filter arguments into SourceObjectConfig messages."""
+    flag_name = '--excluded-tables-filter' if is_excluded else '--tables-filter'
+    filter_label = 'Excluded table filter' if is_excluded else 'Table filter'
+    table_object_configs = []
+    databases = []
+    for item in tables_filter:
+      parts = self._SplitObjectIdentifier(item)
+      if parts and len(parts) == 3:
+        database, schema, table = parts
+      elif (
+          parts
+          and len(parts) == 2
+          and args.IsKnownAndSpecified('databases_filter')
+          and len(args.databases_filter) == 1
+      ):
+        database = args.databases_filter[0]
+        schema, table = parts
+      else:
+        raise exceptions.InvalidArgumentException(
+            flag_name,
+            f'{filter_label} "{item}" must be in the format'
+            ' DATABASE.SCHEMA.TABLE, or SCHEMA.TABLE when a single database is'
+            ' specified in --databases-filter. Names containing dots must be'
+            ' enclosed in double quotes (e.g. db.schema."table.name") or'
+            r' escaped with a backslash (e.g. db.schema.table\.name).',
+        )
+      databases.append(database)
+      source_object_identifier = self.messages.SourceObjectIdentifier(
+          database=database,
+          schema=schema,
+          table=table,
+          type=self.messages.SourceObjectIdentifier.TypeValueValuesEnum.lookup_by_name(
+              'TABLE'
+          ),
+      )
+      table_object_configs.append(
+          self.messages.SourceObjectConfig(
+              objectIdentifier=source_object_identifier,
+          )
+      )
+    return table_object_configs, databases
+
   def _GetMigrationJobObjectsConfig(self, args):
     """Returns the migration job objects config.
 
@@ -428,21 +592,89 @@ class MigrationJobsClient(object):
       args: argparse.Namespace, The arguments that this command was invoked
         with.
     """
-    source_objects_conifg = self.messages.SourceObjectsConfig()
-
     if args.IsKnownAndSpecified('all_databases'):
-      source_objects_conifg = self._GetSourceObjectsConfigForAllDatabases()
-    elif args.IsKnownAndSpecified('databases_filter'):
-      source_objects_conifg = self._GetSourceObjectsConfigForSpecifiedDatabases(
-          args.databases_filter
+      return self.messages.MigrationJobObjectsConfig(
+          sourceObjectsConfig=self._GetSourceObjectsConfigForAllDatabases()
       )
     elif args.IsKnownAndSpecified('object_filter'):
-      source_objects_conifg = self._GetSourceObjectsConfigForSpecifiedTables(
-          args.object_filter
+      return self.messages.MigrationJobObjectsConfig(
+          sourceObjectsConfig=self._GetSourceObjectsConfigForSpecifiedTables(
+              args.object_filter
+          )
       )
 
+    database_object_configs = []
+    schema_object_configs = []
+    table_object_configs = []
+    excluded_schema_object_configs = []
+    excluded_table_object_configs = []
+    databases_with_scoped_objects = set()
+    databases_to_include = (
+        list(args.databases_filter)
+        if args.IsKnownAndSpecified('databases_filter')
+        else []
+    )
+
+    if args.IsKnownAndSpecified('schemas_filter'):
+      schema_object_configs, schema_dbs = self._ParseSchemasFilter(
+          args.schemas_filter, args
+      )
+      databases_with_scoped_objects.update(schema_dbs)
+
+    if args.IsKnownAndSpecified('tables_filter'):
+      table_object_configs, table_dbs = self._ParseTablesFilter(
+          args.tables_filter, args
+      )
+      databases_with_scoped_objects.update(table_dbs)
+
+    if args.IsKnownAndSpecified('excluded_schemas_filter'):
+      excluded_schema_object_configs, excluded_schema_dbs = (
+          self._ParseSchemasFilter(
+              args.excluded_schemas_filter, args, is_excluded=True
+          )
+      )
+      for database in excluded_schema_dbs:
+        if database not in databases_to_include:
+          databases_to_include.append(database)
+
+    if args.IsKnownAndSpecified('excluded_tables_filter'):
+      excluded_table_object_configs, excluded_table_dbs = (
+          self._ParseTablesFilter(
+              args.excluded_tables_filter, args, is_excluded=True
+          )
+      )
+      for database in excluded_table_dbs:
+        if database not in databases_to_include:
+          databases_to_include.append(database)
+
+    for database in databases_to_include:
+      if database not in databases_with_scoped_objects:
+        source_object_identifier = self.messages.SourceObjectIdentifier(
+            database=database,
+            type=self.messages.SourceObjectIdentifier.TypeValueValuesEnum.lookup_by_name(
+                'DATABASE'
+            ),
+        )
+        database_object_configs.append(
+            self.messages.SourceObjectConfig(
+                objectIdentifier=source_object_identifier,
+            )
+        )
+
+    source_object_configs = (
+        database_object_configs + schema_object_configs + table_object_configs
+    )
+    excluded_object_configs = (
+        excluded_schema_object_configs + excluded_table_object_configs
+    )
+
+    source_objects_config = self.messages.SourceObjectsConfig(
+        objectsSelectionType=self.messages.SourceObjectsConfig.ObjectsSelectionTypeValueValuesEnum.SPECIFIED_OBJECTS,
+        objectConfigs=source_object_configs,
+        excludedObjectConfigs=excluded_object_configs,
+    )
     return self.messages.MigrationJobObjectsConfig(
-        sourceObjectsConfig=source_objects_conifg
+        sourceObjectsConfig=source_objects_config
     )
 
   def _IsHeterogeneousConfigKnownAndSpecified(self, args):
@@ -871,9 +1103,7 @@ class MigrationJobsClient(object):
             )
         )
 
-    if args.IsKnownAndSpecified('databases_filter') or args.IsKnownAndSpecified(
-        'all_databases'
-    ):
+    if self._IsObjectsConfigKnownAndSpecified(args):
       migration_job_obj.objectsConfig = self._GetMigrationJobObjectsConfig(args)
 
     return migration_job_obj
@@ -1049,9 +1279,7 @@ class MigrationJobsClient(object):
   def _UpdateMigrationJobObjectsConfig(self, args, migration_job):
     """Update the migration job objects config for the migration job."""
 
-    if args.IsKnownAndSpecified('databases_filter') or args.IsKnownAndSpecified(
-        'all_databases'
-    ):
+    if self._IsObjectsConfigKnownAndSpecified(args):
       migration_job.objectsConfig = self._GetMigrationJobObjectsConfig(args)
 
   def _GetUpdateMask(self, args):
@@ -1109,10 +1337,8 @@ class MigrationJobsClient(object):
       update_fields.append(
           'sqlserverHomogeneousMigrationJobConfig.databaseBackups'
       )
-    if args.IsKnownAndSpecified('databases_filter') or args.IsKnownAndSpecified(
-        'all_databases'
-    ):
-      update_fields.append('objectsConfig.sourceObjectsConfig')
+    if self._IsObjectsConfigKnownAndSpecified(args):
+      update_fields.append('objectsConfig')
     if args.IsKnownAndSpecified('postgres_max_additional_subscriptions'):
       update_fields.append(
           'postgresHomogeneousConfig.maxAdditionalSubscriptions'

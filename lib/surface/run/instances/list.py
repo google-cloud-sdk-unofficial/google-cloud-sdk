@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_printer
+from googlecloudsdk.core.util import regional
 
 
 @base.RegionalEndpointsSupported
@@ -78,7 +79,10 @@ class List(commands.List):
     """List instances."""
     if not args.IsSpecified('region'):
       endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
-      if endpoint_mode == properties.constants.regional.REGIONAL:
+      if (
+          regional.IsRegionalEndpointCompatible()
+          and endpoint_mode == properties.constants.regional.REGIONAL
+      ):
         raise exceptions.ArgumentError(
             'You must specify a region using the `--region` flag when '
             'regional endpoints are enabled.'

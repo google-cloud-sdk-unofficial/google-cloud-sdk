@@ -14,9 +14,16 @@
 # limitations under the License.
 """Client for interaction with EntryGroup API CRUD DATAPLEX."""
 
+from collections.abc import Sequence
+from typing import Any
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.dataplex import util as dataplex_api
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.command_lib.iam import iam_util
+from googlecloudsdk.core import resources
+from googlecloudsdk.core import yaml
+from googlecloudsdk.generated_clients.apis.dataplex.v1 import dataplex_v1_messages
 
 
 def GenerateEntryGroupForCreateRequest(args):
@@ -122,3 +129,112 @@ def EntryGroupSetIamPolicyFromFile(entry_group_ref, policy_file):
       dataplex_api.GetMessageModule().GoogleIamV1Policy)
   return EntryGroupSetIamPolicy(entry_group_ref, policy)
 
+
+def BatchChangeMetadata(
+    entry_group_ref: resources.Resource,
+    changes: Sequence[
+        dataplex_v1_messages.GoogleCloudDataplexV1BatchChangeMetadataRequestChange
+    ],
+    description: str | None = None,
+) -> dataplex_v1_messages.GoogleLongrunningOperation.ResponseValue | None:
+  """Applies a batch of metadata changes to an entry group.
+
+  Sends a BatchChangeMetadata request and waits for the resulting long-running
+  operation to finish.
+
+  Args:
+    entry_group_ref: The entry group to apply the changes to.
+    changes: The metadata changes to apply.
+    description: Text description of the batch change.
+
+  Returns:
+    The response of the finished operation. Pass this response to
+    GetFailedRequests to get the changes that failed.
+
+  Raises:
+    apitools.base.py.exceptions.HttpError: If the service rejects the request.
+    waiter.OperationError: If the operation fails, for example because none of
+      the changes could be applied.
+  """
+  messages = dataplex_api.GetMessageModule()
+  request = messages.GoogleCloudDataplexV1BatchChangeMetadataRequest(
+      name=entry_group_ref.RelativeName(), changes=list(changes)
+  )
+  if description is not None:
+    request.description = (
+        messages.GoogleCloudDataplexV1BatchChangeMetadataRequestDescription(
+            content=description
+        )
+    )
+  client = dataplex_api.GetClientInstance()
+  operation = client.projects_locations_entryGroups.BatchChangeMetadata(request)
+  operation_ref = resources.REGISTRY.Parse(
+      operation.name, collection='dataplex.projects.locations.operations'
+  )
+  return waiter.WaitFor(
+      BatchOperationPoller(client.projects_locations_operations),
+      operation_ref,
+      f'Waiting for [{operation_ref.RelativeName()}] to finish',
+  )
+
+
+def GetFailedRequests(
+    message: (
+        dataplex_v1_messages.GoogleLongrunningOperation.ResponseValue
+        | dataplex_v1_messages.GoogleLongrunningOperation.MetadataValue
+        | None
+    ),
+) -> dict[int, dict[str, Any]]:
+  """Returns the failed changes of a BatchChangeMetadata operation.
+
+  Args:
+    message: The `response` or `metadata` of a BatchChangeMetadata operation.
+
+  Returns:
+    A dict that maps the 0-based position of each failed change in the request
+    to its `google.rpc.Status` dict (for example,
+    `{'code': 5, 'message': '...'}`), ordered by position. The dict is empty if
+    no change failed.
+  """
+  if message is None:
+    return {}
+  failed_requests = (
+      encoding.MessageToPyValue(message).get('failedRequests') or {}
+  )
+  return dict(sorted((int(k), v) for k, v in failed_requests.items()))
+
+
+class BatchOperationPoller(waiter.CloudOperationPollerNoResources):
+  """Poller for BatchChangeMetadata long-running operations.
+
+  When none of the changes in a batch can be applied, the operation fails with
+  a generic error, and the errors of the individual changes are only available
+  in the operation metadata. Unlike the base class, this poller includes them
+  in the raised error.
+  """
+
+  def IsDone(
+      self, operation: dataplex_v1_messages.GoogleLongrunningOperation
+  ) -> bool:
+    """Returns whether the operation finished successfully.
+
+    Args:
+      operation: The BatchChangeMetadata long-running operation.
+
+    Returns:
+      True if the operation finished successfully, False if it is still
+      running.
+
+    Raises:
+      waiter.OperationError: If the operation finished with an error. The
+        message includes the errors of the individual changes, if any.
+    """
+    if not operation.done:
+      return False
+    if not operation.error:
+      return True
+    lines = [operation.error.message] if operation.error.message else []
+    failed_requests = GetFailedRequests(operation.metadata)
+    if failed_requests:
+      lines.append(yaml.dump({'failedRequests': failed_requests}).rstrip())
+    raise waiter.OperationError('\n'.join(lines))

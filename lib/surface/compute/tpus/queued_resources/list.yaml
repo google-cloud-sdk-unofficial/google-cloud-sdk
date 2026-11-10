@@ -1,4 +1,6 @@
 - release_tracks: [ALPHA, GA]
+  hints:
+    read_only: true
   help_text:
     brief: List Queued Resources.
     description: List all Queued Resources associated with a project and location.

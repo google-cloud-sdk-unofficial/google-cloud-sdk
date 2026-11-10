@@ -13,13 +13,17 @@
     description: |
       Delete a Cloud Build pipeline.
 
-      The pipeline must not have any triggers. Delete its triggers before you
-      delete the pipeline; otherwise, the command fails with a
-      `FAILED_PRECONDITION` error.
+      If the pipeline has any triggers, the command fails with a
+      `FAILED_PRECONDITION` error unless `--force` is specified, or the
+      triggers are deleted first.
     examples: |
       To delete a pipeline named `main-pipeline` in region `us-central1`:
 
         $ {command} main-pipeline --region=us-central1
+
+      To delete a pipeline and all of its child triggers:
+
+        $ {command} main-pipeline --region=us-central1 --force
 
       To delete a pipeline without waiting for the operation to complete:
 
@@ -36,16 +40,21 @@
     collection: cloudbuild.projects.locations.operations
     api_version: v1
 
-  # TODO(b/567528950): `delete` does not yet support `--force`. `--force`
-  # deletes child pipeline triggers and will be implemented once pipeline
-  # triggers is completed.
   input:
     confirmation_prompt: |-
       You are about to delete pipeline [{__name__}] in region [{locationsId}].
-      Any triggers on the pipeline must be deleted first, or the request fails.
+      Note: If you specified --force, any triggers on the pipeline will also be deleted.
 
   arguments:
     resource:
       help_text: The Cloud Build pipeline to delete.
       spec: !REF googlecloudsdk.command_lib.cloudbuild.resources:pipeline
       is_positional: true
+    params:
+    - arg_name: force
+      api_field: force
+      action: store_true
+      default: null
+      help_text: |-
+        If true, any triggers associated with the pipeline will also be deleted.
+        Otherwise, the request will fail if the pipeline has any triggers.

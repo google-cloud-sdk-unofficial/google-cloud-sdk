@@ -245,6 +245,10 @@ class _SectionApiEndpointOverrides(_Section):
     self.observability = self._Add(
         'observability', command='gcloud observability'
     )
+    self.orchestration = self._Add(
+        'orchestration', command='gcloud orchestration-pipelines', hidden=True)
+    self.ratelimiting = self._Add(
+        'ratelimiting', command='gcloud rate-limiting', hidden=True)
     self.servicehealth = self._Add(
         'servicehealth', command='gcloud servicehealth'
     )
@@ -355,7 +359,7 @@ class _SectionApiEndpointOverrides(_Section):
         'runtimeconfig', command='gcloud runtime-config'
     )
     self.saasservicemgmt = self._Add(
-        'saasservicemgmt', command='gcloud app-lifecycle-manager', hidden=True
+        'saasservicemgmt', command='gcloud app-lifecycle-manager'
     )
     self.sasportal = self._Add('sasportal', hidden=True)
     self.scc = self._Add('securitycenter', command='gcloud scc')

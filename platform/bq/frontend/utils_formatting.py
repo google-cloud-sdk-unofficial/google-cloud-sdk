@@ -516,6 +516,12 @@ def configure_formatter(
             'Container CPU',
             'Container Request Concurrency',
         ))
+      build_status = object_info.get('buildStatus')  # pyrefly: ignore[missing-attribute]
+      if build_status:
+        if 'buildState' in build_status:
+          formatter.AddColumns(('Build State',))
+        if 'imageSizeBytes' in build_status:
+          formatter.AddColumns(('Image Size (Bytes)',))
   elif reference_type == bq_id_utils.ApiClientHelper.RowAccessPolicyReference:
     if print_format == 'list' or print_format == 'show':
       formatter.AddColumns((
@@ -599,7 +605,6 @@ def configure_formatter(
         'ignoreIdleSlots',
         'creationTime',
         'updateTime',
-        'multiRegionAuxiliary',
         'edition',
         'autoscaleMaxSlots',
         'autoscaleCurrentSlots',
@@ -619,7 +624,6 @@ def configure_formatter(
         'state',
         'commitmentStartTime',
         'commitmentEndTime',
-        'multiRegionAuxiliary',
         'edition',
         'isFlatRate',
     ))
@@ -999,6 +1003,12 @@ def format_routine_info(routine_info):
     result['Max Batching Rows'] = routine_info['externalRuntimeOptions'].get(
         'maxBatchingRows'
     )
+  build_status = routine_info.get('buildStatus')
+  if build_status:
+    if 'buildState' in build_status:
+      result['Build State'] = build_status['buildState']
+    if 'imageSizeBytes' in build_status:
+      result['Image Size (Bytes)'] = build_status['imageSizeBytes']
   if 'sparkOptions' in routine_info:
     spark_options = routine_info['sparkOptions']
     options = [
@@ -1292,8 +1302,6 @@ def format_reservation_info(
     result['slotCapacity'] = '0'
   if 'ignoreIdleSlots' not in list(result.keys()):
     result['ignoreIdleSlots'] = 'False'
-  if 'multiRegionAuxiliary' not in list(result.keys()):
-    result['multiRegionAuxiliary'] = 'False'
   if 'concurrency' in list(result.keys()):
     # Rename concurrency we get from the API to targetJobConcurrency.
     result['targetJobConcurrency'] = result['concurrency']
@@ -1385,8 +1393,6 @@ def format_capacity_commitment_info(capacity_commitment):
   # Default values not passed along in the response.
   if 'slotCount' not in list(result.keys()):
     result['slotCount'] = '0'
-  if 'multiRegionAuxiliary' not in list(result.keys()):
-    result['multiRegionAuxiliary'] = 'False'
   return result
 
 

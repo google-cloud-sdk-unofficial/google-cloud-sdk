@@ -1,7 +1,6 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   hints:
     read_only: true
-  hidden: true
   help_text:
     brief: List Cloud Backup and DR restore template executions.
     description: List restore template executions under a specified restore template.
@@ -11,10 +10,12 @@
         $ {command} --restore-template=my-template --location=us-central1
 
   request:
-    ALPHA:
-      api_version: v1alpha
+    GA:
+      api_version: v1
     BETA:
       api_version: v1beta
+    ALPHA:
+      api_version: v1alpha
     collection: backupdr.projects.locations.restoreTemplates.executions
 
   response:

@@ -55,6 +55,7 @@ DAY_OPTIONS = frozendict.frozendict({
     'SUN': 'SUNDAY',
 })
 RECURRENCE_OPTIONS = ('HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY')
+STORAGE_TIER_OPTIONS = ('STANDARD', 'ARCHIVE')
 WEEK_OPTIONS = ('FIRST', 'SECOND', 'THIRD', 'FOURTH', 'LAST')
 BACKUP_RULE_COMMON_HELP_TEXT = """
 Parameters for the backup rule include:
@@ -1156,12 +1157,13 @@ def AddLogRetentionDays(parser, hidden=False):
   )
 
 
-def AddBackupRule(parser, required=False):
+def AddBackupRule(parser, required=False, release_track=None):
   """Adds a positional backup-rule argument to parser.
 
   Args:
     parser: argparse.Parser: Parser object for command line inputs.
     required: Whether or not --backup-rule is required.
+    release_track: base.ReleaseTrack, The release track of the command.
   """
 
   rule_id_validator = arg_parsers.RegexpValidator(
@@ -1183,33 +1185,42 @@ def AddBackupRule(parser, required=False):
       'recurrence', RECURRENCE_OPTIONS
   )
 
+  spec = {
+      'rule-id': rule_id_validator,
+      'retention-days': int,
+      'recurrence': recurrence_validator,
+      'backup-window-start': arg_parsers.BoundedInt(0, 23),
+      'backup-window-end': arg_parsers.BoundedInt(1, 24),
+      'time-zone': str,
+      'backup-vault': arg_parsers.ArgObject(
+          value_type=str,
+          hidden=True,
+      ),
+      'hourly-frequency': int,
+      'days-of-week': ArgListParser(
+          util.OptionsMapValidator(DAY_OPTIONS).Parse
+      ),
+      'days-of-month': ArgListParser(arg_parsers.BoundedInt(1, 31)),
+      'months': ArgListParser(util.OptionsMapValidator(MONTH_OPTIONS).Parse),
+      'week-day-of-month': util.GetOneOfValidator(
+          'week-day-of-month', week_day_of_month_options
+      ),
+  }
+  if release_track == base.ReleaseTrack.ALPHA:
+    spec['backup-labels'] = arg_parsers.ArgObject(
+        value_type=str,
+        hidden=True,
+    )
+    spec['storage-tier'] = arg_parsers.ArgObject(
+        value_type=util.GetOneOfValidator('storage-tier', STORAGE_TIER_OPTIONS),
+        hidden=True,
+    )
+
   parser.add_argument(
       '--backup-rule',
       required=required,
       type=arg_parsers.ArgDict(
-          spec={
-              'rule-id': rule_id_validator,
-              'retention-days': int,
-              'recurrence': recurrence_validator,
-              'backup-window-start': arg_parsers.BoundedInt(0, 23),
-              'backup-window-end': arg_parsers.BoundedInt(1, 24),
-              'time-zone': str,
-              'backup-vault': arg_parsers.ArgObject(
-                  value_type=str,
-                  hidden=True,
-              ),
-              'hourly-frequency': int,
-              'days-of-week': ArgListParser(
-                  util.OptionsMapValidator(DAY_OPTIONS).Parse
-              ),
-              'days-of-month': ArgListParser(arg_parsers.BoundedInt(1, 31)),
-              'months': ArgListParser(
-                  util.OptionsMapValidator(MONTH_OPTIONS).Parse
-              ),
-              'week-day-of-month': util.GetOneOfValidator(
-                  'week-day-of-month', week_day_of_month_options
-              ),
-          },
+          spec=spec,
           required_keys=[
               'rule-id',
               'recurrence',
@@ -1229,11 +1240,12 @@ def AddBackupRule(parser, required=False):
   )
 
 
-def AddUpdateBackupRule(parser: argparse.ArgumentParser):
+def AddUpdateBackupRule(parser: argparse.ArgumentParser, release_track=None):
   """Adds a positional backup-rule argument to parser.
 
   Args:
     parser: argparse.Parser: Parser object for command line inputs.
+    release_track: base.ReleaseTrack, The release track of the command.
   """
 
   rule_id_validator = arg_parsers.RegexpValidator(
@@ -1255,28 +1267,37 @@ def AddUpdateBackupRule(parser: argparse.ArgumentParser):
       'recurrence', RECURRENCE_OPTIONS
   )
 
+  spec = {
+      'rule-id': rule_id_validator,
+      'retention-days': int,
+      'recurrence': recurrence_validator,
+      'backup-window-start': arg_parsers.BoundedInt(0, 23),
+      'backup-window-end': arg_parsers.BoundedInt(1, 24),
+      'time-zone': str,
+      'hourly-frequency': int,
+      'days-of-week': ArgListParser(
+          util.OptionsMapValidator(DAY_OPTIONS).Parse
+      ),
+      'days-of-month': ArgListParser(arg_parsers.BoundedInt(1, 31)),
+      'months': ArgListParser(util.OptionsMapValidator(MONTH_OPTIONS).Parse),
+      'week-day-of-month': util.GetOneOfValidator(
+          'week-day-of-month', week_day_of_month_options
+      ),
+  }
+  if release_track == base.ReleaseTrack.ALPHA:
+    spec['backup-labels'] = arg_parsers.ArgObject(
+        value_type=str,
+        hidden=True,
+    )
+    spec['storage-tier'] = arg_parsers.ArgObject(
+        value_type=util.GetOneOfValidator('storage-tier', STORAGE_TIER_OPTIONS),
+        hidden=True,
+    )
+
   parser.add_argument(
       '--backup-rule',
       type=arg_parsers.ArgDict(
-          spec={
-              'rule-id': rule_id_validator,
-              'retention-days': int,
-              'recurrence': recurrence_validator,
-              'backup-window-start': arg_parsers.BoundedInt(0, 23),
-              'backup-window-end': arg_parsers.BoundedInt(1, 24),
-              'time-zone': str,
-              'hourly-frequency': int,
-              'days-of-week': ArgListParser(
-                  util.OptionsMapValidator(DAY_OPTIONS).Parse
-              ),
-              'days-of-month': ArgListParser(arg_parsers.BoundedInt(1, 31)),
-              'months': ArgListParser(
-                  util.OptionsMapValidator(MONTH_OPTIONS).Parse
-              ),
-              'week-day-of-month': util.GetOneOfValidator(
-                  'week-day-of-month', week_day_of_month_options
-              ),
-          },
+          spec=spec,
           required_keys=['rule-id'],
       ),
       action='append',
@@ -1293,11 +1314,12 @@ def AddUpdateBackupRule(parser: argparse.ArgumentParser):
   )
 
 
-def AddAddBackupRule(parser):
+def AddAddBackupRule(parser, release_track=None):
   """Adds flags required to add a backup rule.
 
   Args:
     parser: argparse.Parser: Parser object for command line inputs.
+    release_track: base.ReleaseTrack, The release track of the command.
   """
 
   rule_id_validator = arg_parsers.RegexpValidator(
@@ -1319,29 +1341,38 @@ def AddAddBackupRule(parser):
       'recurrence', RECURRENCE_OPTIONS
   )
 
+  spec = {
+      'rule-id': rule_id_validator,
+      'retention-days': int,
+      'recurrence': recurrence_validator,
+      'backup-window-start': arg_parsers.BoundedInt(0, 23),
+      'backup-window-end': arg_parsers.BoundedInt(1, 24),
+      'time-zone': str,
+      'hourly-frequency': int,
+      'days-of-week': ArgListParser(
+          util.OptionsMapValidator(DAY_OPTIONS).Parse
+      ),
+      'days-of-month': ArgListParser(arg_parsers.BoundedInt(1, 31)),
+      'months': ArgListParser(util.OptionsMapValidator(MONTH_OPTIONS).Parse),
+      'week-day-of-month': util.GetOneOfValidator(
+          'week-day-of-month', week_day_of_month_options
+      ),
+  }
+  if release_track == base.ReleaseTrack.ALPHA:
+    spec['backup-labels'] = arg_parsers.ArgObject(
+        value_type=str,
+        hidden=True,
+    )
+    spec['storage-tier'] = arg_parsers.ArgObject(
+        value_type=util.GetOneOfValidator('storage-tier', STORAGE_TIER_OPTIONS),
+        hidden=True,
+    )
+
   parser.add_argument(
       '--add-backup-rule',
       required=False,
       type=arg_parsers.ArgDict(
-          spec={
-              'rule-id': rule_id_validator,
-              'retention-days': int,
-              'recurrence': recurrence_validator,
-              'backup-window-start': arg_parsers.BoundedInt(0, 23),
-              'backup-window-end': arg_parsers.BoundedInt(1, 24),
-              'time-zone': str,
-              'hourly-frequency': int,
-              'days-of-week': ArgListParser(
-                  util.OptionsMapValidator(DAY_OPTIONS).Parse
-              ),
-              'days-of-month': ArgListParser(arg_parsers.BoundedInt(1, 31)),
-              'months': ArgListParser(
-                  util.OptionsMapValidator(MONTH_OPTIONS).Parse
-              ),
-              'week-day-of-month': util.GetOneOfValidator(
-                  'week-day-of-month', week_day_of_month_options
-              ),
-          },
+          spec=spec,
           required_keys=[
               'rule-id',
               'recurrence',

@@ -22,6 +22,7 @@ from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class List(base.ListCommand):
@@ -33,7 +34,8 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(
-        'table(locationId, metadata.hsmAvailable, metadata.ekmAvailable)')
+        'table(locationId, metadata.hsmAvailable, metadata.ekmAvailable,'
+        ' metadata.hsmSingleTenantAvailable)')
     parser.display_info.AddUriFunc(
         cloudkms_base.MakeGetUriFunc(flags.LOCATION_COLLECTION))
 

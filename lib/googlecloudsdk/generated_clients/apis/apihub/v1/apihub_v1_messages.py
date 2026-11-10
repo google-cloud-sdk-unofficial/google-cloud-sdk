@@ -6153,7 +6153,9 @@ class GoogleCloudApihubV1SpecContents(_messages.Message):
   r"""The spec contents.
 
   Fields:
-    contents: Required. The contents of the spec.
+    contents: Required. The contents of the spec. The contents should be
+      base64 encoded while calling the OnePlatform APIs like CreateSpec,
+      UpdateSpec and CollectApiData.
     mimeType: Required. The mime type of the content for example
       application/json, application/yaml, application/wsdl etc.
   """

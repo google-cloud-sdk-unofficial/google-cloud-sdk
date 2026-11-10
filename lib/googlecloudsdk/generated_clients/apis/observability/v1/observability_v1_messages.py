@@ -740,6 +740,20 @@ class ObservabilityProjectsLocationsBucketsPatchRequest(_messages.Message):
   updateMask = _messages.StringField(3)
 
 
+class ObservabilityProjectsLocationsBucketsReprovisionRequest(_messages.Message):
+  r"""A ObservabilityProjectsLocationsBucketsReprovisionRequest object.
+
+  Fields:
+    name: Required. Name of the bucket to reprovision. The format is:
+      projects/[PROJECT_ID]/locations/[LOCATION]/buckets/[BUCKET_ID]
+    reprovisionBucketRequest: A ReprovisionBucketRequest resource to be passed
+      as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  reprovisionBucketRequest = _messages.MessageField('ReprovisionBucketRequest', 2)
+
+
 class ObservabilityProjectsLocationsGetRequest(_messages.Message):
   r"""A ObservabilityProjectsLocationsGetRequest object.
 
@@ -1104,6 +1118,13 @@ class OperationMetadata(_messages.Message):
   statusMessage = _messages.StringField(5)
   target = _messages.StringField(6)
   verb = _messages.StringField(7)
+
+
+class ReprovisionBucketRequest(_messages.Message):
+  r"""Request for reprovisioning a bucket, replaces configuration with that of
+  the configured Observability settings.
+  """
+
 
 
 class Scope(_messages.Message):

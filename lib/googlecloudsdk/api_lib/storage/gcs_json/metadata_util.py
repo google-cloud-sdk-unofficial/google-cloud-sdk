@@ -320,6 +320,45 @@ def get_anywhere_cache_resource_from_metadata(metadata):
   )
 
 
+def get_object_full_context_resource_from_metadata(
+    metadata, bucket_name, object_name, generation=None
+):
+  """Returns a GcsObjectFullContextResource for an ObjectFullContext message.
+
+  Args:
+    metadata (messages.ObjectFullContext): Response of the
+      objects.viewFullContext API method.
+    bucket_name (str): Name of the bucket that has the object.
+    object_name (str): Name of the object that has the context.
+    generation (int|str|None): Generation of the object, if one was requested.
+
+  Returns:
+    GcsObjectFullContextResource for the context.
+  """
+  url = storage_url.CloudUrl(
+      scheme=storage_url.ProviderPrefix.GCS,
+      bucket_name=bucket_name,
+      resource_name=object_name,
+      generation=None if generation is None else str(generation),
+  )
+  extended_data = (
+      encoding.MessageToPyValue(metadata.extendedData)
+      if metadata.extendedData
+      else None
+  )
+  return gcs_resource_reference.GcsObjectFullContextResource(
+      url,
+      create_time=metadata.createTime,
+      extended_data=extended_data,
+      key=metadata.key,
+      kind=metadata.kind,
+      metadata=metadata,
+      type_string=str(metadata.type) if metadata.type else None,
+      update_time=metadata.updateTime,
+      value=metadata.value,
+  )
+
+
 def get_rapid_cache_resource_from_metadata(metadata):
   return gcs_resource_reference.GcsRapidCacheResource(
       admission_policy=metadata.admissionPolicy,

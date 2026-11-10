@@ -19,6 +19,7 @@
 import re
 
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import times
 from six.moves.urllib import parse
 
 
@@ -63,18 +64,39 @@ def get_batch_logging_url(batch):
   batch_id_filter = f'resource.labels.batch_id="{batch_id}"'
   universe_domain = properties.VALUES.core.universe_domain.Get()
   driver_output_filter = f'log_name="projects/{project_id}/logs/dataproc.{universe_domain}%2Foutput"'
+  filters = [
+      batch_resource_filter,
+      batch_id_filter,
+      driver_output_filter,
+  ]
+  # Pass `query` and `startTime` as Logs Explorer matrix parameters
+  # (`/logs/query;query=...;startTime=...`) rather than embedding a
+  # `timestamp>=...` restriction in the query. A timestamp expression in the
+  # query disables the time-range selector and the "Stream logs" button, which
+  # users want while waiting for an active batch. `query` must also be a matrix
+  # parameter: a legacy `?query=` parameter is rewritten by the console and
+  # drops any existing `;startTime=` matrix parameter.
+  matrix_params = [parse.urlencode({'query': '\n'.join(filters)})]
+  create_time = getattr(batch, 'createTime', None)
+  if create_time:
+    try:
+      # Batch.createTime is a google.protobuf.Timestamp, which the API returns
+      # as an RFC 3339 string in UTC (e.g. "2025-01-01T00:00:00.123456Z").
+      # Parse and format explicitly in UTC so the start time never depends on
+      # the local timezone of the machine running gcloud (ParseDateTime
+      # defaults to local time when the string carries no offset).
+      dt = times.ParseDateTime(create_time, tzinfo=times.UTC)
+      matrix_params.append(
+          parse.urlencode(
+              {'startTime': times.FormatDateTime(dt, tzinfo=times.UTC)}
+          )
+      )
+    except times.Error:
+      pass
 
-  return '{}?{}&{}'.format(
+  return '{};{}?{}'.format(
       logging_base,
-      parse.urlencode({
-          'query': (
-              batch_resource_filter
-              + '\n'
-              + batch_id_filter
-              + '\n'
-              + driver_output_filter
-          ),
-      }),
+      ';'.join(matrix_params),
       project_query,
   )
 

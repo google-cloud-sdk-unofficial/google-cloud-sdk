@@ -753,7 +753,7 @@ class VectorsearchV1beta(base_api.BaseApiClient):
         method_id='vectorsearch.projects.locations.dataStores.documents.list',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        query_params=['pageSize', 'pageToken'],
         relative_path='v1beta/{+parent}/documents',
         request_field='',
         request_type_name='VectorsearchProjectsLocationsDataStoresDocumentsListRequest',

@@ -4202,13 +4202,13 @@ def AddClearPSCNetworkAttachmentUri(parser, hidden=False):
   )
 
 
-def AddEnableAcceleratedReplicaMode(parser):
-  """Adds --enable-accelerated-replica-mode flag."""
+def AddEnableAcceleratedReplication(parser):
+  """Adds --enable-accelerated-replication flag."""
   parser.add_argument(
-      '--enable-accelerated-replica-mode',
+      '--enable-accelerated-replication',
       required=False,
       help=(
-          'Accelerated replica mode improves the write performance of'
+          'Accelerated replication improves the write performance of'
           ' the replica instance by reducing its durability. In case of'
           ' replica instance crash, it will be recreated from the primary'
           ' instance.'

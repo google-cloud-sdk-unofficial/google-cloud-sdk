@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.util import regional
 
 _API_NAME = 'run'
 _GA_API_VERSION = 'v1'
@@ -66,7 +67,7 @@ def GetGapicClientInstance(region):
   """Returns the gapic client instance for Run."""
 
   endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
-  if properties.VALUES.regional.endpoint_compatibility.Get() and (
+  if regional.IsRegionalEndpointCompatible() and (
       endpoint_mode == properties.constants.regional.REGIONAL
       or endpoint_mode == properties.constants.regional.REGIONAL_PREFERRED
   ):

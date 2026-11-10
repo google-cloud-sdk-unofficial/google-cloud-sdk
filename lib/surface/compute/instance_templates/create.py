@@ -1311,7 +1311,7 @@ class Create(base.CreateCommand):
   _support_subnet_region = False
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
-  _support_snp_svsm = False
+  _support_snp_svsm = True
   _support_confidential_compute_type_cca = True
   _support_confidential_compute_type_bmsai = True
   _support_replica_zones = True
@@ -1483,7 +1483,7 @@ class CreateBeta(Create):
   _support_subnet_region = False
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
-  _support_snp_svsm = False
+  _support_snp_svsm = True
   _support_confidential_compute_type_cca = True
   _support_confidential_compute_type_bmsai = True
   _support_replica_zones = True

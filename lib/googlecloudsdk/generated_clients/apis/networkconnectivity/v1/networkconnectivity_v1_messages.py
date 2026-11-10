@@ -2220,6 +2220,14 @@ class LinkedInterconnectAttachments(_messages.Message):
       export ranges are included during export to hub.
     includeImportRanges: Optional. Hub routes fully encompassed by include
       import ranges are included during import from hub.
+    proposedExcludeExportRanges: Output only. The proposed exclude export IP
+      ranges waiting for hub administrator's approval.
+    proposedExcludeImportRanges: Output only. The proposed exclude import IP
+      ranges waiting for hub administrator's approval.
+    proposedIncludeExportRanges: Output only. The proposed include export IP
+      ranges waiting for hub administrator's approval.
+    proposedIncludeImportRanges: Output only. The proposed include import IP
+      ranges waiting for hub administrator's approval.
     siteToSiteDataTransfer: A value that controls whether site-to-site data
       transfer is enabled for these resources. Data transfer is available only
       in [supported locations](https://cloud.google.com/network-
@@ -2233,9 +2241,13 @@ class LinkedInterconnectAttachments(_messages.Message):
   excludeImportRanges = _messages.StringField(2, repeated=True)
   includeExportRanges = _messages.StringField(3, repeated=True)
   includeImportRanges = _messages.StringField(4, repeated=True)
-  siteToSiteDataTransfer = _messages.BooleanField(5)
-  uris = _messages.StringField(6, repeated=True)
-  vpcNetwork = _messages.StringField(7)
+  proposedExcludeExportRanges = _messages.StringField(5, repeated=True)
+  proposedExcludeImportRanges = _messages.StringField(6, repeated=True)
+  proposedIncludeExportRanges = _messages.StringField(7, repeated=True)
+  proposedIncludeImportRanges = _messages.StringField(8, repeated=True)
+  siteToSiteDataTransfer = _messages.BooleanField(9)
+  uris = _messages.StringField(10, repeated=True)
+  vpcNetwork = _messages.StringField(11)
 
 
 class LinkedProducerVpcNetwork(_messages.Message):
@@ -2285,6 +2297,14 @@ class LinkedRouterApplianceInstances(_messages.Message):
     includeImportRanges: Optional. Hub routes fully encompassed by include
       import ranges are included during import from hub.
     instances: The list of router appliance instances.
+    proposedExcludeExportRanges: Output only. The proposed exclude export IP
+      ranges waiting for hub administrator's approval.
+    proposedExcludeImportRanges: Output only. The proposed exclude import IP
+      ranges waiting for hub administrator's approval.
+    proposedIncludeExportRanges: Output only. The proposed include export IP
+      ranges waiting for hub administrator's approval.
+    proposedIncludeImportRanges: Output only. The proposed include import IP
+      ranges waiting for hub administrator's approval.
     siteToSiteDataTransfer: A value that controls whether site-to-site data
       transfer is enabled for these resources. Data transfer is available only
       in [supported locations](https://cloud.google.com/network-
@@ -2298,8 +2318,12 @@ class LinkedRouterApplianceInstances(_messages.Message):
   includeExportRanges = _messages.StringField(3, repeated=True)
   includeImportRanges = _messages.StringField(4, repeated=True)
   instances = _messages.MessageField('RouterApplianceInstance', 5, repeated=True)
-  siteToSiteDataTransfer = _messages.BooleanField(6)
-  vpcNetwork = _messages.StringField(7)
+  proposedExcludeExportRanges = _messages.StringField(6, repeated=True)
+  proposedExcludeImportRanges = _messages.StringField(7, repeated=True)
+  proposedIncludeExportRanges = _messages.StringField(8, repeated=True)
+  proposedIncludeImportRanges = _messages.StringField(9, repeated=True)
+  siteToSiteDataTransfer = _messages.BooleanField(10)
+  vpcNetwork = _messages.StringField(11)
 
 
 class LinkedVpcNetwork(_messages.Message):
@@ -2347,6 +2371,14 @@ class LinkedVpnTunnels(_messages.Message):
       export ranges are included during export to hub.
     includeImportRanges: Optional. Hub routes fully encompassed by include
       import ranges are included during import from hub.
+    proposedExcludeExportRanges: Output only. The proposed exclude export IP
+      ranges waiting for hub administrator's approval.
+    proposedExcludeImportRanges: Output only. The proposed exclude import IP
+      ranges waiting for hub administrator's approval.
+    proposedIncludeExportRanges: Output only. The proposed include export IP
+      ranges waiting for hub administrator's approval.
+    proposedIncludeImportRanges: Output only. The proposed include import IP
+      ranges waiting for hub administrator's approval.
     siteToSiteDataTransfer: A value that controls whether site-to-site data
       transfer is enabled for these resources. Data transfer is available only
       in [supported locations](https://cloud.google.com/network-
@@ -2360,9 +2392,13 @@ class LinkedVpnTunnels(_messages.Message):
   excludeImportRanges = _messages.StringField(2, repeated=True)
   includeExportRanges = _messages.StringField(3, repeated=True)
   includeImportRanges = _messages.StringField(4, repeated=True)
-  siteToSiteDataTransfer = _messages.BooleanField(5)
-  uris = _messages.StringField(6, repeated=True)
-  vpcNetwork = _messages.StringField(7)
+  proposedExcludeExportRanges = _messages.StringField(5, repeated=True)
+  proposedExcludeImportRanges = _messages.StringField(6, repeated=True)
+  proposedIncludeExportRanges = _messages.StringField(7, repeated=True)
+  proposedIncludeImportRanges = _messages.StringField(8, repeated=True)
+  siteToSiteDataTransfer = _messages.BooleanField(9)
+  uris = _messages.StringField(10, repeated=True)
+  vpcNetwork = _messages.StringField(11)
 
 
 class ListAutomatedDnsRecordsResponse(_messages.Message):

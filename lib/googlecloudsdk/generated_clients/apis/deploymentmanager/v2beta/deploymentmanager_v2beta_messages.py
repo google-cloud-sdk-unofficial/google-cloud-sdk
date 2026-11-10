@@ -218,6 +218,12 @@ class BulkInsertOperationStatus(_messages.Message):
     createdVmCount: [Output Only] Count of VMs successfully created so far.
     deletedVmCount: [Output Only] Count of VMs that got deleted during
       rollback.
+    estimatedAvailabilityTime: Output only. [Output Only] The time when the
+      scheduler expects capacity for this location. The field is set only
+      while the status is PENDING. The value 9999-12-31T23:59:59.999999999Z
+      means that the scheduler expects no capacity. The field is absent when
+      the scheduler gives no estimate, and it is cleared when the status
+      changes.
     failedToCreateVmCount: [Output Only] Count of VMs that started creating
       but encountered an error.
     status: [Output Only] Creation status of BulkInsert operation -
@@ -245,9 +251,10 @@ class BulkInsertOperationStatus(_messages.Message):
 
   createdVmCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   deletedVmCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  failedToCreateVmCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  status = _messages.EnumField('StatusValueValuesEnum', 4)
-  targetVmCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  estimatedAvailabilityTime = _messages.StringField(3)
+  failedToCreateVmCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  status = _messages.EnumField('StatusValueValuesEnum', 5)
+  targetVmCount = _messages.IntegerField(6, variant=_messages.Variant.INT32)
 
 
 class CollectionOverride(_messages.Message):

@@ -89,6 +89,7 @@
             - arg_name: custom-oauth-config-pkce-disabled
               api_field: accountConnector.customOauthConfig.pkceDisabled
               action: store_true_false
+              inverted_help_text: true
               required: false
               type: bool
               help_text: |-

@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.bq.migration import local_extractor
 @base.RegionalEndpointsSupported
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Extract(base.Command):
   """Extract metadata from a source data warehouse."""
 

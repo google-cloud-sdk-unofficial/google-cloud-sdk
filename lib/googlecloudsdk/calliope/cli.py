@@ -715,6 +715,12 @@ class _CompletionFinder(argcomplete.CompletionFinder):
   argcomplete monkeypatcher.
   """
 
+  def _init_debug_stream(self):
+    # Avoid unconditionally opening fd 9 unless debug output is requested, as
+    # fd 9 may already be in use by in-process test runners.
+    if '_ARC_DEBUG' in os.environ:
+      super(_CompletionFinder, self)._init_debug_stream()
+
   def _patch_argument_parser(self):
     ai = self._parser
     self._parser = ai.parser
@@ -738,9 +744,10 @@ class _CompletionFinder(argcomplete.CompletionFinder):
 
     self.completing = False
 
-    completions = self.collect_completions(
-        active_parsers, parsed_args, cword_prefix, lambda *_: None
-    )
+    collect_args = (active_parsers, parsed_args, cword_prefix)
+    if self.collect_completions.__code__.co_argcount > 4:
+      collect_args += (lambda *_: None,)
+    completions = self.collect_completions(*collect_args)
     completions = self.filter_completions(completions)
     return self.quote_completions(
         completions, cword_prequote, last_wordbreak_pos
@@ -793,22 +800,46 @@ class _CompletionFinder(argcomplete.CompletionFinder):
     else:
       special_chars = single_quote_special
 
-    if (
-        encoding.GetEncodedValue(os.environ, '_ARGCOMPLETE_SHELL')
-        in no_escaping_shells
-    ):
+    shell = encoding.GetEncodedValue(os.environ, '_ARGCOMPLETE_SHELL')
+    if shell in no_escaping_shells:
       # these shells escape special characters themselves.
-      special_chars = ''
+      special_chars = (
+          ':' if shell == 'zsh' and hasattr(argcomplete, 'finders') else ''
+      )
     elif cword_prequote == "'":
       # Nothing can be escaped in single quotes, so we need to close
       # the string, escape the single quote, then open a new string.
       special_chars = ''
-      completions = [c.replace("'", r"'\''") for c in completions]
+      escaped_completions = []
+      for completion in completions:
+        escaped_completion = completion.replace("'", r"'\''")
+        escaped_completions.append(escaped_completion)
+        if (
+            hasattr(self, '_display_completions')
+            and completion in self._display_completions
+        ):
+          self._display_completions[escaped_completion] = (
+              self._display_completions[completion]
+          )
+      completions = escaped_completions
 
-    for char in special_chars:
-      completions = [c.replace(char, '\\' + char) for c in completions]
+    if special_chars:
+      escaped_completions = []
+      for completion in completions:
+        escaped_completion = completion
+        for char in special_chars:
+          escaped_completion = escaped_completion.replace(char, '\\' + char)
+        escaped_completions.append(escaped_completion)
+        if (
+            hasattr(self, '_display_completions')
+            and completion in self._display_completions
+        ):
+          self._display_completions[escaped_completion] = (
+              self._display_completions[completion]
+          )
+      completions = escaped_completions
 
-    if getattr(self, 'append_space', False):
+    if getattr(self, 'append_space', False) and shell != 'zsh':
       # Similar functionality in bash was previously turned off by supplying
       # the "-o nospace" option to complete. Now it is conditionally disabled
       # using "compopt -o nospace" if the match ends in a continuation
@@ -827,13 +858,15 @@ def _ArgComplete(ai, **kwargs):
   if '_ARGCOMPLETE' not in os.environ:
     return
   mute_stderr = None
+  finders_mute_stderr = None
+  argcomplete_argparse = getattr(argcomplete, 'argparse', argparse)
   namespace = None
   try:
     # Monkeypatch argcomplete argparse Namespace to be the Calliope extended
     # Namespace so the parsed_args passed to the completers is an extended
     # Namespace object.
-    namespace = argcomplete.argparse.Namespace
-    argcomplete.argparse.Namespace = parser_extensions.Namespace
+    namespace = argcomplete_argparse.Namespace
+    argcomplete_argparse.Namespace = parser_extensions.Namespace
     # Monkeypatch disable argcomplete.mute_stderr if the caller wants to see
     # error output. This is indispensible for debugging Cloud SDK completers.
     # It's much less verbose than the argcomplete _ARC_DEBUG output.
@@ -844,15 +877,20 @@ def _ArgComplete(ai, **kwargs):
         pass
 
       argcomplete.mute_stderr = _DisableMuteStderr
+      if hasattr(argcomplete, 'finders'):
+        finders_mute_stderr = argcomplete.finders.mute_stderr
+        argcomplete.finders.mute_stderr = _DisableMuteStderr
 
     completer = _CompletionFinder()
     # pylint: disable=not-callable
     completer(ai, always_complete_options=False, **kwargs)
   finally:
     if namespace:
-      argcomplete.argparse.Namespace = namespace
+      argcomplete_argparse.Namespace = namespace
     if mute_stderr:
       argcomplete.mute_stderr = mute_stderr
+    if finders_mute_stderr:
+      argcomplete.finders.mute_stderr = finders_mute_stderr
 
 
 def _SubParsersActionCall(self, parser, namespace, values, option_string=None):

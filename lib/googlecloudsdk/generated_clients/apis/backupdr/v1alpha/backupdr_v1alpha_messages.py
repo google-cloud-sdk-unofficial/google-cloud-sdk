@@ -575,7 +575,8 @@ class AutoProtectionPolicy(_messages.Message):
       containers covered through this policy.
     createTime: Output only. The timestamp when the policy was created.
     criteria: Required. The criteria for matching resources.
-    description: Optional. A description of the policy.
+    description: Optional. A description of the policy. The description must
+      be at most 2048 characters.
     etag: Output only. The etag for the policy. If this is provided on update,
       it must match the server's etag, otherwise the request will be rejected
       with an ABORTED error.
@@ -630,9 +631,10 @@ class AutoProtectionPolicyBinding(_messages.Message):
       application when the job has run, with one entry per resource type
       specified in the AutoProtectionPolicy.
     createTime: Output only. The timestamp when the binding was created.
-    description: Optional. A description of the binding.
-    etag: Optional. Output only. The etag for the binding. If this is provided
-      on update, it must match the server's etag.
+    description: Optional. A description of the binding. The description must
+      be at most 2048 characters.
+    etag: Output only. The etag for the binding. If this is provided on
+      update, it must match the server's etag.
     name: Output only. Identifier. The resource name of the
       AutoProtectionPolicyBinding. Format: `projects/{project}/locations/{loca
       tion}/autoProtectionPolicies/{auto_protection_policy}/bindings/{binding}
@@ -677,6 +679,9 @@ class Backup(_messages.Message):
     BackupTypeValueValuesEnum: Output only. Type of the backup, unspecified,
       scheduled or ondemand.
     StateValueValuesEnum: Output only. The Backup resource instance state.
+    StorageTierValueValuesEnum: Output only. The storage tier where this
+      backup is stored. For legacy backups created before the introduction of
+      the Archive tier, this will dynamically report as STANDARD.
 
   Messages:
     LabelsValue: Optional. Resource labels to represent user provided
@@ -731,7 +736,12 @@ class Backup(_messages.Message):
     serviceLocks: Output only. The list of BackupLocks taken by the service to
       prevent the deletion of the backup.
     state: Output only. The Backup resource instance state.
+    storageTier: Output only. The storage tier where this backup is stored.
+      For legacy backups created before the introduction of the Archive tier,
+      this will dynamically report as STANDARD.
     updateTime: Output only. The time when the instance was updated.
+    verificationSummary: Output only. The restore verification status of the
+      backup.
   """
 
   class BackupRetentionInheritanceValueValuesEnum(_messages.Enum):
@@ -788,6 +798,20 @@ class Backup(_messages.Message):
     ERROR = 4
     UPLOADING = 5
 
+  class StorageTierValueValuesEnum(_messages.Enum):
+    r"""Output only. The storage tier where this backup is stored. For legacy
+    backups created before the introduction of the Archive tier, this will
+    dynamically report as STANDARD.
+
+    Values:
+      STORAGE_TIER_UNSPECIFIED: Storage tier not set. Treated as STANDARD.
+      STANDARD: Standard storage tier.
+      ARCHIVE: Archive storage tier.
+    """
+    STORAGE_TIER_UNSPECIFIED = 0
+    STANDARD = 1
+    ARCHIVE = 2
+
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
     r"""Optional. Resource labels to represent user provided metadata. No
@@ -839,7 +863,9 @@ class Backup(_messages.Message):
   satisfiesPzs = _messages.BooleanField(24)
   serviceLocks = _messages.MessageField('BackupLock', 25, repeated=True)
   state = _messages.EnumField('StateValueValuesEnum', 26)
-  updateTime = _messages.StringField(27)
+  storageTier = _messages.EnumField('StorageTierValueValuesEnum', 27)
+  updateTime = _messages.StringField(28)
+  verificationSummary = _messages.MessageField('VerificationSummary', 29)
 
 
 class BackupApplianceBackupConfig(_messages.Message):
@@ -1014,6 +1040,8 @@ class BackupConfigInfo(_messages.Message):
   Fields:
     backupApplianceBackupConfig: Configuration for an application backed up by
       a Backup Appliance.
+    backupInsightStatusSummaries: Output only. The status of the latest
+      insight run, one entry per insight type.
     gcpBackupConfig: Configuration for a Google Cloud resource.
     lastBackupError: Output only. If the last backup failed, this field has
       the error message.
@@ -1041,10 +1069,11 @@ class BackupConfigInfo(_messages.Message):
     PERMISSION_DENIED = 4
 
   backupApplianceBackupConfig = _messages.MessageField('BackupApplianceBackupConfig', 1)
-  gcpBackupConfig = _messages.MessageField('GcpBackupConfig', 2)
-  lastBackupError = _messages.MessageField('Status', 3)
-  lastBackupState = _messages.EnumField('LastBackupStateValueValuesEnum', 4)
-  lastSuccessfulBackupConsistencyTime = _messages.StringField(5)
+  backupInsightStatusSummaries = _messages.MessageField('BackupInsightStatusSummary', 2, repeated=True)
+  gcpBackupConfig = _messages.MessageField('GcpBackupConfig', 3)
+  lastBackupError = _messages.MessageField('Status', 4)
+  lastBackupState = _messages.EnumField('LastBackupStateValueValuesEnum', 5)
+  lastSuccessfulBackupConsistencyTime = _messages.StringField(6)
 
 
 class BackupDrPlanConfig(_messages.Message):
@@ -1102,20 +1131,67 @@ class BackupGcpResource(_messages.Message):
   type = _messages.StringField(3)
 
 
+class BackupInsightConfig(_messages.Message):
+  r"""Configuration of an insight type for a workload's backups.
+
+  Enums:
+    BackupInsightTypeValueValuesEnum: Required. The insight type this
+      configuration applies to.
+    RequestedEnablementValueValuesEnum: Required. The requested enablement of
+      the insight type. The BackupInsightPlan of the backup vault determines
+      whether the request takes effect.
+
+  Fields:
+    backupInsightType: Required. The insight type this configuration applies
+      to.
+    requestedEnablement: Required. The requested enablement of the insight
+      type. The BackupInsightPlan of the backup vault determines whether the
+      request takes effect.
+  """
+
+  class BackupInsightTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The insight type this configuration applies to.
+
+    Values:
+      BACKUP_INSIGHT_TYPE_UNSPECIFIED: The insight type is unspecified.
+      BACKUP_METADATA_INDEXING: Backup metadata indexing insight.
+    """
+    BACKUP_INSIGHT_TYPE_UNSPECIFIED = 0
+    BACKUP_METADATA_INDEXING = 1
+
+  class RequestedEnablementValueValuesEnum(_messages.Enum):
+    r"""Required. The requested enablement of the insight type. The
+    BackupInsightPlan of the backup vault determines whether the request takes
+    effect.
+
+    Values:
+      BACKUP_INSIGHT_ENABLEMENT_UNSPECIFIED: Enablement is not specified.
+      BACKUP_INSIGHT_ENABLEMENT_ENABLED: Insights of this type are generated
+        for the workload's backups.
+      BACKUP_INSIGHT_ENABLEMENT_DISABLED: Insights of this type are not
+        generated for the workload's backups.
+    """
+    BACKUP_INSIGHT_ENABLEMENT_UNSPECIFIED = 0
+    BACKUP_INSIGHT_ENABLEMENT_ENABLED = 1
+    BACKUP_INSIGHT_ENABLEMENT_DISABLED = 2
+
+  backupInsightType = _messages.EnumField('BackupInsightTypeValueValuesEnum', 1)
+  requestedEnablement = _messages.EnumField('RequestedEnablementValueValuesEnum', 2)
+
+
 class BackupInsightPlan(_messages.Message):
   r"""Message describing a BackupInsightPlan object.
 
   Enums:
-    AllowedRuleRecurrenceTypesValueListEntryValuesEnum:
+    AllowedRuleRecurrenceCriteriaValueListEntryValuesEnum:
     BackupInsightTypeValueValuesEnum: Required. Immutable. The type of insight
       this plan enables.
     StateValueValuesEnum: Output only. The current state of the
       BackupInsightPlan.
 
   Fields:
-    allowedRuleRecurrenceTypes: Optional. Backups are processed from rules
-      whose recurrence matches an entry here. If not specified, defaults to
-      [DAILY, WEEKLY, MONTHLY, YEARLY].
+    allowedRuleRecurrenceCriteria: Required. Backups are processed from rules
+      whose recurrence matches an entry here.
     backupInsightType: Required. Immutable. The type of insight this plan
       enables.
     backupMetadataInsightSettings: Settings for backup metadata insight.
@@ -1128,17 +1204,18 @@ class BackupInsightPlan(_messages.Message):
     state: Output only. The current state of the BackupInsightPlan.
   """
 
-  class AllowedRuleRecurrenceTypesValueListEntryValuesEnum(_messages.Enum):
-    r"""AllowedRuleRecurrenceTypesValueListEntryValuesEnum enum type.
+  class AllowedRuleRecurrenceCriteriaValueListEntryValuesEnum(_messages.Enum):
+    r"""AllowedRuleRecurrenceCriteriaValueListEntryValuesEnum enum type.
 
     Values:
-      RULE_RECURRENCE_TYPE_UNSPECIFIED: The rule recurrence is unspecified.
+      RULE_RECURRENCE_CRITERION_UNSPECIFIED: The rule recurrence criterion is
+        unspecified.
       DAILY: Rules with daily recurrence.
       WEEKLY: Rules with weekly recurrence.
       MONTHLY: Rules with monthly recurrence.
       YEARLY: Rules with yearly recurrence.
     """
-    RULE_RECURRENCE_TYPE_UNSPECIFIED = 0
+    RULE_RECURRENCE_CRITERION_UNSPECIFIED = 0
     DAILY = 1
     WEEKLY = 2
     MONTHLY = 3
@@ -1170,13 +1247,60 @@ class BackupInsightPlan(_messages.Message):
     DELETING = 3
     ERROR = 4
 
-  allowedRuleRecurrenceTypes = _messages.EnumField('AllowedRuleRecurrenceTypesValueListEntryValuesEnum', 1, repeated=True)
+  allowedRuleRecurrenceCriteria = _messages.EnumField('AllowedRuleRecurrenceCriteriaValueListEntryValuesEnum', 1, repeated=True)
   backupInsightType = _messages.EnumField('BackupInsightTypeValueValuesEnum', 2)
   backupMetadataInsightSettings = _messages.MessageField('BackupMetadataInsightSettings', 3)
   createTime = _messages.StringField(4)
   etag = _messages.StringField(5)
   name = _messages.StringField(6)
   state = _messages.EnumField('StateValueValuesEnum', 7)
+
+
+class BackupInsightStatusSummary(_messages.Message):
+  r"""BackupInsightStatusSummary summarizes the latest run of an insight type.
+
+  Enums:
+    BackupInsightTypeValueValuesEnum: Output only. The insight type this
+      summary applies to.
+    LatestBackupInsightStateValueValuesEnum: Output only. The state of the
+      latest backup insight run.
+
+  Fields:
+    backupInsightType: Output only. The insight type this summary applies to.
+    latestBackupInsightError: Output only. The error of the latest backup
+      insight run, if it failed.
+    latestBackupInsightState: Output only. The state of the latest backup
+      insight run.
+    latestSuccessfulBackupConsistencyTime: Output only. The consistency time
+      of the latest backup for which the insight was generated successfully.
+  """
+
+  class BackupInsightTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The insight type this summary applies to.
+
+    Values:
+      BACKUP_INSIGHT_TYPE_UNSPECIFIED: The insight type is unspecified.
+      BACKUP_METADATA_INDEXING: Backup metadata indexing insight.
+    """
+    BACKUP_INSIGHT_TYPE_UNSPECIFIED = 0
+    BACKUP_METADATA_INDEXING = 1
+
+  class LatestBackupInsightStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the latest backup insight run.
+
+    Values:
+      STATE_UNSPECIFIED: State not set. No insight run has completed yet.
+      SUCCEEDED: The latest backup insight run succeeded.
+      FAILED: The latest backup insight run failed.
+    """
+    STATE_UNSPECIFIED = 0
+    SUCCEEDED = 1
+    FAILED = 2
+
+  backupInsightType = _messages.EnumField('BackupInsightTypeValueValuesEnum', 1)
+  latestBackupInsightError = _messages.MessageField('Status', 2)
+  latestBackupInsightState = _messages.EnumField('LatestBackupInsightStateValueValuesEnum', 3)
+  latestSuccessfulBackupConsistencyTime = _messages.StringField(4)
 
 
 class BackupLocation(_messages.Message):
@@ -1401,6 +1525,9 @@ class BackupPlanAssociation(_messages.Message):
       lanAssociations/{backupPlanAssociationId}
     netappVolumeBackupPlanAssociationProperties: Output only. NetApp volume
       backup plan association properties.
+    requestedBackupInsightConfigs: Optional. Insight configuration for the
+      backups of this association. The BackupInsightPlan of each backup vault
+      determines whether a requested insight configuration takes effect.
     resource: Required. Immutable. Resource name of workload on which the
       backup plan is applied. The format can either be the resource name
       (e.g., "projects/my-project/zones/us-central1-a/instances/my-instance")
@@ -1445,11 +1572,12 @@ class BackupPlanAssociation(_messages.Message):
   filestoreInstanceBackupPlanAssociationProperties = _messages.MessageField('FilestoreInstanceBackupPlanAssociationProperties', 9)
   name = _messages.StringField(10)
   netappVolumeBackupPlanAssociationProperties = _messages.MessageField('NetAppVolumeBackupPlanAssociationProperties', 11)
-  resource = _messages.StringField(12)
-  resourceType = _messages.StringField(13)
-  rulesConfigInfo = _messages.MessageField('RuleConfigInfo', 14, repeated=True)
-  state = _messages.EnumField('StateValueValuesEnum', 15)
-  updateTime = _messages.StringField(16)
+  requestedBackupInsightConfigs = _messages.MessageField('BackupInsightConfig', 12, repeated=True)
+  resource = _messages.StringField(13)
+  resourceType = _messages.StringField(14)
+  rulesConfigInfo = _messages.MessageField('RuleConfigInfo', 15, repeated=True)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  updateTime = _messages.StringField(17)
 
 
 class BackupPlanDetail(_messages.Message):
@@ -1513,6 +1641,10 @@ class BackupPlanRevision(_messages.Message):
 class BackupRule(_messages.Message):
   r"""`BackupRule` binds the backup schedule to a retention policy.
 
+  Enums:
+    StorageTierValueValuesEnum: Optional. The target storage tier for all
+      backups created by this rule. If unspecified, this defaults to STANDARD.
+
   Messages:
     BackupLabelsValue: Optional. Allows custom labels to be supplied by the
       user on a per-rule basis.
@@ -1539,7 +1671,22 @@ class BackupRule(_messages.Message):
       hyphens. Pattern, /a-z{,62}/.
     standardSchedule: Optional. Defines a schedule that runs within the
       confines of a defined window of time.
+    storageTier: Optional. The target storage tier for all backups created by
+      this rule. If unspecified, this defaults to STANDARD.
   """
+
+  class StorageTierValueValuesEnum(_messages.Enum):
+    r"""Optional. The target storage tier for all backups created by this
+    rule. If unspecified, this defaults to STANDARD.
+
+    Values:
+      STORAGE_TIER_UNSPECIFIED: Storage tier not set. Treated as STANDARD.
+      STANDARD: Standard storage tier.
+      ARCHIVE: Archive storage tier.
+    """
+    STORAGE_TIER_UNSPECIFIED = 0
+    STANDARD = 1
+    ARCHIVE = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class BackupLabelsValue(_messages.Message):
@@ -1573,6 +1720,7 @@ class BackupRule(_messages.Message):
   backupVaultServiceAccount = _messages.StringField(4)
   ruleId = _messages.StringField(5)
   standardSchedule = _messages.MessageField('StandardSchedule', 6)
+  storageTier = _messages.EnumField('StorageTierValueValuesEnum', 7)
 
 
 class BackupSelectionConfig(_messages.Message):
@@ -1932,14 +2080,23 @@ class BackupdrProjectsLocationsAutoProtectionPoliciesBindingsCreateRequest(_mess
       passed as the request body.
     autoProtectionPolicyBindingId: Required. The ID to use for the binding.
       This will become the final component of the binding's resource name.
+      This value must start with a lowercase letter followed by up to 62
+      lowercase letters, numbers, or hyphens, and cannot end with a hyphen.
     parent: Required. The parent resource where this binding will be created.
       Format: projects/{project}/locations/{location}/autoProtectionPolicies/{
       auto_protection_policy}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
   """
 
   autoProtectionPolicyBinding = _messages.MessageField('AutoProtectionPolicyBinding', 1)
   autoProtectionPolicyBindingId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
 
 
 class BackupdrProjectsLocationsAutoProtectionPoliciesBindingsGetRequest(_messages.Message):
@@ -2049,29 +2206,45 @@ class BackupdrProjectsLocationsAutoProtectionPoliciesCreateRequest(_messages.Mes
     autoProtectionPolicy: A AutoProtectionPolicy resource to be passed as the
       request body.
     autoProtectionPolicyId: Required. The ID to use for the policy. This will
-      become the final component of the policy's resource name.
+      become the final component of the policy's resource name. This value
+      must start with a lowercase letter followed by up to 62 lowercase
+      letters, numbers, or hyphens, and cannot end with a hyphen.
     parent: Required. The parent resource where this policy will be created.
       Format: projects/{project}/locations/{location}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
   """
 
   autoProtectionPolicy = _messages.MessageField('AutoProtectionPolicy', 1)
   autoProtectionPolicyId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
+  requestId = _messages.StringField(4)
 
 
 class BackupdrProjectsLocationsAutoProtectionPoliciesDeleteRequest(_messages.Message):
   r"""A BackupdrProjectsLocationsAutoProtectionPoliciesDeleteRequest object.
 
   Fields:
-    etag: The current etag of the AutoProtectionPolicy. If an etag is provided
-      and does not match the current etag of the connection, the request will
-      be rejected with an ABORTED error.
+    etag: Optional. The current etag of the AutoProtectionPolicy. If an etag
+      is provided and does not match the current etag of the connection, the
+      request will be rejected with an ABORTED error.
     name: Required. The name of the policy to delete. Format: projects/{projec
       t}/locations/{location}/autoProtectionPolicies/{auto_protection_policy}
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
   """
 
   etag = _messages.StringField(1)
   name = _messages.StringField(2, required=True)
+  requestId = _messages.StringField(3)
 
 
 class BackupdrProjectsLocationsAutoProtectionPoliciesGetRequest(_messages.Message):
@@ -2119,6 +2292,12 @@ class BackupdrProjectsLocationsAutoProtectionPoliciesPatchRequest(_messages.Mess
     name: Output only. Identifier. The resource name of the
       AutoprotectionPolicy. Format: `projects/{project}/locations/{location}/a
       utoProtectionPolicies/{auto_protection_policy}`
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the AutoProtectionPolicy resource by the update. The
       fields specified in the update_mask are relative to the resource, not
@@ -2128,7 +2307,8 @@ class BackupdrProjectsLocationsAutoProtectionPoliciesPatchRequest(_messages.Mess
 
   autoProtectionPolicy = _messages.MessageField('AutoProtectionPolicy', 1)
   name = _messages.StringField(2, required=True)
-  updateMask = _messages.StringField(3)
+  requestId = _messages.StringField(3)
+  updateMask = _messages.StringField(4)
 
 
 class BackupdrProjectsLocationsBackupPlanAssociationsCreateRequest(_messages.Message):
@@ -2743,6 +2923,21 @@ class BackupdrProjectsLocationsBackupVaultsDataSourcesBackupsFetchForResourceTyp
   parent = _messages.StringField(5, required=True)
   resourceType = _messages.StringField(6)
   view = _messages.EnumField('ViewValueValuesEnum', 7)
+
+
+class BackupdrProjectsLocationsBackupVaultsDataSourcesBackupsGenerateInsightsRequest(_messages.Message):
+  r"""A BackupdrProjectsLocationsBackupVaultsDataSourcesBackupsGenerateInsight
+  sRequest object.
+
+  Fields:
+    generateInsightsRequest: A GenerateInsightsRequest resource to be passed
+      as the request body.
+    name: Required. The resource name of the Backup instance, in the format
+      `projects/*/locations/*/backupVaults/*/dataSources/*/backups/*`.
+  """
+
+  generateInsightsRequest = _messages.MessageField('GenerateInsightsRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class BackupdrProjectsLocationsBackupVaultsDataSourcesBackupsGetRequest(_messages.Message):
@@ -4226,15 +4421,15 @@ class BindingMatchingResource(_messages.Message):
       resource from the current binding's perspective.
     lastEvaluationTime: Output only. The timestamp when the resource was last
       evaluated for protection.
-    name: Identifier. The resource name of the `BindingMatchingResource`.
-      Format: `projects/{project}/locations/{location}/autoProtectionPolicies/
-      {auto_protection_policy}/bindings/{binding}/matchingResources/{matching_
-      resource}`
-    resource: Required. Immutable. Resource name of the workload that matches
-      the criteria of the binding. The format can be either a relative
-      resource name (e.g., `projects/my-project/zones/us-
-      central1-a/instances/my-instance`) or a schemeless full resource name
-      (e.g., `//compute.googleapis.com/projects/my-project/zones/us-
+    name: Output only. Identifier. The resource name of the
+      `BindingMatchingResource`. Format: `projects/{project}/locations/{locati
+      on}/autoProtectionPolicies/{auto_protection_policy}/bindings/{binding}/m
+      atchingResources/{matching_resource}`
+    resource: Output only. Resource name of the workload that matches the
+      criteria of the binding. The format can be either a relative resource
+      name (e.g., `projects/my-project/zones/us-central1-a/instances/my-
+      instance`) or a schemeless full resource name (e.g.,
+      `//compute.googleapis.com/projects/my-project/zones/us-
       central1-a/instances/my-instance`).
   """
 
@@ -4841,6 +5036,8 @@ class DataSource(_messages.Message):
     state: Output only. The DataSource resource instance state.
     totalStoredBytes: The number of bytes (metadata and data) stored in this
       datasource.
+    totalStoredBytesPerTier: Output only. The number of bytes stored in this
+      datasource, broken down by storage tier.
     updateTime: Output only. The time when the instance was updated.
   """
 
@@ -4914,7 +5111,8 @@ class DataSource(_messages.Message):
   name = _messages.StringField(10)
   state = _messages.EnumField('StateValueValuesEnum', 11)
   totalStoredBytes = _messages.IntegerField(12)
-  updateTime = _messages.StringField(13)
+  totalStoredBytesPerTier = _messages.MessageField('StorageTierUsage', 13, repeated=True)
+  updateTime = _messages.StringField(14)
 
 
 class DataSourceBackupApplianceApplication(_messages.Message):
@@ -5854,6 +6052,8 @@ class GcpBackupConfig(_messages.Message):
     backupPlanRevisionName: The name of the backup plan revision.
     backupPlanRules: The names of the backup plan rules which point to this
       backupvault
+    requestedBackupInsightConfigs: Optional. Requested insight configuration
+      of the backup plan association that protects this data source.
   """
 
   autoProtectionPolicyBinding = _messages.StringField(1)
@@ -5863,6 +6063,42 @@ class GcpBackupConfig(_messages.Message):
   backupPlanRevisionId = _messages.StringField(5)
   backupPlanRevisionName = _messages.StringField(6)
   backupPlanRules = _messages.StringField(7, repeated=True)
+  requestedBackupInsightConfigs = _messages.MessageField('BackupInsightConfig', 8, repeated=True)
+
+
+class GenerateInsightsRequest(_messages.Message):
+  r"""Request message for generating insights for a Backup.
+
+  Enums:
+    InsightTypesValueListEntryValuesEnum:
+
+  Fields:
+    insightTypes: Required. The types of insights to generate. The list must
+      not be empty and must not contain duplicate values.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes after the first
+      request. For example, consider a situation where you make an initial
+      request and the request times out. If you make the request again with
+      the same request ID, the server can check if original operation with the
+      same request ID was received, and if so, will ignore the second request.
+      The request ID must be a valid UUID with the exception that zero UUID is
+      not supported (`00000000-0000-0000-0000-000000000000`).
+  """
+
+  class InsightTypesValueListEntryValuesEnum(_messages.Enum):
+    r"""InsightTypesValueListEntryValuesEnum enum type.
+
+    Values:
+      BACKUP_INSIGHT_TYPE_UNSPECIFIED: The insight type is unspecified.
+      BACKUP_METADATA_INDEXING: Backup metadata indexing insight.
+    """
+    BACKUP_INSIGHT_TYPE_UNSPECIFIED = 0
+    BACKUP_METADATA_INDEXING = 1
+
+  insightTypes = _messages.EnumField('InsightTypesValueListEntryValuesEnum', 1, repeated=True)
+  requestId = _messages.StringField(2)
 
 
 class GoogleCloudBackupdrV1alphaOperationMetadata(_messages.Message):
@@ -6066,8 +6302,21 @@ class InitiateBackupResponse(_messages.Message):
 
 class InitiateDeleteAutoProtectionPolicyBindingRequest(_messages.Message):
   r"""Request message for initiating delete of an AutoProtectionPolicyBinding.
+
+  Fields:
+    etag: Optional. The current etag of the AutoProtectionPolicyBinding. If an
+      etag is provided and does not match the current etag of the binding,
+      deletion will be blocked and an ABORTED error will be returned.
+    requestId: Optional. An optional request ID to identify requests. Specify
+      a unique request ID so that if you must retry your request, the server
+      will know to ignore the request if it has already been completed. The
+      server will guarantee that for at least 60 minutes since the first
+      request. The request ID must be a valid UUID with the exception that
+      zero UUID is not supported (00000000-0000-0000-0000-000000000000).
   """
 
+  etag = _messages.StringField(1)
+  requestId = _messages.StringField(2)
 
 
 class InstanceParams(_messages.Message):
@@ -6192,7 +6441,7 @@ class ListAutoProtectionPoliciesResponse(_messages.Message):
       found.
     nextPageToken: A token that can be sent as `page_token` to retrieve the
       next page. If this field is omitted, there are no subsequent pages.
-    unreachable: Locations that could not be reached.
+    unreachable: Unordered list. Locations that could not be reached.
   """
 
   autoProtectionPolicies = _messages.MessageField('AutoProtectionPolicy', 1, repeated=True)
@@ -8058,7 +8307,8 @@ class RestoreVerificationCleanupRule(_messages.Message):
 
   Fields:
     cleanupDelay: Optional. Duration after restore finishes when cleanup
-      triggers. Delay must be at most 30 days (2592000 seconds).
+      triggers. Delay must be non-negative and at most 30 days (2592000
+      seconds).
     skipCleanup: Optional. If set to true, the restored resource will not be
       cleaned up.
   """
@@ -8781,6 +9031,34 @@ class Status(_messages.Message):
   message = _messages.StringField(3)
 
 
+class StorageTierUsage(_messages.Message):
+  r"""StorageTierUsage has information about the storage consumption for a
+  storage tier.
+
+  Enums:
+    TierValueValuesEnum: Output only. The storage tier.
+
+  Fields:
+    tier: Output only. The storage tier.
+    totalStoredBytes: Output only. The number of bytes stored in this tier.
+  """
+
+  class TierValueValuesEnum(_messages.Enum):
+    r"""Output only. The storage tier.
+
+    Values:
+      STORAGE_TIER_UNSPECIFIED: Storage tier not set. Treated as STANDARD.
+      STANDARD: Standard storage tier.
+      ARCHIVE: Archive storage tier.
+    """
+    STORAGE_TIER_UNSPECIFIED = 0
+    STANDARD = 1
+    ARCHIVE = 2
+
+  tier = _messages.EnumField('TierValueValuesEnum', 1)
+  totalStoredBytes = _messages.IntegerField(2)
+
+
 class SubscribeTrialRequest(_messages.Message):
   r"""Request message for subscribing to a trial."""
 
@@ -9065,6 +9343,38 @@ class VerificationPhaseInfo(_messages.Message):
   phaseState = _messages.EnumField('PhaseStateValueValuesEnum', 4)
   startTime = _messages.StringField(5)
   verificationConfig = _messages.MessageField('VerificationConfig', 6)
+
+
+class VerificationSummary(_messages.Message):
+  r"""VerificationSummary contains the status and timestamp of the latest
+  Automated Verification test.
+
+  Enums:
+    LastVerificationStateValueValuesEnum: Output only. The state of the last
+      verification.
+
+  Fields:
+    lastVerificationExecution: Output only. The last verification execution.
+    lastVerificationState: Output only. The state of the last verification.
+    lastVerificationTime: Output only. The time when the backup was last
+      verified.
+  """
+
+  class LastVerificationStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the last verification.
+
+    Values:
+      STATE_UNSPECIFIED: Verification state is unspecified.
+      SUCCEEDED: Verification succeeded.
+      FAILED: Verification failed.
+    """
+    STATE_UNSPECIFIED = 0
+    SUCCEEDED = 1
+    FAILED = 2
+
+  lastVerificationExecution = _messages.StringField(1)
+  lastVerificationState = _messages.EnumField('LastVerificationStateValueValuesEnum', 2)
+  lastVerificationTime = _messages.StringField(3)
 
 
 class WeekDayOfMonth(_messages.Message):

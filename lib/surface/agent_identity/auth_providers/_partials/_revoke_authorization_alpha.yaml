@@ -30,7 +30,7 @@
   arguments:
     params:
     - help_text: |-
-        The resource name of the AuthProvider.
+        The resource name of the auth provider.
         Format:
         projects/{project}/locations/{location}/authProviders/{auth_provider}
       is_positional: true

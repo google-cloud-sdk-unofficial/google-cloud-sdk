@@ -87,6 +87,8 @@ class JobsAsyncClient:
     parse_secret_path = staticmethod(JobsClient.parse_secret_path)
     secret_version_path = staticmethod(JobsClient.secret_version_path)
     parse_secret_version_path = staticmethod(JobsClient.parse_secret_version_path)
+    volume_path = staticmethod(JobsClient.volume_path)
+    parse_volume_path = staticmethod(JobsClient.parse_volume_path)
     common_billing_account_path = staticmethod(JobsClient.common_billing_account_path)
     parse_common_billing_account_path = staticmethod(JobsClient.parse_common_billing_account_path)
     common_folder_path = staticmethod(JobsClient.common_folder_path)

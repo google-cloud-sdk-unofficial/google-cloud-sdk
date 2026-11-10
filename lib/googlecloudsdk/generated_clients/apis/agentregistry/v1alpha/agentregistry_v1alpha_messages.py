@@ -2204,7 +2204,6 @@ class Finding(_messages.Message):
     SeverityValueValuesEnum: Optional. Severity of the finding.
 
   Fields:
-    category: Optional. Category of the finding.
     createTime: Output only. Create time.
     detail: Optional. Detailed description of the finding.
     files: Optional. File associated with the finding.
@@ -2224,15 +2223,12 @@ class Finding(_messages.Message):
       FINDING_CLASS_UNSPECIFIED: Unspecified finding class.
       VULNERABILITY: Describes a potential weakness in software that increases
         risk to Confidentiality & Integrity & Availability.
-      OBSERVATION: Describes a security observation that is for informational
-        purposes.
       SECRET: Describes a potential security risk due to plaintext
         credentials, keys, or tokens being exposed in an asset or workload.
     """
     FINDING_CLASS_UNSPECIFIED = 0
     VULNERABILITY = 1
-    OBSERVATION = 2
-    SECRET = 3
+    SECRET = 2
 
   class SeverityValueValuesEnum(_messages.Enum):
     r"""Optional. Severity of the finding.
@@ -2251,16 +2247,15 @@ class Finding(_messages.Message):
     SEVERITY_MEDIUM = 3
     SEVERITY_LOW = 4
 
-  category = _messages.StringField(1)
-  createTime = _messages.StringField(2)
-  detail = _messages.StringField(3)
-  files = _messages.MessageField('File', 4, repeated=True)
-  findingClass = _messages.EnumField('FindingClassValueValuesEnum', 5)
-  name = _messages.StringField(6)
-  resource = _messages.StringField(7)
-  severity = _messages.EnumField('SeverityValueValuesEnum', 8)
-  uid = _messages.StringField(9)
-  updateTime = _messages.StringField(10)
+  createTime = _messages.StringField(1)
+  detail = _messages.StringField(2)
+  files = _messages.MessageField('File', 3, repeated=True)
+  findingClass = _messages.EnumField('FindingClassValueValuesEnum', 4)
+  name = _messages.StringField(5)
+  resource = _messages.StringField(6)
+  severity = _messages.EnumField('SeverityValueValuesEnum', 7)
+  uid = _messages.StringField(8)
+  updateTime = _messages.StringField(9)
 
 
 class Frontmatter(_messages.Message):
@@ -3628,7 +3623,7 @@ class Skill(_messages.Message):
       default revision of the skill.
     description: Optional. Brief summary describing the capabilities of the
       skill. Maximum length is 2048 characters.
-    displayName: Required. Human-readable display name of the skill. Maximum
+    displayName: Optional. Human-readable display name of the skill. Maximum
       length is 128 characters.
     frontmatter: Output only. Lightweight frontmatter metadata attributes
       copied from the default revision.
@@ -3983,15 +3978,47 @@ class Target(_messages.Message):
 class Tool(_messages.Message):
   r"""Represents a single tool provided by an MCP Server.
 
+  Messages:
+    MetaValue: Output only. Protocol-level tool metadata conforming to MCP
+      _meta specification. Output only.
+
   Fields:
+    _meta: Output only. Protocol-level tool metadata conforming to MCP _meta
+      specification. Output only.
     annotations: Output only. Annotations associated with the tool.
     description: Output only. Description of what the tool does.
     name: Output only. Human-readable name of the tool.
   """
 
-  annotations = _messages.MessageField('Annotations', 1)
-  description = _messages.StringField(2)
-  name = _messages.StringField(3)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetaValue(_messages.Message):
+    r"""Output only. Protocol-level tool metadata conforming to MCP _meta
+    specification. Output only.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetaValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetaValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  _meta = _messages.MessageField('MetaValue', 1)
+  annotations = _messages.MessageField('Annotations', 2)
+  description = _messages.StringField(3)
+  name = _messages.StringField(4)
 
 
 encoding.AddCustomJsonFieldMapping(

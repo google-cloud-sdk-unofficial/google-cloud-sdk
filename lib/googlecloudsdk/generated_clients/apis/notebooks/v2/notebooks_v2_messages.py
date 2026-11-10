@@ -1196,6 +1196,42 @@ class NetworkInterface(_messages.Message):
   subnet = _messages.StringField(5)
 
 
+class NotebookFileAction(_messages.Message):
+  r"""A file operation on a notebook (.ipynb) file in JupyterLab.
+
+  Enums:
+    ActionValueValuesEnum: Required. The operation.
+
+  Fields:
+    action: Required. The operation.
+  """
+
+  class ActionValueValuesEnum(_messages.Enum):
+    r"""Required. The operation.
+
+    Values:
+      ACTION_UNSPECIFIED: Not used.
+      CREATE: The user created a new notebook.
+      UPLOAD: The user uploaded a notebook from their computer.
+      COPY: The user copied or duplicated a notebook.
+      RENAME: The user renamed or moved a notebook.
+      SAVE: JupyterLab saved the notebook, because the user asked or through
+        autosave.
+      DELETE: The user deleted a notebook.
+      OPEN: The user opened the notebook.
+    """
+    ACTION_UNSPECIFIED = 0
+    CREATE = 1
+    UPLOAD = 2
+    COPY = 3
+    RENAME = 4
+    SAVE = 5
+    DELETE = 6
+    OPEN = 7
+
+  action = _messages.EnumField('ActionValueValuesEnum', 1)
+
+
 class NotebooksProjectsLocationsGetRequest(_messages.Message):
   r"""A NotebooksProjectsLocationsGetRequest object.
 
@@ -1410,6 +1446,20 @@ class NotebooksProjectsLocationsInstancesReportInfoSystemRequest(_messages.Messa
 
   name = _messages.StringField(1, required=True)
   reportInstanceInfoSystemRequest = _messages.MessageField('ReportInstanceInfoSystemRequest', 2)
+
+
+class NotebooksProjectsLocationsInstancesReportTelemetryRequest(_messages.Message):
+  r"""A NotebooksProjectsLocationsInstancesReportTelemetryRequest object.
+
+  Fields:
+    name: Required. Format:
+      `projects/{project_id}/locations/{location}/instances/{instance_id}`
+    reportInstanceTelemetryRequest: A ReportInstanceTelemetryRequest resource
+      to be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  reportInstanceTelemetryRequest = _messages.MessageField('ReportInstanceTelemetryRequest', 2)
 
 
 class NotebooksProjectsLocationsInstancesResetRequest(_messages.Message):
@@ -1861,6 +1911,31 @@ class ReportInstanceInfoSystemRequest(_messages.Message):
   vmId = _messages.StringField(2)
 
 
+class ReportInstanceTelemetryRequest(_messages.Message):
+  r"""Request for a Workbench instance to report usage events.
+
+  Fields:
+    events: Required. The events to report, in the order they happened. At
+      most 1,000 per request.
+    vmId: Required. The VM identity token (a JWT) for authenticating the VM.
+      https://cloud.google.com/compute/docs/instances/verifying-instance-
+      identity
+  """
+
+  events = _messages.MessageField('UsageEvent', 1, repeated=True)
+  vmId = _messages.StringField(2)
+
+
+class ReportInstanceTelemetryResponse(_messages.Message):
+  r"""Response for a Workbench instance's report of usage events.
+
+  Fields:
+    nextReportDelay: How long the instance should wait before its next report.
+  """
+
+  nextReportDelay = _messages.StringField(1)
+
+
 class ReservationAffinity(_messages.Message):
   r"""A reservation that an instance can consume from.
 
@@ -2259,6 +2334,18 @@ class UpgradeInstanceSystemRequest(_messages.Message):
   """
 
   vmId = _messages.StringField(1)
+
+
+class UsageEvent(_messages.Message):
+  r"""A usage event from a Workbench instance.
+
+  Fields:
+    eventTime: Required. When the event happened on the instance.
+    notebookFileAction: A file operation on a notebook.
+  """
+
+  eventTime = _messages.StringField(1)
+  notebookFileAction = _messages.MessageField('NotebookFileAction', 2)
 
 
 class VmImage(_messages.Message):

@@ -5712,9 +5712,10 @@ class RootModule(_messages.Message):
       components, this list will contain all such component names.
     dependencies: Dependencies of this root module. The dependency graph of
       root modules must be acyclic.
-    id: Identifier of the root module. This is the directory name of the root
-      module in the generated terraform which is also same as the
-      corresponding component ID.
+    id: Identifier of the root module. This is the name of the directory that
+      holds the root module's content in the generated terraform, which is
+      also the same as the corresponding component ID. The root module itself
+      is in this directory, or in `/` when `directory` is set.
     inputVariables: List of input variables of this root module.
     outputVariables: List of output variables of this root module.
   """
@@ -5798,10 +5799,12 @@ class Scope(_messages.Message):
       TYPE_UNSPECIFIED: Unspecified type.
       REGIONAL: Regional type.
       GLOBAL: Global type.
+      MULTI_REGIONAL: Multi-regional type.
     """
     TYPE_UNSPECIFIED = 0
     REGIONAL = 1
     GLOBAL = 2
+    MULTI_REGIONAL = 3
 
   type = _messages.EnumField('TypeValueValuesEnum', 1)
 

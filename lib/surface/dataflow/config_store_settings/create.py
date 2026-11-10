@@ -21,7 +21,7 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new Dataflow ConfigStore setting."""
 
@@ -91,3 +91,33 @@ class Create(base.CreateCommand):
         setting_ref.RelativeName(), kind='ConfigStore setting'
     )
     return response
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a new Dataflow ConfigStore setting."""
+
+  detailed_help = {
+      'DESCRIPTION': 'Create a new Dataflow ConfigStore setting.',
+      'EXAMPLES': (
+          """\
+          To create a setting on a project (use either project ID or
+          project number):
+
+            $ {command} default_launcher_machine_type \\
+              --project=my-project --location=us-central1 --value="e2-standard-2"
+
+            $ {command} default_launcher_machine_type \\
+              --project=123456789 --location=us-central1 --value="e2-standard-2"
+
+          To create the same setting on a folder or an organization:
+
+            $ {command} default_launcher_machine_type \\
+              --folder=123456 --location=us-central1 --value="e2-standard-2"
+
+            $ {command} default_launcher_machine_type \\
+              --organization=789012 --location=us-central1 --value="e2-standard-2"
+          """
+      ),
+  }

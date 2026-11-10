@@ -55,6 +55,8 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     self.projects_locations_grpcRoutes = self.ProjectsLocationsGrpcRoutesService(self)
     self.projects_locations_httpFilters = self.ProjectsLocationsHttpFiltersService(self)
     self.projects_locations_httpRoutes = self.ProjectsLocationsHttpRoutesService(self)
+    self.projects_locations_keyValueStores_entries = self.ProjectsLocationsKeyValueStoresEntriesService(self)
+    self.projects_locations_keyValueStores = self.ProjectsLocationsKeyValueStoresService(self)
     self.projects_locations_lbEdgeExtensions = self.ProjectsLocationsLbEdgeExtensionsService(self)
     self.projects_locations_lbObservabilityExtensions = self.ProjectsLocationsLbObservabilityExtensionsService(self)
     self.projects_locations_lbRouteExtensions = self.ProjectsLocationsLbRouteExtensionsService(self)
@@ -2812,6 +2814,269 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsKeyValueStoresEntriesService(base_api.BaseApiService):
+    """Service class for the projects_locations_keyValueStores_entries resource."""
+
+    _NAME = 'projects_locations_keyValueStores_entries'
+
+    def __init__(self, client):
+      super(NetworkservicesV1alpha1.ProjectsLocationsKeyValueStoresEntriesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Enumerate(self, request, global_params=None):
+      r"""Enumerates `KeyValueEntry` resources in a given `KeyValueStore`.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsKeyValueStoresEntriesEnumerateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (EnumerateKeyValueEntriesResponse) The response message.
+      """
+      config = self.GetMethodConfig('Enumerate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Enumerate.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/keyValueStores/{keyValueStoresId}/entries:enumerate',
+        http_method='GET',
+        method_id='networkservices.projects.locations.keyValueStores.entries.enumerate',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken', 'view'],
+        relative_path='v1alpha1/{+parent}/entries:enumerate',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsKeyValueStoresEntriesEnumerateRequest',
+        response_type_name='EnumerateKeyValueEntriesResponse',
+        supports_download=False,
+    )
+
+    def Modify(self, request, global_params=None):
+      r"""Modifies multiple `KeyValueEntry` resources in a single request.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsKeyValueStoresEntriesModifyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ModifyKeyValueEntriesResponse) The response message.
+      """
+      config = self.GetMethodConfig('Modify')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Modify.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/keyValueStores/{keyValueStoresId}/entries:modify',
+        http_method='POST',
+        method_id='networkservices.projects.locations.keyValueStores.entries.modify',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1alpha1/{+parent}/entries:modify',
+        request_field='modifyKeyValueEntriesRequest',
+        request_type_name='NetworkservicesProjectsLocationsKeyValueStoresEntriesModifyRequest',
+        response_type_name='ModifyKeyValueEntriesResponse',
+        supports_download=False,
+    )
+
+    def Retrieve(self, request, global_params=None):
+      r"""Gets details of the specified `KeyValueEntry` resource.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsKeyValueStoresEntriesRetrieveRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (KeyValueEntry) The response message.
+      """
+      config = self.GetMethodConfig('Retrieve')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Retrieve.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/keyValueStores/{keyValueStoresId}/entries/{entriesId}:retrieve',
+        http_method='GET',
+        method_id='networkservices.projects.locations.keyValueStores.entries.retrieve',
+        ordered_params=['parent', 'key'],
+        path_params=['key', 'parent'],
+        query_params=[],
+        relative_path='v1alpha1/{+parent}/entries/{+key}:retrieve',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsKeyValueStoresEntriesRetrieveRequest',
+        response_type_name='KeyValueEntry',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsKeyValueStoresService(base_api.BaseApiService):
+    """Service class for the projects_locations_keyValueStores resource."""
+
+    _NAME = 'projects_locations_keyValueStores'
+
+    def __init__(self, client):
+      super(NetworkservicesV1alpha1.ProjectsLocationsKeyValueStoresService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Clear(self, request, global_params=None):
+      r"""Clears the contents of the specified `KeyValueStore` resource.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsKeyValueStoresClearRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Clear')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Clear.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/keyValueStores/{keyValueStoresId}:clear',
+        http_method='POST',
+        method_id='networkservices.projects.locations.keyValueStores.clear',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}:clear',
+        request_field='clearKeyValueStoreRequest',
+        request_type_name='NetworkservicesProjectsLocationsKeyValueStoresClearRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new `KeyValueStore` resource in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsKeyValueStoresCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/keyValueStores',
+        http_method='POST',
+        method_id='networkservices.projects.locations.keyValueStores.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['keyValueStoreId'],
+        relative_path='v1alpha1/{+parent}/keyValueStores',
+        request_field='keyValueStore',
+        request_type_name='NetworkservicesProjectsLocationsKeyValueStoresCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified `KeyValueStore` resource.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsKeyValueStoresDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/keyValueStores/{keyValueStoresId}',
+        http_method='DELETE',
+        method_id='networkservices.projects.locations.keyValueStores.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsKeyValueStoresDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of the specified `KeyValueStore` resource.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsKeyValueStoresGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (KeyValueStore) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/keyValueStores/{keyValueStoresId}',
+        http_method='GET',
+        method_id='networkservices.projects.locations.keyValueStores.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsKeyValueStoresGetRequest',
+        response_type_name='KeyValueStore',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists `KeyValueStore` resources in a given project and location.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsKeyValueStoresListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListKeyValueStoresResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/keyValueStores',
+        http_method='GET',
+        method_id='networkservices.projects.locations.keyValueStores.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken', 'view'],
+        relative_path='v1alpha1/{+parent}/keyValueStores',
+        request_field='',
+        request_type_name='NetworkservicesProjectsLocationsKeyValueStoresListRequest',
+        response_type_name='ListKeyValueStoresResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of the specified `KeyValueStore` resource.
+
+      Args:
+        request: (NetworkservicesProjectsLocationsKeyValueStoresPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/keyValueStores/{keyValueStoresId}',
+        http_method='PATCH',
+        method_id='networkservices.projects.locations.keyValueStores.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1alpha1/{+name}',
+        request_field='keyValueStore',
+        request_type_name='NetworkservicesProjectsLocationsKeyValueStoresPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsLbEdgeExtensionsService(base_api.BaseApiService):
     """Service class for the projects_locations_lbEdgeExtensions resource."""
 
@@ -4654,7 +4919,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
           }
 
     def Create(self, request, global_params=None):
-      r"""Creates a new multicast group consumer activation in a given project and location.
+      r"""Creates a new multicast group producer activation in a given project and location.
 
       Args:
         request: (NetworkservicesProjectsLocationsMulticastGroupProducerActivationsCreateRequest) input message
@@ -4681,7 +4946,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a single multicast group consumer activation.
+      r"""Deletes a single multicast group producer activation.
 
       Args:
         request: (NetworkservicesProjectsLocationsMulticastGroupProducerActivationsDeleteRequest) input message
@@ -4708,7 +4973,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets details of a single multicast group consumer activation.
+      r"""Gets details of a single multicast group producer activation.
 
       Args:
         request: (NetworkservicesProjectsLocationsMulticastGroupProducerActivationsGetRequest) input message
@@ -4735,7 +5000,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists multicast group consumer activations in a given project and location.
+      r"""Lists multicast group producer activations in a given project and location.
 
       Args:
         request: (NetworkservicesProjectsLocationsMulticastGroupProducerActivationsListRequest) input message
@@ -4762,7 +5027,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the parameters of a single multicast group consumer activation.
+      r"""Updates the parameters of a single multicast group producer activation.
 
       Args:
         request: (NetworkservicesProjectsLocationsMulticastGroupProducerActivationsPatchRequest) input message
@@ -5116,7 +5381,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      r"""Deletes a single multicast consumer association.
+      r"""Deletes a single multicast producer association.
 
       Args:
         request: (NetworkservicesProjectsLocationsMulticastProducerAssociationsDeleteRequest) input message
@@ -5197,7 +5462,7 @@ class NetworkservicesV1alpha1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Updates the parameters of a single multicast consumer association.
+      r"""Updates the parameters of a single multicast producer association.
 
       Args:
         request: (NetworkservicesProjectsLocationsMulticastProducerAssociationsPatchRequest) input message

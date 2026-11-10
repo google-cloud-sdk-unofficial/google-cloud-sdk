@@ -82,6 +82,8 @@ class TasksAsyncClient:
     parse_secret_version_path = staticmethod(TasksClient.parse_secret_version_path)
     task_path = staticmethod(TasksClient.task_path)
     parse_task_path = staticmethod(TasksClient.parse_task_path)
+    volume_path = staticmethod(TasksClient.volume_path)
+    parse_volume_path = staticmethod(TasksClient.parse_volume_path)
     common_billing_account_path = staticmethod(TasksClient.common_billing_account_path)
     parse_common_billing_account_path = staticmethod(TasksClient.parse_common_billing_account_path)
     common_folder_path = staticmethod(TasksClient.common_folder_path)

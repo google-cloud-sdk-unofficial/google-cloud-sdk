@@ -145,9 +145,9 @@ def _NodeUpgradeMessage(name, cluster, node_pool_name, new_version,
     if cluster:
       current_version = _NodePoolFromCluster(cluster, node_pool_name).version
   elif cluster:
+    node_count = cluster.currentNodeCount or 0
     node_message = '{} ({} {})'.format(
-        node_message, cluster.currentNodeCount,
-        text.Pluralize(cluster.currentNodeCount, 'node'))
+        node_message, node_count, text.Pluralize(node_count, 'node'))
     current_version = cluster.currentNodeVersion
 
   if current_version:

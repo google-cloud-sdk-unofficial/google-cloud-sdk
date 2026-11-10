@@ -79,3 +79,15 @@ projects_locations_policies_revisions:
     attribute_name: revision
     help: The revision id of the {resource} resource.
   disable_auto_completers: false
+projects_locations_authorities:
+  name: authority
+  plural_name: authorities
+  collection: softwaredeliverytrust.projects.locations.authorities
+  attributes:
+  - *project
+  - *location
+  - &authority
+    parameter_name: authoritiesId
+    attribute_name: authority
+    help: The authority id of the {resource} resource.
+  disable_auto_completers: false

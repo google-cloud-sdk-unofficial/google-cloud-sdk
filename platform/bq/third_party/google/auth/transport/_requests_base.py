@@ -19,7 +19,6 @@
 
 import abc
 
-
 _DEFAULT_TIMEOUT = 120  # in second
 
 
@@ -45,7 +44,7 @@ class _BaseAuthorizedSession(metaclass=abc.ABCMeta):
         headers=None,
         max_allowed_time=None,
         timeout=_DEFAULT_TIMEOUT,
-        **kwargs
+        **kwargs,
     ):
         raise NotImplementedError("Request must be implemented")
 

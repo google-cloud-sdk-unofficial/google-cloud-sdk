@@ -75,10 +75,7 @@ class Update(base.UpdateCommand):
         type=arg_parsers.ArgDict(),
         help='List of label KEY=VALUE pairs to set on the service.',
     )
-    parser.add_argument(
-        '--sql-source-dir',
-        help='Path to a local directory containing SQL migration files.',
-    )
+    flags.AddSqlSourceDirFlag(parser)
     parser.add_argument(
         '--validate-only',
         action='store_true',

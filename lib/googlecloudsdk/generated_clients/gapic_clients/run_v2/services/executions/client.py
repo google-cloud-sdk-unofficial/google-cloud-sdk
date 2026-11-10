@@ -263,6 +263,17 @@ class ExecutionsClient(metaclass=ExecutionsClientMeta):
         return m.groupdict() if m else {}
 
     @staticmethod
+    def volume_path(project: str,location: str,volume_pool: str,volume: str,) -> str:
+        """Returns a fully-qualified volume string."""
+        return "projects/{project}/locations/{location}/volumePools/{volume_pool}/volumes/{volume}".format(project=project, location=location, volume_pool=volume_pool, volume=volume, )
+
+    @staticmethod
+    def parse_volume_path(path: str) -> Dict[str,str]:
+        """Parses a volume path into its component segments."""
+        m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/volumePools/(?P<volume_pool>.+?)/volumes/(?P<volume>.+?)$", path)
+        return m.groupdict() if m else {}
+
+    @staticmethod
     def common_billing_account_path(billing_account: str, ) -> str:
         """Returns a fully-qualified billing_account string."""
         return "billingAccounts/{billing_account}".format(billing_account=billing_account, )

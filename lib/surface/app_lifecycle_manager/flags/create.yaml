@@ -9,7 +9,7 @@
     examples: |-
       To create a simple boolean flag with a default `Disabled` state, run:
 
-          $ {command} my-feature-flag --key=enable_new_feature --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"defaultTarget": "Disabled"}' --location=global
+          $ {command} my-feature-flag --key=enable_new_feature --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"defaultVariant": "Disabled"}' --location=global
 
       To create a simple boolean flag including a flag set, description, state, and the default variants and evaluation spec, run:
 
@@ -17,23 +17,23 @@
 
       To create a percentage rollout (10% Enabled) using a `userID` attribute, run:
 
-          $ {command} beta-feature --key=beta_rollout --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"allocations": [{"id": "p10", "randomizedOn": "userID", "slots": [{"variant": "Disabled", "weight": 90}, {"variant": "Enabled", "weight": 10}]}], "defaultTarget": "p10", "attributes": ["projects/my-project/locations/global/flagAttributes/id-attr"]}' --location=global
+          $ {command} beta-feature --key=beta_rollout --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"allocations": [{"id": "p10", "randomizedOn": "userID", "slots": [{"variant": "Disabled", "weight": 90}, {"variant": "Enabled", "weight": 10}]}], "defaultAllocation": "p10", "attributes": ["projects/my-project/locations/global/flagAttributes/id-attr"]}' --location=global
 
       To create an integer flag for a retry limit, run:
 
-          $ {command} retry-limit --key=max_retries --flag-value-type=int --unit-kind=my-service-unit --variants='[{"id": "Low", "integerValue": 3}, {"id": "High", "integerValue": 10}]' --evaluation-spec='{"defaultTarget": "Low"}' --location=global
+          $ {command} retry-limit --key=max_retries --flag-value-type=int --unit-kind=my-service-unit --variants='[{"id": "Low", "integerValue": 3}, {"id": "High", "integerValue": 10}]' --evaluation-spec='{"defaultVariant": "Low"}' --location=global
 
       To create a double flag for a discount percentage, run:
 
-          $ {command} discount-percentage --key=discount_percentage --flag-value-type=double --unit-kind=my-service-unit --variants='[{"id": "Zero", "doubleValue": 0.0}, {"id": "TenPercent", "doubleValue": 0.1}, {"id": "TwentyPercent", "doubleValue": 0.2}]' --evaluation-spec='{"defaultTarget": "Zero"}' --location=global
+          $ {command} discount-percentage --key=discount_percentage --flag-value-type=double --unit-kind=my-service-unit --variants='[{"id": "Zero", "doubleValue": 0.0}, {"id": "TenPercent", "doubleValue": 0.1}, {"id": "TwentyPercent", "doubleValue": 0.2}]' --evaluation-spec='{"defaultVariant": "Zero"}' --location=global
 
       To create a string flag for a theme color, run:
 
-          $ {command} header-color --key=header_color --flag-value-type=string --unit-kind=my-service-unit --variants='[{"id": "Blue", "stringValue": "blue"}, {"id": "Red", "stringValue": "red"}]' --evaluation-spec='{"defaultTarget": "Blue"}' --location=global
+          $ {command} header-color --key=header_color --flag-value-type=string --unit-kind=my-service-unit --variants='[{"id": "Blue", "stringValue": "blue"}, {"id": "Red", "stringValue": "red"}]' --evaluation-spec='{"defaultVariant": "Blue"}' --location=global
 
       To create a flag with complex targeting rules using a CEL expression and attributes, run:
 
-          $ {command} beta-feature --key=beta_enabled --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"rules": [{"id": "internal-testers", "condition": "email.endsWith(\"@google.com\")", "target": "Enabled"}], "defaultTarget": "Disabled", "attributes": ["projects/my-project/locations/global/flagAttributes/email-attr"]}' --location=global
+          $ {command} beta-feature --key=beta_enabled --flag-value-type=bool --unit-kind=my-service-unit --variants='[{"id": "Enabled", "booleanValue": true}, {"id": "Disabled", "booleanValue": false}]' --evaluation-spec='{"rules": [{"id": "internal-testers", "condition": "email.endsWith(\"@google.com\")", "variantId": "Enabled"}], "defaultVariant": "Disabled", "attributes": ["projects/my-project/locations/global/flagAttributes/email-attr"]}' --location=global
 
   arguments:
     params:
@@ -90,13 +90,16 @@
       required: false
       repeated: false
       spec:
-      - api_field: defaultTarget
+      - api_field: defaultVariant
         help_text: |-
-          Default variant for the flag.
+          Name of a variant to use as the default.
+      - api_field: defaultAllocation
+        help_text: |-
+          ID of an allocation to use as the default.
       - api_field: defaultDynamicAllocation
         hidden: true
         help_text: |-
-          The ID of a dynamic allocation to use as the default.
+          ID of a dynamic allocation to use as the default.
       - api_field: dynamicAllocations
         hidden: true
         help_text: |-
@@ -160,9 +163,16 @@
         - api_field: id
           help_text: |-
             A unique identifier for the rule.
-        - api_field: target
+        - api_field: variantId
           help_text: |-
-            The ID of the variant to return if the condition evaluates to true.
+            Name of a variant to target.
+        - api_field: allocationId
+          help_text: |-
+            ID of an allocation to target.
+        - api_field: dynamicAllocationId
+          hidden: true
+          help_text: |-
+            ID of a dynamic allocation to target.
       - api_field: attributes
         help_text: |-
           Names of the context attributes that are used in the evaluation rules and allocations.

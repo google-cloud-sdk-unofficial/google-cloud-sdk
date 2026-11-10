@@ -36,8 +36,8 @@ from rsa.pkcs1 import (
 )
 
 
-__date__ = "2022-07-20"
-__version__ = "4.9"
+__date__ = "2025-04-16"
+__version__ = "4.9.1"
 
 # Do doctest if we're run directly
 if __name__ == "__main__":

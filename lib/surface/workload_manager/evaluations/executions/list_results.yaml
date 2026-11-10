@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA]
+  command_type: LIST
+  hints:
+    read_only: true
+
+  help_text:
+    brief: List results of a Workload Manager evaluation execution.
+    description: List results of a Workload Manager evaluation execution.
+    examples: |
+      To list all results of execution ``my-execution'' under evaluation
+      ``my-evaluation'' in location ``us-central1'', run:
+
+        $ {command} --execution=my-execution --evaluation=my-evaluation \
+            --location=us-central1
+
+  request:
+    collection: workloadmanager.projects.locations.evaluations.executions.results
+    method: list
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: execution for which to list results.
+      spec: !REF googlecloudsdk.command_lib.workload_manager.resources:execution
+
+  output:
+    format: |
+      table(
+        rule:label=RULE,
+        resource.name:label=RESOURCE,
+        type:label=TYPE,
+        severity:label=SEVERITY,
+        violationMessage:label=VIOLATION_MESSAGE
+      )

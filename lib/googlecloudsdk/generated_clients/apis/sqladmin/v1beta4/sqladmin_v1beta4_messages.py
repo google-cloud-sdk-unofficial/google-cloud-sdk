@@ -1779,6 +1779,10 @@ class DatabaseInstance(_messages.Message):
       and replication setup.
     sqlNetworkArchitecture: The SQL network architecture for the instance.
     state: The current serving state of the Cloud SQL instance.
+    suspensionDetails: Output only. Details for the entries in
+      `suspension_reason`, such as the specific Cloud KMS problem behind a
+      `KMS_KEY_ISSUE` suspension. Populated only when the instance state is
+      `SUSPENDED`.
     suspensionReason: If the instance state is SUSPENDED, the reason for the
       suspension.
     switchTransactionLogsToCloudStorageEnabled: Input only. Whether Cloud SQL
@@ -1792,6 +1796,11 @@ class DatabaseInstance(_messages.Message):
       https://cloud.google.com/resource-manager/docs/tags/tags-overview.
     upgradableDatabaseVersions: Output only. All database versions that are
       available for upgrade.
+    workloadCaptureConfig: Output only. The workload capture configuration for
+      this instance. This field is set only when an active workload capture is
+      present on the instance.
+    workloadReplayConfig: Output only. The workload replay configuration for
+      this instance. This field is set only for workload replay instances.
     writeEndpoint: Output only. The dns name of the primary instance in a
       replication group.
   """
@@ -2320,11 +2329,14 @@ class DatabaseInstance(_messages.Message):
   sourceInstanceNames = _messages.StringField(53, repeated=True)
   sqlNetworkArchitecture = _messages.EnumField('SqlNetworkArchitectureValueValuesEnum', 54)
   state = _messages.EnumField('StateValueValuesEnum', 55)
-  suspensionReason = _messages.EnumField('SuspensionReasonValueListEntryValuesEnum', 56, repeated=True)
-  switchTransactionLogsToCloudStorageEnabled = _messages.BooleanField(57)
-  tags = _messages.MessageField('TagsValue', 58)
-  upgradableDatabaseVersions = _messages.MessageField('AvailableDatabaseVersion', 59, repeated=True)
-  writeEndpoint = _messages.StringField(60)
+  suspensionDetails = _messages.MessageField('SuspensionDetails', 56, repeated=True)
+  suspensionReason = _messages.EnumField('SuspensionReasonValueListEntryValuesEnum', 57, repeated=True)
+  switchTransactionLogsToCloudStorageEnabled = _messages.BooleanField(58)
+  tags = _messages.MessageField('TagsValue', 59)
+  upgradableDatabaseVersions = _messages.MessageField('AvailableDatabaseVersion', 60, repeated=True)
+  workloadCaptureConfig = _messages.MessageField('WorkloadCaptureConfig', 61)
+  workloadReplayConfig = _messages.MessageField('WorkloadReplayConfig', 62)
+  writeEndpoint = _messages.StringField(63)
 
 
 class DatabasesListResponse(_messages.Message):
@@ -3594,7 +3606,7 @@ class ImportContext(_messages.Message):
 
 
 class InitialUser(_messages.Message):
-  r"""Configuration for a user created during instance creation.
+  r"""Configuration for an IAM user created during instance creation.
 
   Enums:
     TypeValueValuesEnum: Required. The user type. Cannot be BUILT_IN.
@@ -3648,7 +3660,7 @@ class InitialUsersConfig(_messages.Message):
   r"""Configuration for users created during instance creation.
 
   Fields:
-    initialUsers: Optional. List of users to be created during instance
+    initialUsers: Optional. List of IAM users to be created during instance
       creation. A maximum of 5 users are allowed.
   """
 
@@ -4213,6 +4225,58 @@ class IpMapping(_messages.Message):
   ipAddress = _messages.StringField(1)
   timeToRetire = _messages.StringField(2)
   type = _messages.EnumField('TypeValueValuesEnum', 3)
+
+
+class KmsKeyIssueDetails(_messages.Message):
+  r"""Details of a `KMS_KEY_ISSUE` suspension.
+
+  Enums:
+    IssueValueValuesEnum: Output only. The specific Cloud KMS problem.
+
+  Fields:
+    errorMessage: Output only. The error message returned by Cloud KMS.
+    issue: Output only. The specific Cloud KMS problem.
+  """
+
+  class IssueValueValuesEnum(_messages.Enum):
+    r"""Output only. The specific Cloud KMS problem.
+
+    Values:
+      KMS_KEY_ISSUE_UNSPECIFIED: The Cloud KMS problem is unknown or not
+        applicable.
+      KMS_KEY_NOT_FOUND: The Cloud KMS key or key version was not found.
+        Restore the key, or restore the instance from a backup encrypted with
+        a different key.
+      KMS_KEY_PERMISSION_DENIED: The Cloud SQL service agent doesn't have
+        permission to use the key. Grant it the Cloud KMS CryptoKey
+        Encrypter/Decrypter role on the key.
+      KMS_KEY_DISABLED: The Cloud KMS key version is disabled. Enable the key
+        version; the instance is then resumed automatically.
+      KMS_KEY_DESTROY_SCHEDULED: The Cloud KMS key version is scheduled for
+        destruction. Restore the key version or reencrypt to a new key version
+        before its destruction time.
+      KMS_KEY_DESTROYED: The Cloud KMS key version is destroyed. Restore the
+        instance from a backup encrypted with a different key version.
+      KMS_BILLING_DISABLED: Billing is disabled on the project that owns the
+        Cloud KMS key. Enable billing on that project.
+      KMS_KEY_UNREACHABLE: Cloud KMS can't reach the key in the external key
+        manager. Check that the external key manager is running and reachable.
+      KMS_KEY_VPCSC_ACCESS_DENIED: A VPC Service Controls perimeter denied
+        access to the key. Allow Cloud SQL to access the key across the
+        perimeter.
+    """
+    KMS_KEY_ISSUE_UNSPECIFIED = 0
+    KMS_KEY_NOT_FOUND = 1
+    KMS_KEY_PERMISSION_DENIED = 2
+    KMS_KEY_DISABLED = 3
+    KMS_KEY_DESTROY_SCHEDULED = 4
+    KMS_KEY_DESTROYED = 5
+    KMS_BILLING_DISABLED = 6
+    KMS_KEY_UNREACHABLE = 7
+    KMS_KEY_VPCSC_ACCESS_DENIED = 8
+
+  errorMessage = _messages.StringField(1)
+  issue = _messages.EnumField('IssueValueValuesEnum', 2)
 
 
 class ListBackupsResponse(_messages.Message):
@@ -7359,15 +7423,22 @@ class SqlInstancesAddEntraIdCertificateRequest(_messages.Message):
   r"""A SqlInstancesAddEntraIdCertificateRequest object.
 
   Fields:
+    autoUpload: Optional. If `true`, Cloud SQL also uploads the new
+      certificate to the Microsoft Entra ID application of the instance by
+      using the manager application, and confirms that the certificate can be
+      used. If the upload fails, the operation fails and the certificate is
+      removed from the instance. Requires `manager_application_id` to be set
+      in the Entra ID configuration of the instance.
     instance: Required. Cloud SQL instance ID. This does not include the
       project ID.
     location: Optional. Region of the Cloud SQL instance.
     project: Required. Project ID of the project that contains the instance.
   """
 
-  instance = _messages.StringField(1, required=True)
-  location = _messages.StringField(2)
-  project = _messages.StringField(3, required=True)
+  autoUpload = _messages.BooleanField(1)
+  instance = _messages.StringField(2, required=True)
+  location = _messages.StringField(3)
+  project = _messages.StringField(4, required=True)
 
 
 class SqlInstancesAddReplicationSourceRequest(_messages.Message):
@@ -8653,13 +8724,24 @@ class SqlServerEntraIdConfig(_messages.Message):
   Fields:
     applicationId: Optional. The application ID for the Entra ID
       configuration.
+    autoRotation: Optional. Whether the certificate of the application
+      identified by `application_id` is rotated automatically during
+      maintenance. Requires `manager_application_id`.
     kind: Output only. This is always sql#sqlServerEntraIdConfig
+    managerApplicationId: Optional. The client ID of the Microsoft Entra
+      application that Cloud SQL uses, through Workload Identity Federation,
+      to manage the certificates of the application identified by
+      `application_id`. The manager application must be an owner of that
+      application and must have the `Application.ReadWrite.OwnedBy` Microsoft
+      Graph application permission.
     tenantId: Optional. The tenant ID for the Entra ID configuration.
   """
 
   applicationId = _messages.StringField(1)
-  kind = _messages.StringField(2)
-  tenantId = _messages.StringField(3)
+  autoRotation = _messages.BooleanField(2)
+  kind = _messages.StringField(3)
+  managerApplicationId = _messages.StringField(4)
+  tenantId = _messages.StringField(5)
 
 
 class SqlServerPasswordValidationPolicy(_messages.Message):
@@ -9340,6 +9422,9 @@ class StartWorkloadReplayContext(_messages.Message):
       with a lowercase letter and contain only lowercase letters, numbers, and
       hyphens. The combined length of `project-ID:instance-name` must be 98
       characters or less.
+    sourceInstance: Output only. The name of the source Cloud SQL instance
+      where the workload was captured, excluding the project ID (for example,
+      `my-source-instance`).
     workloadId: Output only. The ID of the workload to start executing on the
       replay instance. Each workload capture generates a unique ID in the
       format `workload-` (for example, `workload-1786046400`). Use this ID to
@@ -9347,7 +9432,8 @@ class StartWorkloadReplayContext(_messages.Message):
   """
 
   replayInstance = _messages.StringField(1)
-  workloadId = _messages.StringField(2)
+  sourceInstance = _messages.StringField(2)
+  workloadId = _messages.StringField(3)
 
 
 class Status(_messages.Message):
@@ -9423,6 +9509,51 @@ class StopWorkloadReplayContext(_messages.Message):
   instance.
   """
 
+
+
+class SuspensionDetails(_messages.Message):
+  r"""Details for one suspension reason of a database instance.
+
+  Enums:
+    ReasonValueValuesEnum: Output only. The suspension reason that these
+      details describe.
+
+  Fields:
+    kmsKeyIssue: Output only. The Cloud KMS problem. Set only when `reason` is
+      `KMS_KEY_ISSUE`.
+    reason: Output only. The suspension reason that these details describe.
+  """
+
+  class ReasonValueValuesEnum(_messages.Enum):
+    r"""Output only. The suspension reason that these details describe.
+
+    Values:
+      SQL_SUSPENSION_REASON_UNSPECIFIED: This is an unknown suspension reason.
+      BILLING_ISSUE: The instance is suspended due to billing issues (for
+        example:, account issue)
+      LEGAL_ISSUE: The instance is suspended due to illegal content (for
+        example:, child pornography, copyrighted material, etc.).
+      OPERATIONAL_ISSUE: The instance is causing operational issues (for
+        example:, causing the database to crash).
+      KMS_KEY_ISSUE: The KMS key used by the instance is either revoked or
+        denied access to
+      CLOUD_SQL_FREE_TRIAL_EXPIRED: The Cloud SQL free trial for the instance
+        has expired.
+      FDC_IFTRIAL_EXPIRED: Indicates that the Firebase Data Connect free trial
+        instance has expired.
+      PROJECT_ABUSE: The project is suspended due to abuse detected by Ares.
+    """
+    SQL_SUSPENSION_REASON_UNSPECIFIED = 0
+    BILLING_ISSUE = 1
+    LEGAL_ISSUE = 2
+    OPERATIONAL_ISSUE = 3
+    KMS_KEY_ISSUE = 4
+    CLOUD_SQL_FREE_TRIAL_EXPIRED = 5
+    FDC_IFTRIAL_EXPIRED = 6
+    PROJECT_ABUSE = 7
+
+  kmsKeyIssue = _messages.MessageField('KmsKeyIssueDetails', 1)
+  reason = _messages.EnumField('ReasonValueValuesEnum', 2)
 
 
 class SwitchoverBlueGreenDeploymentRequest(_messages.Message):
@@ -10085,6 +10216,75 @@ class WorkloadCapture(_messages.Message):
   workloadId = _messages.StringField(8)
 
 
+class WorkloadCaptureConfig(_messages.Message):
+  r"""The workload capture configuration for a Cloud SQL primary instance.
+
+  Enums:
+    CaptureModeValueValuesEnum: Output only. The mode of the workload capture.
+    StateValueValuesEnum: Output only. The state of the workload capture.
+
+  Fields:
+    backupId: Output only. The base backup ID associated with the workload
+      capture.
+    captureMode: Output only. The mode of the workload capture.
+    endTime: Output only. The end time of the workload capture. This field is
+      unset while the capture is running.
+    maxCaptureDuration: Output only. The maximum duration for this workload
+      capture.
+    replayInstance: Output only. The name of the replay instance, excluding
+      the project ID, if live replay is enabled.
+    retentionDays: Output only. The retention period in days for the captured
+      workload.
+    startTime: Output only. The start time of the workload capture.
+    state: Output only. The state of the workload capture.
+    workloadId: Output only. The ID of the captured workload.
+  """
+
+  class CaptureModeValueValuesEnum(_messages.Enum):
+    r"""Output only. The mode of the workload capture.
+
+    Values:
+      CAPTURE_MODE_UNSPECIFIED: Default value. This value is unused.
+      CAPTURE_ONLY: Captures the workload on the primary instance without live
+        replay.
+      CAPTURE_AND_LIVE_REPLAY: Captures the workload and simultaneously
+        replays it on a live replay instance.
+    """
+    CAPTURE_MODE_UNSPECIFIED = 0
+    CAPTURE_ONLY = 1
+    CAPTURE_AND_LIVE_REPLAY = 2
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the workload capture.
+
+    Values:
+      STATE_UNSPECIFIED: Default value. This value is unused.
+      RUNNING: Workload capture is currently running.
+      COMPLETED: Workload capture completed successfully. Cloud SQL sets this
+        state when you explicitly stop the capture.
+      FAILED: Workload capture failed.
+      TERMINATED: Workload capture was terminated automatically. Cloud SQL
+        sets this state when it automatically stops the capture because of a
+        conflicting operation or because the capture reached its maximum
+        duration.
+    """
+    STATE_UNSPECIFIED = 0
+    RUNNING = 1
+    COMPLETED = 2
+    FAILED = 3
+    TERMINATED = 4
+
+  backupId = _messages.StringField(1)
+  captureMode = _messages.EnumField('CaptureModeValueValuesEnum', 2)
+  endTime = _messages.StringField(3)
+  maxCaptureDuration = _messages.StringField(4)
+  replayInstance = _messages.StringField(5)
+  retentionDays = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  startTime = _messages.StringField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 8)
+  workloadId = _messages.StringField(9)
+
+
 class WorkloadCapturesListResponse(_messages.Message):
   r"""Instance list captured workloads response.
 
@@ -10142,6 +10342,64 @@ class WorkloadCapturesStopRequest(_messages.Message):
   """
 
   stopWorkloadCaptureContext = _messages.MessageField('StopWorkloadCaptureContext', 1)
+
+
+class WorkloadReplayConfig(_messages.Message):
+  r"""The workload replay configuration for a Cloud SQL replay instance.
+
+  Enums:
+    ReplayModeValueValuesEnum: Output only. The mode of the workload replay.
+    StateValueValuesEnum: Output only. The state of the workload replay.
+
+  Fields:
+    endTime: Output only. The end time of the workload replay. This field is
+      unset while the replay is running.
+    replayMode: Output only. The mode of the workload replay.
+    sourceInstance: Output only. The name of the source instance, excluding
+      the project ID, where the workload was captured.
+    startTime: Output only. The start time of the workload replay.
+    state: Output only. The state of the workload replay.
+    workloadId: Output only. The ID of the captured workload being replayed.
+  """
+
+  class ReplayModeValueValuesEnum(_messages.Enum):
+    r"""Output only. The mode of the workload replay.
+
+    Values:
+      REPLAY_MODE_UNSPECIFIED: Default value. This value is unused.
+      LIVE: Live workload replay mode.
+      OFFLINE: Offline (delayed) workload replay mode.
+    """
+    REPLAY_MODE_UNSPECIFIED = 0
+    LIVE = 1
+    OFFLINE = 2
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The state of the workload replay.
+
+    Values:
+      STATE_UNSPECIFIED: Default value. This value is unused.
+      RUNNING: Workload replay is currently running.
+      COMPLETED: Workload replay completed successfully. Cloud SQL sets this
+        state when all captured workload files finish replaying or when you
+        explicitly stop the replay.
+      FAILED: Workload replay failed.
+      TERMINATED: Workload replay was terminated automatically. Cloud SQL sets
+        this state when it automatically stops the replay because of a
+        conflicting operation.
+    """
+    STATE_UNSPECIFIED = 0
+    RUNNING = 1
+    COMPLETED = 2
+    FAILED = 3
+    TERMINATED = 4
+
+  endTime = _messages.StringField(1)
+  replayMode = _messages.EnumField('ReplayModeValueValuesEnum', 2)
+  sourceInstance = _messages.StringField(3)
+  startTime = _messages.StringField(4)
+  state = _messages.EnumField('StateValueValuesEnum', 5)
+  workloadId = _messages.StringField(6)
 
 
 encoding.AddCustomJsonFieldMapping(

@@ -21,7 +21,7 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a Dataflow ConfigStore setting."""
 
@@ -79,3 +79,33 @@ class Delete(base.DeleteCommand):
         setting_ref.RelativeName(), kind='ConfigStore setting'
     )
     return response
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  """Delete a Dataflow ConfigStore setting."""
+
+  detailed_help = {
+      'DESCRIPTION': 'Delete a Dataflow ConfigStore setting.',
+      'EXAMPLES': (
+          """\
+          To delete a setting on a project (use either project ID or
+          project number):
+
+            $ {command} default_launcher_machine_type \\
+              --project=my-project --location=us-central1
+
+            $ {command} default_launcher_machine_type \\
+              --project=123456789 --location=us-central1
+
+          To delete the same setting on a folder or an organization:
+
+            $ {command} default_launcher_machine_type \\
+              --folder=123456 --location=us-central1
+
+            $ {command} default_launcher_machine_type \\
+              --organization=789012 --location=us-central1
+          """
+      ),
+  }

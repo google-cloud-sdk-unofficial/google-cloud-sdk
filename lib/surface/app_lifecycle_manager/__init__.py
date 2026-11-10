@@ -17,11 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-# TODO(b/573139202): Un-hide the GA command set at launch: remove @base.Hidden,
-# drop `hidden: true` for saasservicemgmt in
-# generated_clients/regen_apis_config.yaml (endpoint override property),
-# regenerate help text and surface specs, and add a release note.
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SaasRuntimeGa(base.Group):

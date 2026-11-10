@@ -409,7 +409,20 @@ def AddSnowflakeRoleArg(parser):
   )
 
 
-def AddSnowflakeCatalogArgs(parser):
+def AddSnowflakeUserIdentityFederationRoleArg(parser):
+  """Adds Snowflake user identity federation role argument."""
+  parser.add_argument(
+      '--snowflake-user-identity-federation-role',
+      help=(
+          'The Snowflake role used to scope end user access to Snowflake'
+          ' Horizon Catalog for user identity federation.'
+      ),
+  )
+
+
+def AddSnowflakeCatalogArgs(
+    parser, support_user_identity_federation_role=False
+):
   """Adds arguments for Snowflake catalogs."""
   parser.add_argument(
       '--snowflake-warehouse',
@@ -420,6 +433,8 @@ def AddSnowflakeCatalogArgs(parser):
       help='The account identifier of the Snowflake catalog to connect to.',
   )
   AddSnowflakeRoleArg(parser)
+  if support_user_identity_federation_role:
+    AddSnowflakeUserIdentityFederationRoleArg(parser)
 
 
 def AddWorkdayApiClientClientIdArg(parser):

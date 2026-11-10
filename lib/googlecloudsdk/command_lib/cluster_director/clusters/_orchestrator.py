@@ -28,7 +28,6 @@ from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.cluster_director.clusters import _validator
 from googlecloudsdk.command_lib.cluster_director.clusters import errors
-from googlecloudsdk.command_lib.cluster_director.clusters import slurm_parser
 from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.core.util import files
 
@@ -86,12 +85,14 @@ def _GetStoragePoolName(cluster_ref: Any, storage_pool: str) -> str:
 
 
 _GCE_INSTANCE_FIELDS = frozenset([
+    "computeInstance",
     "startupScript",
     "labels",
     "bootDisk",
     "startupScriptTimeout",
 ])
 _GKE_NODE_POOL_FIELDS = frozenset([
+    "containerNodePool",
     "container-resource-labels",
     "container-startup-script",
 ])
@@ -498,8 +499,8 @@ def _MakeSlurmNodeSet(
         startupScript=startup_script,
         labels=compute_instance_labels,
     )
-    if node_set.get("startupScriptTimeout"):
-      compute_instance.startupScriptTimeout = node_set.get(
+    if conf.get("startupScriptTimeout"):
+      compute_instance.startupScriptTimeout = conf.get(
           "startupScriptTimeout")
     if hasattr(slurm_node_set, "computeId"):
       slurm_node_set.computeId = node_set.get("computeId")
@@ -616,13 +617,8 @@ def MakeClusterSlurmOrchestrator(
   if args.IsKnownAndSpecified("slurm_task_epilog_scripts"):
     slurm.taskEpilogBashScripts = args.slurm_task_epilog_scripts
   if args.IsKnownAndSpecified("slurm_config"):
-    parsed_slurm_config = slurm_parser.ParseSlurmConfigDict(args.slurm_config)
-    known_fields = {f.name for f in message_module.SlurmConfig.all_fields()}
-    direct_fields = {
-        k: v for k, v in parsed_slurm_config.items() if k in known_fields
-    }
     slurm.config = messages_util.DictToMessageWithErrorCheck(
-        direct_fields, message_module.SlurmConfig
+        args.slurm_config, message_module.SlurmConfig
     )
   if args.IsKnownAndSpecified("enable_slurm_health_check"):
     slurm.disableHealthCheckProgram = not args.enable_slurm_health_check
@@ -630,6 +626,15 @@ def MakeClusterSlurmOrchestrator(
     _validator.ValidateControllerVersion(args.controller_version)
     slurm.controllerVersion = args.controller_version
   return slurm
+
+
+def _GetOrCreateComputeInstance(message_module, existing_node_set):
+  """Gets or creates the computeInstance for a SlurmNodeSet."""
+  if not existing_node_set.computeInstance:
+    existing_node_set.computeInstance = (
+        message_module.ComputeInstanceSlurmNodeSet()
+    )
+  return existing_node_set.computeInstance
 
 
 def _GetOrCreateContainerNodePool(message_module, existing_node_set):
@@ -790,15 +795,24 @@ def MakeClusterSlurmOrchestratorPatch(
         existing_node_set.maxDynamicNodeCount = node_set.get(
             "maxDynamicNodeCount"
         )
-      if "startupScriptTimeout" in node_set:
-        if not existing_node_set.computeInstance:
-          existing_node_set.computeInstance = (
-              message_module.ComputeInstanceSlurmNodeSet()
-          )
-        existing_node_set.computeInstance.startupScriptTimeout = node_set.get(
+      conf = {**node_set, **(node_set.get("computeInstance") or {})}
+      if "startupScript" in conf:
+        _GetOrCreateComputeInstance(message_module, existing_node_set)
+        existing_node_set.computeInstance.startupScript = _GetBashScript(
+            conf.get("startupScript")
+        )
+      if "labels" in conf:
+        _GetOrCreateComputeInstance(message_module, existing_node_set)
+        existing_node_set.computeInstance.labels = MakeLabels(
+            label_args=conf.get("labels"),
+            label_cls=message_module.ComputeInstanceSlurmNodeSet.LabelsValue,
+        )
+      if "startupScriptTimeout" in conf:
+        _GetOrCreateComputeInstance(message_module, existing_node_set)
+        existing_node_set.computeInstance.startupScriptTimeout = conf.get(
             "startupScriptTimeout"
         )
-      if "bootDisk" in node_set:
+      if "bootDisk" in conf:
         if not is_gke_node_set:
           compute_id = getattr(existing_node_set, "computeId", None)
           if compute_id:
@@ -808,26 +822,43 @@ def MakeClusterSlurmOrchestratorPatch(
                 existing_cluster=existing_cluster,
                 use_existing_cluster=True,
             )
-            _validator.ValidateBootDisk(machine_type, node_set.get("bootDisk"))
+            _validator.ValidateBootDisk(machine_type, conf.get("bootDisk"))
         _PatchBootDiskForNodeSet(
             message_module,
             existing_node_set=existing_node_set,
-            node_set_patch=node_set,
+            node_set_patch=conf,
             cluster_ref=cluster_ref,
         )
-      if "container-resource-labels" in node_set:
+      container_conf = node_set.get("containerNodePool") or {}
+      if (
+          "container-resource-labels" in node_set
+          or "resourceLabels" in container_conf
+      ):
         _GetOrCreateContainerNodePool(message_module, existing_node_set)
+        label_args = (
+            container_conf.get("resourceLabels")
+            if "resourceLabels" in container_conf
+            else node_set.get("container-resource-labels")
+        )
         existing_node_set.containerNodePool.resourceLabels = MakeLabels(
-            label_args=node_set.get("container-resource-labels"),
+            label_args=label_args,
             label_cls=(
                 message_module.ContainerNodePoolSlurmNodeSet
                 .ResourceLabelsValue
             ),
         )
-      if "container-startup-script" in node_set:
+      if (
+          "container-startup-script" in node_set
+          or "startupScript" in container_conf
+      ):
         _GetOrCreateContainerNodePool(message_module, existing_node_set)
+        startup_script_arg = (
+            container_conf.get("startupScript")
+            if "startupScript" in container_conf
+            else node_set.get("container-startup-script")
+        )
         existing_node_set.containerNodePool.startupScript = _GetBashScript(
-            node_set.get("container-startup-script")
+            startup_script_arg
         )
 
       if "storageConfigs" in node_set:
@@ -1008,8 +1039,10 @@ def MakeClusterSlurmOrchestratorPatch(
 
     if (count := login_node_patch.get("count")) is not None:
       login_nodes.count = count
-    if (startup_script := login_node_patch.get("startupScript")) is not None:
-      login_nodes.startupScript = _GetBashScript(startup_script)
+    if "startupScript" in login_node_patch:
+      login_nodes.startupScript = _GetBashScript(
+          login_node_patch.get("startupScript")
+      )
     if (boot_disk_patch := login_node_patch.get("bootDisk")) is not None:
       boot_disk = login_nodes.bootDisk
       if boot_disk is None:
@@ -1198,52 +1231,45 @@ def MakeClusterSlurmOrchestratorPatch(
       update_mask.add("orchestrator.slurm.task_epilog_bash_scripts")
 
   if args.IsKnownAndSpecified("update_slurm_config"):
-
     if not args.update_slurm_config:
       slurm.config = None
       update_mask.add("orchestrator.slurm.config")
     else:
-      parsed_slurm_config = slurm_parser.ParseSlurmConfigDict(
-          args.update_slurm_config
-      )
-      if not parsed_slurm_config:
-        slurm.config = None
-        update_mask.add("orchestrator.slurm.config")
-      else:
-        existing_config_dict = {}
-        if (
-            existing_cluster
-            and existing_cluster.orchestrator
-            and existing_cluster.orchestrator.slurm
-            and existing_cluster.orchestrator.slurm.config
-        ):
-          existing_config_dict = encoding.MessageToDict(
-              existing_cluster.orchestrator.slurm.config
-          )
-        for k, v in parsed_slurm_config.items():
-          if not v:
-            existing_config_dict.pop(k, None)
-          elif isinstance(v, dict):
-            merged_subdict = dict(existing_config_dict.get(k, {}))
-            for sub_k, sub_v in v.items():
-              if not sub_v:
-                merged_subdict.pop(sub_k, None)
-              else:
-                merged_subdict[sub_k] = sub_v
-            if not merged_subdict:
-              existing_config_dict.pop(k, None)
-            else:
-              existing_config_dict[k] = merged_subdict
-          else:
-            existing_config_dict[k] = v
-        known_fields = {f.name for f in message_module.SlurmConfig.all_fields()}
-        direct_fields = {
-            k: v for k, v in existing_config_dict.items() if k in known_fields
-        }
-        slurm.config = messages_util.DictToMessageWithErrorCheck(
-            direct_fields, message_module.SlurmConfig
+      existing_config_dict = {}
+      if (
+          existing_cluster
+          and existing_cluster.orchestrator
+          and existing_cluster.orchestrator.slurm
+          and existing_cluster.orchestrator.slurm.config
+      ):
+        existing_config_dict = encoding.MessageToDict(
+            existing_cluster.orchestrator.slurm.config
         )
-        update_mask.add("orchestrator.slurm.config")
+      for k, v in args.update_slurm_config.items():
+        if not v and not isinstance(v, (int, bool)):
+          existing_config_dict.pop(k, None)
+        elif isinstance(v, dict):
+          merged_subdict = dict(existing_config_dict.get(k, {}))
+          for sub_k, sub_v in v.items():
+            if not sub_v and not isinstance(sub_v, (int, bool)):
+              merged_subdict.pop(sub_k, None)
+            else:
+              merged_subdict[sub_k] = sub_v
+          if not merged_subdict:
+            existing_config_dict.pop(k, None)
+          else:
+            existing_config_dict[k] = merged_subdict
+        else:
+          existing_config_dict[k] = v
+      # Intentionally do not filter existing_config_dict by known local fields:
+      # since updateMask=orchestrator.slurm.config replaces the entire
+      # SlurmConfig submessage, silently stripping unrecognized fields from a
+      # newer server version would wipe them on the server. Failing loudly via
+      # DictToMessageWithErrorCheck prevents silent data loss on version skew.
+      slurm.config = messages_util.DictToMessageWithErrorCheck(
+          existing_config_dict, message_module.SlurmConfig
+      )
+      update_mask.add("orchestrator.slurm.config")
   if args.IsKnownAndSpecified("enable_slurm_health_check"):
     slurm.disableHealthCheckProgram = (
         not args.enable_slurm_health_check
@@ -1306,6 +1332,80 @@ def _GetDefaultComputeServiceAccountEmail(cluster_ref: Any = None) -> str:
   return f"{project_number}-compute@developer.gserviceaccount.com"
 
 
+def _MakeAdditionalDisk(
+    message_module: Any,
+    device_name: str,
+    disk_args: dict[str, Any],
+    cluster_ref: Any = None,
+) -> Any:
+  """Makes a Disk message for ManagedInstanceGroup.additionalDisks."""
+  _validator.ValidateAdditionalDisk(device_name, disk_args)
+  if any(disk_args.get(k) for k in ("existingDisk", "image", "snapshot")):
+    if not cluster_ref:
+      raise ClusterDirectorError(
+          "Cluster reference is required to resolve additional disk resource"
+          f" name for '{device_name}'."
+      )
+    project = cluster_ref.Parent().projectsId
+    if disk_args.get("existingDisk"):
+      return message_module.Disk(
+          existingDisk=f"projects/{project}/{disk_args['existingDisk']}"
+      )
+    disk_msg = message_module.Disk(
+        type=disk_args["type"], sizeGb=disk_args["sizeGb"]
+    )
+    if disk_args.get("image"):
+      disk_msg.image = f"projects/{project}/{disk_args['image']}"
+    else:
+      disk_msg.snapshot = f"projects/{project}/{disk_args['snapshot']}"
+    return disk_msg
+  return message_module.Disk(
+      type=disk_args["type"], sizeGb=disk_args["sizeGb"]
+  )
+
+
+def _MergeStringMap(
+    existing_map_msg: Any, patch_dict: Mapping[str, str], map_cls: Any
+) -> Any:
+  """Merges string map updates; empty patch clears, empty value removes key."""
+  if not patch_dict:
+    return None
+  merged = _ConvertMessageToDict(existing_map_msg)
+  for k, v in patch_dict.items():
+    if v == "":  # pylint: disable=g-explicit-bool-comparison
+      merged.pop(k, None)
+    else:
+      merged[k] = v
+  return MakeLabels(merged, map_cls)
+
+
+def _PatchAdditionalDisks(
+    message_module: Any,
+    disks_args: Mapping[str, Any] | None,
+    existing_disks_msg: Any = None,
+    cluster_ref: Any = None,
+    is_update: bool = False,
+) -> Any:
+  """Builds or merges ManagedInstanceGroup.AdditionalDisksValue."""
+  if not disks_args:
+    return None
+  merged = _ConvertMessageToDict(existing_disks_msg) if is_update else {}
+  for device_name, disk_args in disks_args.items():
+    if not disk_args:
+      if not is_update:
+        raise ClusterDirectorError(
+            f"Additional disk '{device_name}' configuration cannot be empty."
+        )
+      merged.pop(device_name, None)
+    else:
+      merged[device_name] = _MakeAdditionalDisk(
+          message_module, device_name, dict(disk_args), cluster_ref=cluster_ref
+      )
+  return MakeLabels(
+      merged, message_module.ManagedInstanceGroup.AdditionalDisksValue
+  )
+
+
 def _MakeManagedInstanceGroup(
     message_module,
     mig: Mapping[str, Any],
@@ -1325,9 +1425,19 @@ def _MakeManagedInstanceGroup(
   mig_msg = message_module.ManagedInstanceGroup(
       computeId=mig.get("computeId"),
       targetSize=mig.get("targetSize"),
+      enableOsLogin=mig.get("enableOsLogin"),
       enablePublicIps=mig.get("enablePublicIps"),
       startupScript=_GetBashScript(mig.get("startupScript")),
       startupScriptTimeout=mig.get("startupScriptTimeout") or None,
+      labels=MakeLabels(
+          mig.get("labels"), message_module.ManagedInstanceGroup.LabelsValue
+      ),
+      metadata=MakeLabels(
+          mig.get("metadata"), message_module.ManagedInstanceGroup.MetadataValue
+      ),
+      additionalDisks=_PatchAdditionalDisks(
+          message_module, mig.get("additionalDisks"), cluster_ref=cluster_ref
+      ),
       storageConfigs=storage_configs,
   )
   if mig.get("acceleratorTopology"):
@@ -1487,6 +1597,8 @@ def MakeClusterComputeEngineOrchestratorPatch(
       if "targetSize" in mig:
         _validator.ValidateMigTargetSize(mig_id, mig.get("targetSize"))
         existing_mig.targetSize = mig.get("targetSize")
+      if "enableOsLogin" in mig:
+        existing_mig.enableOsLogin = mig.get("enableOsLogin")
       if "enablePublicIps" in mig:
         existing_mig.enablePublicIps = mig.get("enablePublicIps")
       if "startupScript" in mig:
@@ -1494,6 +1606,26 @@ def MakeClusterComputeEngineOrchestratorPatch(
       if "startupScriptTimeout" in mig:
         existing_mig.startupScriptTimeout = (
             mig.get("startupScriptTimeout") or None
+        )
+      if "labels" in mig:
+        existing_mig.labels = _MergeStringMap(
+            existing_mig.labels,
+            mig.get("labels"),
+            message_module.ManagedInstanceGroup.LabelsValue,
+        )
+      if "metadata" in mig:
+        existing_mig.metadata = _MergeStringMap(
+            existing_mig.metadata,
+            mig.get("metadata"),
+            message_module.ManagedInstanceGroup.MetadataValue,
+        )
+      if "additionalDisks" in mig:
+        existing_mig.additionalDisks = _PatchAdditionalDisks(
+            message_module,
+            mig.get("additionalDisks"),
+            existing_mig.additionalDisks,
+            cluster_ref=cluster_ref,
+            is_update=True,
         )
       if "acceleratorTopology" in mig:
         if not existing_mig.resourcePolicyConfig:

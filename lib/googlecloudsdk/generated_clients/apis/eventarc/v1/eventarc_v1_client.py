@@ -1996,6 +1996,33 @@ class EventarcV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetDefaultMessageBus(self, request, global_params=None):
+      r"""Get the default MessageBus.
+
+      Args:
+        request: (EventarcProjectsLocationsGetDefaultMessageBusRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (MessageBus) The response message.
+      """
+      config = self.GetMethodConfig('GetDefaultMessageBus')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetDefaultMessageBus.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/defaultMessageBus',
+        http_method='GET',
+        method_id='eventarc.projects.locations.getDefaultMessageBus',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='EventarcProjectsLocationsGetDefaultMessageBusRequest',
+        response_type_name='MessageBus',
+        supports_download=False,
+    )
+
     def GetGoogleChannelConfig(self, request, global_params=None):
       r"""Get a GoogleChannelConfig. The name of the GoogleChannelConfig in the response is ALWAYS coded with projectID.
 
@@ -2047,6 +2074,33 @@ class EventarcV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='EventarcProjectsLocationsListRequest',
         response_type_name='ListLocationsResponse',
+        supports_download=False,
+    )
+
+    def UpdateDefaultMessageBus(self, request, global_params=None):
+      r"""Update the default MessageBus.
+
+      Args:
+        request: (EventarcProjectsLocationsUpdateDefaultMessageBusRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleLongrunningOperation) The response message.
+      """
+      config = self.GetMethodConfig('UpdateDefaultMessageBus')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdateDefaultMessageBus.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/defaultMessageBus',
+        http_method='PATCH',
+        method_id='eventarc.projects.locations.updateDefaultMessageBus',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask', 'validateOnly'],
+        relative_path='v1/{+name}',
+        request_field='messageBus',
+        request_type_name='EventarcProjectsLocationsUpdateDefaultMessageBusRequest',
+        response_type_name='GoogleLongrunningOperation',
         supports_download=False,
     )
 

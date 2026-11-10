@@ -5,6 +5,7 @@ Discovery Documents are used to create API Clients.
 """
 
 import pkgutil
+import re
 from typing import Optional, Union
 
 from absl import logging
@@ -28,6 +29,20 @@ SUPPORTED_BIGQUERY_APIS = frozenset([
     'https://bigquery.googleapis.com',
     'https://bigqueryreservation.googleapis.com',
 ])
+
+_LOCAL_DISCOVERY_DOC_REP_ENDPOINT_PATTERN = re.compile(
+    r'^https://(bigquery|bigqueryreservation)'
+    r'\.[a-z0-9-]+\.rep(\.mtls)?\.googleapis\.com/?$'
+)
+
+
+def _is_supported_bigquery_api(api: str) -> bool:
+  """Returns True if `api` is a supported endpoint for local discovery docs."""
+  if not api:
+    return False
+  return api.rstrip('/') in SUPPORTED_BIGQUERY_APIS or bool(
+      _LOCAL_DISCOVERY_DOC_REP_ENDPOINT_PATTERN.match(api)
+  )
 
 
 SERVICES_TO_LOCAL_DISCOVERY_DOC_MAP = {
@@ -53,7 +68,7 @@ def load_local_discovery_doc_from_service(
     )
     return
   if service == bq_consts.Service.BIGQUERY and (
-      api not in SUPPORTED_BIGQUERY_APIS or api_version != 'v2'
+      not _is_supported_bigquery_api(api) or api_version != 'v2'
   ):
     # For now, align this strictly with the default flag values. We can loosen
     # this but for a first pass I'm keeping the current code flow.
@@ -66,7 +81,9 @@ def load_local_discovery_doc_from_service(
         ', '.join(SUPPORTED_BIGQUERY_APIS),
     )
     return
-  if service != bq_consts.Service.BQ_IAM and api not in SUPPORTED_BIGQUERY_APIS:
+  if service != bq_consts.Service.BQ_IAM and not _is_supported_bigquery_api(
+      api
+  ):
     # For non-IAM APIs, we only support local discovery docs for selected API
     # endpoints.
     logging.info(

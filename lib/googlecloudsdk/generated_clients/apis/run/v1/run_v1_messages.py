@@ -191,6 +191,20 @@ class Binding(_messages.Message):
   role = _messages.StringField(3)
 
 
+class BuildStatus(_messages.Message):
+  r"""BuildStatus holds the status of a build.
+
+  Fields:
+    cloudBuildLogUrl: The log URL for the Cloud Build execution.
+    message: The message details of the build.
+    status: The status of the build.
+  """
+
+  cloudBuildLogUrl = _messages.StringField(1)
+  message = _messages.StringField(2)
+  status = _messages.StringField(3)
+
+
 class CSIVolumeSource(_messages.Message):
   r"""Storage volume source using the Container Storage Interface.
 
@@ -508,6 +522,24 @@ class ContainerPort(_messages.Message):
   containerPort = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   name = _messages.StringField(2)
   protocol = _messages.StringField(3)
+
+
+class ContainerStatus(_messages.Message):
+  r"""ContainerStatus holds the information of container name and image digest
+  value.
+
+  Fields:
+    buildStatus: Output only. The build status of the container image.
+    imageDigest: ImageDigest holds the resolved digest for the image specified
+      and resolved during the creation of Revision. This field holds the
+      digest value regardless of whether a tag or digest was originally
+      specified in the Container object.
+    name: The name of the container, if specified.
+  """
+
+  buildStatus = _messages.MessageField('BuildStatus', 1)
+  imageDigest = _messages.StringField(2)
+  name = _messages.StringField(3)
 
 
 class DomainMapping(_messages.Message):
@@ -897,6 +929,18 @@ class Expr(_messages.Message):
   expression = _messages.StringField(2)
   location = _messages.StringField(3)
   title = _messages.StringField(4)
+
+
+class FilestoreVolumeSource(_messages.Message):
+  r"""Represents a volume backed by a Filestore instance.
+
+  Fields:
+    volume: Required. The resource name of the Filestore volume. Format: `proj
+      ects/{project}/locations/{location}/volumePools/{volume_pool}/volumes/{v
+      olume}`
+  """
+
+  volume = _messages.StringField(1)
 
 
 class GRPCAction(_messages.Message):
@@ -1421,8 +1465,8 @@ class GoogleDevtoolsCloudbuildV1BuildOptions(_messages.Message):
         the same region as the build. The builder service account must have
         access to create and write to Cloud Storage buckets in the build
         project.
-      LEGACY_BUCKET: Bucket is located in a Google-owned project and is not
-        regionalized.
+      LEGACY_BUCKET: Deprecated: Use `REGIONAL_USER_OWNED_BUCKET` instead.
+        Bucket is located in a Google-owned project and is not regionalized.
     """
     DEFAULT_LOGS_BUCKET_BEHAVIOR_UNSPECIFIED = 0
     REGIONAL_USER_OWNED_BUCKET = 1
@@ -4278,6 +4322,9 @@ class RevisionStatus(_messages.Message):
       provisioned. * `ContainerHealthy`: `True` when the Revision readiness
       check completes. * `Active`: `True` when the Revision may receive
       traffic.
+    containerStatuses: Output only. Status information for each of the
+      specified containers. The status includes the resolved digest for
+      specified images.
     desiredReplicas: Output only. The configured number of instances running
       this revision. For Cloud Run, this only includes instances provisioned
       using the minScale annotation. It does not include instances created by
@@ -4297,11 +4344,12 @@ class RevisionStatus(_messages.Message):
   """
 
   conditions = _messages.MessageField('GoogleCloudRunV1Condition', 1, repeated=True)
-  desiredReplicas = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  imageDigest = _messages.StringField(3)
-  logUrl = _messages.StringField(4)
-  observedGeneration = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  serviceName = _messages.StringField(6)
+  containerStatuses = _messages.MessageField('ContainerStatus', 2, repeated=True)
+  desiredReplicas = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  imageDigest = _messages.StringField(4)
+  logUrl = _messages.StringField(5)
+  observedGeneration = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  serviceName = _messages.StringField(7)
 
 
 class RevisionTemplate(_messages.Message):
@@ -6656,6 +6704,7 @@ class Volume(_messages.Message):
     configMap: Not supported in Cloud Run.
     csi: Volume specified by the Container Storage Interface driver
     emptyDir: Ephemeral storage used as a shared volume.
+    filestore: Represents a volume backed by a Filestore instance.
     name: Volume's name. In Cloud Run Fully Managed, the name 'cloudsql' is
       reserved.
     nfs: A NFSVolumeSource attribute.
@@ -6668,10 +6717,11 @@ class Volume(_messages.Message):
   configMap = _messages.MessageField('ConfigMapVolumeSource', 1)
   csi = _messages.MessageField('CSIVolumeSource', 2)
   emptyDir = _messages.MessageField('EmptyDirVolumeSource', 3)
-  name = _messages.StringField(4)
-  nfs = _messages.MessageField('NFSVolumeSource', 5)
-  persistentVolume = _messages.MessageField('PersistentVolumeSource', 6)
-  secret = _messages.MessageField('SecretVolumeSource', 7)
+  filestore = _messages.MessageField('FilestoreVolumeSource', 4)
+  name = _messages.StringField(5)
+  nfs = _messages.MessageField('NFSVolumeSource', 6)
+  persistentVolume = _messages.MessageField('PersistentVolumeSource', 7)
+  secret = _messages.MessageField('SecretVolumeSource', 8)
 
 
 class VolumeMount(_messages.Message):

@@ -93,3 +93,15 @@ projects_locations_events:
     attribute_name: event
     help: The event id of the {resource} resource.
   disable_auto_completers: false
+projects_locations_impacts:
+  name: impact
+  plural_name: impacts
+  collection: servicehealth.projects.locations.impacts
+  attributes:
+  - *project
+  - *location
+  - &impact
+    parameter_name: impactsId
+    attribute_name: impact
+    help: The impact id of the {resource} resource.
+  disable_auto_completers: false

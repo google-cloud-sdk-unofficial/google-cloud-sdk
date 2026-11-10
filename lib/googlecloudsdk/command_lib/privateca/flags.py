@@ -1280,18 +1280,18 @@ _KEY_ALGORITHM_MAPPING = {
     'RSA_PKCS1_4096_SHA256': 'rsa-pkcs1-4096-sha256',
     'EC_P256_SHA256': 'ec-p256-sha256',
     'EC_P384_SHA384': 'ec-p384-sha384',
-    'PQ_ML_DSA_44_EXTERNAL_MU': 'pq-ml-dsa-44-external-mu',
-    'PQ_ML_DSA_65_EXTERNAL_MU': 'pq-ml-dsa-65-external-mu',
-    'PQ_ML_DSA_87_EXTERNAL_MU': 'pq-ml-dsa-87-external-mu',
+    'PQ_ML_DSA_44': 'pq-ml-dsa-44',
+    'PQ_ML_DSA_65': 'pq-ml-dsa-65',
+    'PQ_ML_DSA_87': 'pq-ml-dsa-87',
 }
 
 # Hidden choices for Private Preview (b/562608939). In production, One Platform
 # gates access to these algorithms based on project visibility labels.
 # TODO(b/562608939): Remove _HIDDEN_KEY_ALGORITHMS once ML-DSA is GA.
 _HIDDEN_KEY_ALGORITHMS = [
-    'pq-ml-dsa-44-external-mu',
-    'pq-ml-dsa-65-external-mu',
-    'pq-ml-dsa-87-external-mu',
+    'pq-ml-dsa-44',
+    'pq-ml-dsa-65',
+    'pq-ml-dsa-87',
 ]
 
 

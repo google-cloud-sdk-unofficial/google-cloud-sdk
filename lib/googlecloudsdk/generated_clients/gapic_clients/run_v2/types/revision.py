@@ -23,6 +23,7 @@ from google.api import launch_stage_pb2  # type: ignore
 from cloudsdk.google.protobuf import duration_pb2  # type: ignore
 from cloudsdk.google.protobuf import timestamp_pb2  # type: ignore
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import condition
+from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import container_status
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import k8s_min
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import sandbox
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import status
@@ -287,6 +288,10 @@ class Revision(proto.Message):
         log_uri (str):
             Output only. The Google Console URI to obtain
             logs for the Revision.
+        container_statuses (MutableSequence[googlecloudsdk.generated_clients.gapic_clients.run_v2.types.ContainerStatus]):
+            Output only. Status information for each of
+            the specified containers. The status includes
+            the resolved digest for specified images.
         satisfies_pzs (bool):
             Output only. Reserved for future use.
         session_affinity (bool):
@@ -456,6 +461,11 @@ class Revision(proto.Message):
     log_uri: str = proto.Field(
         proto.STRING,
         number=33,
+    )
+    container_statuses: MutableSequence[container_status.ContainerStatus] = proto.RepeatedField(
+        proto.MESSAGE,
+        number=35,
+        message=container_status.ContainerStatus,
     )
     satisfies_pzs: bool = proto.Field(
         proto.BOOL,

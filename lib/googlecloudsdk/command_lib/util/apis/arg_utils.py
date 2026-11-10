@@ -572,6 +572,11 @@ def GenerateFlag(field, attributes, fix_bools=True, category=None):
     arg.kwargs['default'] = attributes.default
   if attributes.dest:
     arg.kwargs['dest'] = attributes.dest
+  if (
+      action == arg_parsers.StoreTrueFalseAction
+      and getattr(attributes, 'inverted_help_text', False)
+  ):
+    arg.kwargs['inverted_help_text'] = True
   if not _IsStoreBoolAction(action):
     # For this special action type, it won't accept a bunch of the common
     # kwargs, so we can only add them if not generating a boolean flag.

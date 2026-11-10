@@ -34,7 +34,7 @@ class AmbiguousPipelineError(PipelineLoadError):
 
 
 class PackagingError(ServerlessOrchestrationError):
-  """Raised when the artifacts of a pipeline action cannot be packaged."""
+  """Raised when the artifacts of a data model cannot be packaged."""
 
 
 class UploadError(ServerlessOrchestrationError):

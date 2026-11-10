@@ -1002,6 +1002,10 @@ class GoogleCloudNetworkconnectivityV1betaInterconnectAttachment(_messages.Messa
 class GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup(_messages.Message):
   r"""Represents an InterconnectKeyGroup resource.
 
+  Enums:
+    StateValueValuesEnum: Output only. The fanout state of this
+      InterconnectKeyGroup.
+
   Messages:
     InterconnectsValue: Output only. [Output Only] Status of Interconnects
       using this Key Group. The map keys are the Interconnect names. These
@@ -1022,8 +1026,27 @@ class GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup(_messages.Message
       customer-provided names of the MACsec keys.
     labels: Optional. Labels as key value pairs.
     name: Identifier. Name of the resource.
+    state: Output only. The fanout state of this InterconnectKeyGroup.
     updateTime: Output only. [Output Only] Update time stamp.
   """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Output only. The fanout state of this InterconnectKeyGroup.
+
+    Values:
+      STATE_UNSPECIFIED: Unspecified state.
+      FANOUT_SUCCEEDED: All associated Interconnects have been updated with
+        the current set of keys in this group.
+      PARTIAL_FANOUT: One or more associated Interconnects have not yet been
+        updated with the current set of keys in this group, either because an
+        update is in progress or because a previous update failed for some
+        Interconnects. Interconnects that have not been updated may continue
+        to use their previous keys. Google automatically retries updating
+        them.
+    """
+    STATE_UNSPECIFIED = 0
+    FANOUT_SUCCEEDED = 1
+    PARTIAL_FANOUT = 2
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class InterconnectsValue(_messages.Message):
@@ -1109,7 +1132,8 @@ class GoogleCloudNetworkconnectivityV1betaInterconnectKeyGroup(_messages.Message
   keys = _messages.MessageField('KeysValue', 4)
   labels = _messages.MessageField('LabelsValue', 5)
   name = _messages.StringField(6)
-  updateTime = _messages.StringField(7)
+  state = _messages.EnumField('StateValueValuesEnum', 7)
+  updateTime = _messages.StringField(8)
 
 
 class GoogleCloudNetworkconnectivityV1betaInterconnectStatus(_messages.Message):
@@ -1171,6 +1195,14 @@ class GoogleCloudNetworkconnectivityV1betaLinkedInterconnectAttachments(_message
       export ranges are included during export to hub.
     includeImportRanges: Optional. Hub routes fully encompassed by include
       import ranges are included during import from hub.
+    proposedExcludeExportRanges: Output only. The proposed exclude export IP
+      ranges waiting for hub administrator's approval.
+    proposedExcludeImportRanges: Output only. The proposed exclude import IP
+      ranges waiting for hub administrator's approval.
+    proposedIncludeExportRanges: Output only. The proposed include export IP
+      ranges waiting for hub administrator's approval.
+    proposedIncludeImportRanges: Output only. The proposed include import IP
+      ranges waiting for hub administrator's approval.
     siteToSiteDataTransfer: A value that controls whether site-to-site data
       transfer is enabled for these resources. Data transfer is available only
       in [supported locations](https://cloud.google.com/network-
@@ -1184,9 +1216,13 @@ class GoogleCloudNetworkconnectivityV1betaLinkedInterconnectAttachments(_message
   excludeImportRanges = _messages.StringField(2, repeated=True)
   includeExportRanges = _messages.StringField(3, repeated=True)
   includeImportRanges = _messages.StringField(4, repeated=True)
-  siteToSiteDataTransfer = _messages.BooleanField(5)
-  uris = _messages.StringField(6, repeated=True)
-  vpcNetwork = _messages.StringField(7)
+  proposedExcludeExportRanges = _messages.StringField(5, repeated=True)
+  proposedExcludeImportRanges = _messages.StringField(6, repeated=True)
+  proposedIncludeExportRanges = _messages.StringField(7, repeated=True)
+  proposedIncludeImportRanges = _messages.StringField(8, repeated=True)
+  siteToSiteDataTransfer = _messages.BooleanField(9)
+  uris = _messages.StringField(10, repeated=True)
+  vpcNetwork = _messages.StringField(11)
 
 
 class GoogleCloudNetworkconnectivityV1betaLinkedProducerVpcNetwork(_messages.Message):
@@ -1236,6 +1272,14 @@ class GoogleCloudNetworkconnectivityV1betaLinkedRouterApplianceInstances(_messag
     includeImportRanges: Optional. Hub routes fully encompassed by include
       import ranges are included during import from hub.
     instances: The list of router appliance instances.
+    proposedExcludeExportRanges: Output only. The proposed exclude export IP
+      ranges waiting for hub administrator's approval.
+    proposedExcludeImportRanges: Output only. The proposed exclude import IP
+      ranges waiting for hub administrator's approval.
+    proposedIncludeExportRanges: Output only. The proposed include export IP
+      ranges waiting for hub administrator's approval.
+    proposedIncludeImportRanges: Output only. The proposed include import IP
+      ranges waiting for hub administrator's approval.
     siteToSiteDataTransfer: A value that controls whether site-to-site data
       transfer is enabled for these resources. Data transfer is available only
       in [supported locations](https://cloud.google.com/network-
@@ -1249,8 +1293,12 @@ class GoogleCloudNetworkconnectivityV1betaLinkedRouterApplianceInstances(_messag
   includeExportRanges = _messages.StringField(3, repeated=True)
   includeImportRanges = _messages.StringField(4, repeated=True)
   instances = _messages.MessageField('GoogleCloudNetworkconnectivityV1betaRouterApplianceInstance', 5, repeated=True)
-  siteToSiteDataTransfer = _messages.BooleanField(6)
-  vpcNetwork = _messages.StringField(7)
+  proposedExcludeExportRanges = _messages.StringField(6, repeated=True)
+  proposedExcludeImportRanges = _messages.StringField(7, repeated=True)
+  proposedIncludeExportRanges = _messages.StringField(8, repeated=True)
+  proposedIncludeImportRanges = _messages.StringField(9, repeated=True)
+  siteToSiteDataTransfer = _messages.BooleanField(10)
+  vpcNetwork = _messages.StringField(11)
 
 
 class GoogleCloudNetworkconnectivityV1betaLinkedVpcNetwork(_messages.Message):
@@ -1298,6 +1346,14 @@ class GoogleCloudNetworkconnectivityV1betaLinkedVpnTunnels(_messages.Message):
       export ranges are included during export to hub.
     includeImportRanges: Optional. Hub routes fully encompassed by include
       import ranges are included during import from hub.
+    proposedExcludeExportRanges: Output only. The proposed exclude export IP
+      ranges waiting for hub administrator's approval.
+    proposedExcludeImportRanges: Output only. The proposed exclude import IP
+      ranges waiting for hub administrator's approval.
+    proposedIncludeExportRanges: Output only. The proposed include export IP
+      ranges waiting for hub administrator's approval.
+    proposedIncludeImportRanges: Output only. The proposed include import IP
+      ranges waiting for hub administrator's approval.
     siteToSiteDataTransfer: A value that controls whether site-to-site data
       transfer is enabled for these resources. Data transfer is available only
       in [supported locations](https://cloud.google.com/network-
@@ -1311,9 +1367,13 @@ class GoogleCloudNetworkconnectivityV1betaLinkedVpnTunnels(_messages.Message):
   excludeImportRanges = _messages.StringField(2, repeated=True)
   includeExportRanges = _messages.StringField(3, repeated=True)
   includeImportRanges = _messages.StringField(4, repeated=True)
-  siteToSiteDataTransfer = _messages.BooleanField(5)
-  uris = _messages.StringField(6, repeated=True)
-  vpcNetwork = _messages.StringField(7)
+  proposedExcludeExportRanges = _messages.StringField(5, repeated=True)
+  proposedExcludeImportRanges = _messages.StringField(6, repeated=True)
+  proposedIncludeExportRanges = _messages.StringField(7, repeated=True)
+  proposedIncludeImportRanges = _messages.StringField(8, repeated=True)
+  siteToSiteDataTransfer = _messages.BooleanField(9)
+  uris = _messages.StringField(10, repeated=True)
+  vpcNetwork = _messages.StringField(11)
 
 
 class GoogleCloudNetworkconnectivityV1betaListDestinationsResponse(_messages.Message):

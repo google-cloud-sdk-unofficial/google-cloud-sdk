@@ -288,13 +288,15 @@ apis:
       discovery_doc: assuredworkloads_v1beta1.json
       resources:
         organizations.locations.dbFrameworkComplianceReports:
-          path: organizations/{organizationsId}/locations/{locationsId}/dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}
+          path:
+            organizations/{organizationsId}/locations/{locationsId}/dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}
     v1:
       discovery_doc: assuredworkloads_v1.json
       default: true
       resources:
         organizations.locations.dbFrameworkComplianceReports:
-          path: organizations/{organizationsId}/locations/{locationsId}/dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}
+          path:
+            organizations/{organizationsId}/locations/{locationsId}/dbFrameworkComplianceReports/{dbFrameworkComplianceReportsId}
     v2:
       discovery_doc: assuredworkloads_v2.json
       skip:
@@ -360,7 +362,8 @@ apis:
       default: true
       resources:
         iceberg.v1.restcatalog.v1.projects.catalogs.namespaces.views:
-          path: restcatalog/v1/projects/{projectsId}/catalogs/{catalogsId}/namespaces/{namespacesId}/views/{viewsId}
+          path:
+            restcatalog/v1/projects/{projectsId}/catalogs/{catalogsId}/namespaces/{namespacesId}/views/{viewsId}
     delta_v1:
       discovery_doc: biglake_delta_v1.json
       default: false
@@ -743,8 +746,7 @@ apis:
         zoneFolderOperations:
           path: folders/{folder}/zones/{zone}/operations/{operation}
         zoneOrganizationOperations:
-          path:
-            organizations/{organization}/zones/{zone}/operations/{operation}
+          path: organizations/{organization}/zones/{zone}/operations/{operation}
         zones:
           path: projects/{project}/zones/{zone}
         zoneVmExtensionPolicies:
@@ -1640,6 +1642,8 @@ apis:
       discovery_doc: logging_v2.json
       gcloud_gapic_library: google/logging/v2:logging_v2_py
       default: true
+      skip:
+        bug: b/579887145
   looker:
     v1alpha2:
       discovery_doc: looker_v1alpha2.json
@@ -1831,6 +1835,11 @@ apis:
   observability:
     v1:
       discovery_doc: observability_v1.json
+  orchestration:
+    v1beta:
+      discovery_doc: orchestration_v1beta.json
+      default: true
+      enable_mtls: true
   orglifecycle:
     v1:
       discovery_doc: orglifecycle_v1.json
@@ -2116,6 +2125,10 @@ apis:
       discovery_doc: cloudquotas_v1alpha.json
     v1beta:
       discovery_doc: cloudquotas_v1beta.json
+  ratelimiting:
+    v1:
+      discovery_doc: ratelimiting_v1.json
+      default: true
   source:
     v1:
       discovery_doc: source_v1.json
@@ -2124,6 +2137,8 @@ apis:
     v1alpha:
       discovery_doc: softwaredeliverytrust_v1alpha.json
       default: true
+      skip:
+        bug: b/579888197
   sourcerepo:
     v1:
       discovery_doc: sourcerepo_v1.json
@@ -2604,8 +2619,7 @@ apis:
       default: true
       resources:
         projects.locations.rules:
-          path:
-            projects/{projectsId}/locations/{locationsId}/rules/{rulesId}
+          path: projects/{projectsId}/locations/{locationsId}/rules/{rulesId}
         projects.locations.evaluations.executions.results:
           path:
             projects/{projectsId}/locations/{locationsId}/evaluations/{evaluationsId}/executions/{executionsId}/results/{resultsId}
@@ -3052,6 +3066,10 @@ canonical_surfaces:
   oracledatabase:
     name: oracledatabase
     command: oracle-database
+  orchestration:
+    name: orchestration
+    command: orchestration-pipelines
+    hidden: true
   orglifecycle:
     name: orglifecycle
     command: orglifecycle
@@ -3092,6 +3110,10 @@ canonical_surfaces:
   pubsublite:
     name: pubsublite
     hidden: true
+  ratelimiting:
+    name: ratelimiting
+    command: rate-limiting
+    hidden: true
   recaptcha:
     name: recaptchaenterprise
     command: recaptcha
@@ -3119,9 +3141,6 @@ canonical_surfaces:
   saasservicemgmt:
     name: saasservicemgmt
     command: app-lifecycle-manager
-    # TODO(b/573139202): Remove when the GA app-lifecycle-manager commands are
-    # un-hidden.
-    hidden: true
   sasportal:
     name: sasportal
     hidden: true

@@ -47,7 +47,7 @@ CLUSTERS_FORMAT = """
         endpoint:label=MASTER_IP,
         nodePools[0].config.machineType,
         currentNodeVersion:label=NODE_VERSION,
-        firstof(currentNodeCount,initialNodeCount):label=NUM_NODES,
+        firstof(currentNodeCount,initialNodeCount).yesno(no=0):label=NUM_NODES,
         status,
         ipAllocationPolicy.stackType.yesno(no='IPV4'):label=STACK_TYPE
     )

@@ -35,6 +35,7 @@ ANNOTATIONS = 'annotations'
 STATUS = 'status'
 TRAFFIC = 'traffic'
 PERCENT = 'percent'
+TAG = 'tag'
 SERVICE_ACCOUNT_NAME = 'serviceAccountName'
 REVISION_NAME = 'revisionName'
 

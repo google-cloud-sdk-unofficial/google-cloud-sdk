@@ -18,6 +18,8 @@
 - release_tracks:
   - GA
   auto_generated: true
+  hints:
+    read_only: false
   help_text:
     brief: Refresh an AutonomousDatabase clone.
     description: Refresh an AutonomousDatabase clone to data from a specified point-in-time.

@@ -92,11 +92,20 @@ class VPCTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
   def cleanup_resources(self):
     return
 
+  def FindVPCIssues(self) -> list[ssh_troubleshooter.Finding]:
+    """Returns a list of Finding(cause, message), in check order."""
+    findings = []
+    if self._CheckDefaultSSHPort():
+      findings.append(
+          ssh_troubleshooter.Finding(
+              'default_ssh_port', DEFAULT_SSH_PORT_MESSAGE))
+    if self.iap_tunnel_args and self._CheckIAPTunneling():
+      findings.append(ssh_troubleshooter.Finding('iap', IAP_MESSAGE))
+    return findings
+
   def troubleshoot(self):
     log.status.Print('---- Checking VPC settings ----')
-    self._CheckDefaultSSHPort()
-    if self.iap_tunnel_args:
-      self._CheckIAPTunneling()
+    self.issues = dict(self.FindVPCIssues())
     log.status.Print('VPC settings: {0} issue(s) found.\n'.format(
         len(self.issues)))
     for message in self.issues.values():
@@ -107,15 +116,15 @@ class VPCTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
     firewall_list = self._ListInstanceEffectiveFirewall()
     for firewall in firewall_list:
       if self._HasValidateIAPTunnelingRule(firewall):
-        return
-    self.issues['iap'] = IAP_MESSAGE
+        return False
+    return True
 
   def _CheckDefaultSSHPort(self):
     firewall_list = self._ListInstanceEffectiveFirewall()
     for firewall in firewall_list:
       if self._HasSSHProtocalAndPort(firewall):
-        return
-    self.issues['default_ssh_port'] = DEFAULT_SSH_PORT_MESSAGE
+        return False
+    return True
 
   def _ListInstanceEffectiveFirewall(self):
     req = self.compute_message.ComputeInstancesGetEffectiveFirewallsRequest(

@@ -14,36 +14,25 @@
 # limitations under the License.
 """Client for the Serverless Orchestration API."""
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 import datetime
-import http
 import json
-import os
 import re
 import time
 import types
 from typing import Any
-from urllib import parse as urllib_parse
 import uuid
 
+from apitools.base.py import encoding
+from apitools.base.py import exceptions as apitools_exceptions
+from apitools.base.py import extra_types
+from googlecloudsdk.api_lib.util import apis
+from googlecloudsdk.api_lib.util import exceptions as api_exceptions
+from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.command_lib.orchestration_pipelines.serverless_orchestration import errors
 from googlecloudsdk.core import ecp_proxy_manager
-from googlecloudsdk.core import log
-from googlecloudsdk.core import properties
-from googlecloudsdk.core.credentials import requests as creds_requests
-from googlecloudsdk.core.util import encoding
 
-# gcloud-disable-gdu-domain
-DEFAULT_ENDPOINT = "https://staging-orchestration.sandbox.googleapis.com"
-# Used instead of `DEFAULT_ENDPOINT` with certificate-based access, whose
-# credentials only the mTLS endpoint accepts.
-# gcloud-disable-gdu-domain
-DEFAULT_MTLS_ENDPOINT = (
-    "https://staging-orchestration.mtls.sandbox.googleapis.com"
-)
-# Overrides the endpoint as is, so with certificate-based access it must be an
-# mTLS endpoint too.
-ENDPOINT_ENV_VAR = "ORCHESTRATION_ENDPOINT"
+API_NAME = "orchestration"
 API_VERSION = "v1beta"
 _DEFAULT_POLL_INTERVAL_SECONDS = 5
 
@@ -89,24 +78,28 @@ class OrchestrationClient:
   def __init__(
       self,
       poll_interval_seconds: float = _DEFAULT_POLL_INTERVAL_SECONDS,
-      session: Any = None,
+      client: Any = None,
   ):
     """Initializes the instance.
 
     Args:
       poll_interval_seconds: Seconds to wait between `GetOperation` polls.
-      session: Optional authenticated HTTP `requests.Session`; created lazily
-        via `creds_requests.GetSession()` if None.
+      client: Optional `orchestration` `v1beta` apitools client; created lazily
+        if None, honoring the `api_endpoint_overrides/orchestration` property.
     """
-    custom_endpoint = encoding.GetEncodedValue(os.environ, ENDPOINT_ENV_VAR)
-    self._base_url = _NormalizeBaseUrl(custom_endpoint or _GetDefaultEndpoint())
     self._poll_interval_seconds = poll_interval_seconds
-    self._session = session
+    self._client = client
+    self._messages = apis.GetMessagesModule(API_NAME, API_VERSION)
 
   def GetPipeline(self, name: str) -> Mapping[str, Any] | None:
     """Returns the pipeline resource for `name`, or None if not found."""
+    request = self._messages.OrchestrationProjectsLocationsPipelinesGetRequest(
+        name=name
+    )
     try:
-      return self._Request("GET", name)
+      return _CallApi(
+          self._GetApiClient().projects_locations_pipelines.Get, request
+      )
     except errors.OrchestrationApiError as e:
       if e.code == "NOT_FOUND":
         return None
@@ -124,19 +117,23 @@ class OrchestrationClient:
     Args:
       parent: Parent location resource name (`projects/<p>/locations/<l>`).
       pipeline_id: Pipeline identifier to create under `parent`.
-      body: Pipeline resource fields (`spec`, `execution_identity`, etc.).
+      body: `Pipeline` resource fields keyed by their JSON names (`spec`,
+        `executionIdentity`, etc.).
       request_id: Optional idempotency UUID; omitted from the request if None.
 
     Returns:
       The `google.longrunning.Operation` mapping returned by the API.
     """
     name = f"{parent}/pipelines/{pipeline_id}"
-    params = {"pipelineId": pipeline_id}
-    if request_id:
-      params["requestId"] = request_id
-    payload = {**body, "name": name}
-    return self._Request(
-        "POST", f"{parent}/pipelines", params=params, body=payload
+    messages = self._messages
+    request = messages.OrchestrationProjectsLocationsPipelinesCreateRequest(
+        parent=parent,
+        pipelineId=pipeline_id,
+        pipeline=self._BuildPipeline(name, body),
+        requestId=request_id,
+    )
+    return _CallApi(
+        self._GetApiClient().projects_locations_pipelines.Create, request
     )
 
   def UpdatePipeline(
@@ -150,7 +147,7 @@ class OrchestrationClient:
 
     Args:
       name: Full pipeline resource name (`projects/<p>/locations/<l>/...`).
-      body: Pipeline resource fields to update.
+      body: `Pipeline` resource fields to update, keyed by their JSON names.
       update_mask: Comma-separated field mask; replaces the full definition if
         None.
       request_id: Optional idempotency UUID; omitted from the request if None.
@@ -158,13 +155,16 @@ class OrchestrationClient:
     Returns:
       The `google.longrunning.Operation` mapping returned by the API.
     """
-    params: dict[str, str] = {}
-    if update_mask:
-      params["updateMask"] = update_mask
-    if request_id:
-      params["requestId"] = request_id
-    payload = {**body, "name": name}
-    return self._Request("PATCH", name, params=params or None, body=payload)
+    messages = self._messages
+    request = messages.OrchestrationProjectsLocationsPipelinesPatchRequest(
+        name=name,
+        pipeline=self._BuildPipeline(name, body),
+        updateMask=update_mask,
+        requestId=request_id,
+    )
+    return _CallApi(
+        self._GetApiClient().projects_locations_pipelines.Patch, request
+    )
 
   def CreatePipelineRun(
       self,
@@ -186,32 +186,43 @@ class OrchestrationClient:
     """
     _, pipeline_id = _SplitPipelineName(pipeline_name)
     resolved_run_id = run_id or _GenerateRunId(pipeline_id)
-    run_name = f"{pipeline_name}/runs/{resolved_run_id}"
-    pipeline_run: dict[str, Any] = {
-        "name": run_name,
-        "runMode": "BATCH",
-    }
+    messages = self._messages
+    pipeline_run = messages.PipelineRun(
+        name=f"{pipeline_name}/runs/{resolved_run_id}",
+        runMode=messages.PipelineRun.RunModeValueValuesEnum.BATCH,
+    )
     if variables:
-      pipeline_run["parameters"] = {
-          str(key): str(value) for key, value in sorted(variables.items())
-      }
-    params = {"pipelineRunId": resolved_run_id}
-    if request_id:
-      params["requestId"] = request_id
-    return self._Request(
-        "POST",
-        f"{pipeline_name}/runs",
-        params=params,
-        body=pipeline_run,
+      pipeline_run.parameters = _BuildRunParameters(
+          messages.PipelineRun.ParametersValue, variables
+      )
+    request = messages.OrchestrationProjectsLocationsPipelinesRunsCreateRequest(
+        parent=pipeline_name,
+        pipelineRun=pipeline_run,
+        pipelineRunId=resolved_run_id,
+        requestId=request_id,
+    )
+    return _CallApi(
+        self._GetApiClient().projects_locations_pipelines_runs.Create, request
     )
 
   def GetPipelineRun(self, run_name: str) -> Mapping[str, Any]:
     """Returns the current state of a pipeline run."""
-    return self._Request("GET", run_name)
+    messages = self._messages
+    request = messages.OrchestrationProjectsLocationsPipelinesRunsGetRequest(
+        name=run_name
+    )
+    return _CallApi(
+        self._GetApiClient().projects_locations_pipelines_runs.Get, request
+    )
 
   def GetOperation(self, name: str) -> Mapping[str, Any]:
     """Returns the long-running operation."""
-    return self._Request("GET", name)
+    request = self._messages.OrchestrationProjectsLocationsOperationsGetRequest(
+        name=name
+    )
+    return _CallApi(
+        self._GetApiClient().projects_locations_operations.Get, request
+    )
 
   def WaitOperation(
       self, operation: Mapping[str, Any], timeout_seconds: int = 600
@@ -245,77 +256,98 @@ class OrchestrationClient:
       )
     return operation.get("response") or {}
 
-  @property
-  def _http_session(self) -> Any:
-    if self._session is None:
-      self._session = creds_requests.GetSession()
-    return self._session
+  def _GetApiClient(self) -> Any:
+    """Returns the apitools client, creating it on first use."""
+    if self._client is None:
+      try:
+        self._client = apis.GetClientInstance(API_NAME, API_VERSION)
+      # With certificate-based access, creating the client fails if the client
+      # certificate cannot be loaded (`OSError`) or the local ECP proxy is not
+      # running (`ECPProxyError`).
+      except (OSError, ecp_proxy_manager.ECPProxyError) as e:
+        raise errors.OrchestrationApiError(
+            f"Failed to create the Orchestration API client: {e}"
+        ) from e
+    return self._client
 
-  def _Request(
-      self,
-      method: str,
-      path: str,
-      *,
-      params: Mapping[str, str] | None = None,
-      body: Mapping[str, Any] | None = None,
-  ) -> dict[str, Any]:
-    """Sends an authenticated HTTP REST request and returns the parsed JSON."""
-    url = _BuildRequestUrl(self._base_url, path, params)
-    headers, data = _BuildRequestPayload(body)
-    body_text = self._SendHttpRequest(method, url, headers=headers, data=data)
-    return _ParseJsonResponse(method, url, body_text)
+  def _BuildPipeline(self, name: str, body: Mapping[str, Any]) -> Any:
+    """Returns the `Pipeline` message for the JSON-style `body` fields.
 
-  def _SendHttpRequest(
-      self,
-      method: str,
-      url: str,
-      *,
-      headers: Mapping[str, str],
-      data: str | None,
-  ) -> str:
-    """Sends an HTTP request and returns the decoded response body text."""
-    log.info("Calling %s %s", method, url)
-    try:
-      response = self._http_session.request(
-          method, url, data=data, headers=headers
-      )
-    # `requests.exceptions.RequestException` is an `OSError`, but with
-    # certificate-based access the session's local ECP proxy adapter wraps
-    # transport and proxy failures in `ECPProxyError`, which is not.
-    except (OSError, ecp_proxy_manager.ECPProxyError) as e:
-      raise errors.OrchestrationApiError(f"{method} {url} failed: {e}") from e
+    Args:
+      name: Full pipeline resource name.
+      body: `Pipeline` resource fields keyed by their JSON names.
 
-    status_code = int(response.status_code)
-    body_text = _DecodeResponseText(response)
-    if (
-        status_code < http.HTTPStatus.OK
-        or status_code >= http.HTTPStatus.MULTIPLE_CHOICES
-    ):
-      message, code = _ExtractHttpError(status_code, response.reason, body_text)
-      raise errors.OrchestrationApiError(
-          f"{method} {url} failed: {message}", code=code
-      )
-    return body_text
+    Raises:
+      messages_util.DecodeError: If `body` has a field that `Pipeline` does not
+        define, such as a `snake_case` name, which `encoding.DictToMessage`
+        would silently keep as an unrecognized field.
+    """
+    return messages_util.DictToMessageWithErrorCheck(
+        {**body, "name": name}, self._messages.Pipeline
+    )
 
 
-def _GetDefaultEndpoint() -> str:
-  """Returns `DEFAULT_MTLS_ENDPOINT` if gcloud uses certificate-based access."""
-  context_aware_properties = properties.VALUES.context_aware
-  # Same rule as gcloud's generated clients of APIs that support mTLS.
-  if (
-      context_aware_properties.always_use_mtls_endpoint.GetBool()
-      or context_aware_properties.use_client_certificate.GetBool()
-  ):
-    return DEFAULT_MTLS_ENDPOINT
-  return DEFAULT_ENDPOINT
+def _CallApi(method: Callable[[Any], Any], request: Any) -> dict[str, Any]:
+  """Calls apitools `method` with `request` and returns the JSON response.
+
+  Args:
+    method: Bound apitools service method, for example
+      `client.projects_locations_pipelines.Get`.
+    request: The request message for `method`.
+
+  Returns:
+    The response message as a JSON-style dict with REST field names.
+
+  Raises:
+    errors.OrchestrationApiError: If the request fails.
+  """
+  method_id = method.method_config().method_id
+  try:
+    response = method(request)
+  except apitools_exceptions.HttpError as e:
+    raise _HttpErrorToApiError(method_id, e) from e
+  # Clients from `apis.GetClientInstance` wrap the `HttpError` in an
+  # `HttpException` if the API is disabled and the prompt to enable it is
+  # declined or suppressed (for example, with `--quiet`).
+  except api_exceptions.HttpException as e:
+    raise _HttpErrorToApiError(method_id, e.error) from e
+  # With certificate-based access, the local ECP proxy adapter wraps transport
+  # and proxy failures in `ECPProxyError`, which is not an `OSError`.
+  except (
+      apitools_exceptions.CommunicationError,
+      OSError,
+      ecp_proxy_manager.ECPProxyError,
+  ) as e:
+    raise errors.OrchestrationApiError(f"{method_id} failed: {e}") from e
+  return encoding.MessageToDict(response)
 
 
-def _NormalizeBaseUrl(endpoint: str, api_version: str = API_VERSION) -> str:
-  """Returns `<endpoint>/<api_version>` without duplicate slashes."""
-  cleaned = endpoint.strip().rstrip("/")
-  if cleaned.endswith(("/v1alpha", "/v1main", f"/{api_version}")):
-    return cleaned
-  return f"{cleaned}/{api_version}"
+def _HttpErrorToApiError(
+    method_id: str, http_error: apitools_exceptions.HttpError
+) -> errors.OrchestrationApiError:
+  """Returns the `OrchestrationApiError` for an HTTP error of `method_id`."""
+  message, code = _ExtractHttpError(
+      http_error.status_code,
+      http_error.response.get("reason"),
+      _DecodeContent(http_error.content),
+  )
+  return errors.OrchestrationApiError(
+      f"{method_id} failed: {message}", code=code
+  )
+
+
+def _BuildRunParameters(
+    parameters_type: Any, variables: Mapping[str, str]
+) -> Any:
+  """Returns `variables` as a `PipelineRun.parameters` map of string values."""
+  return parameters_type(
+      additionalProperties=[
+          parameters_type.AdditionalProperty(
+              key=str(key), value=extra_types.JsonValue(string_value=str(value))
+          )
+          for key, value in sorted(variables.items())
+      ]
+  )
 
 
 def _SplitPipelineName(pipeline_name: str) -> tuple[str, str]:
@@ -348,66 +380,11 @@ def _FormatRpcCode(code: Any) -> str | None:
   return str(code)
 
 
-def _BuildRequestUrl(
-    base_url: str,
-    path: str,
-    params: Mapping[str, str] | None = None,
-) -> str:
-  """Builds the full request URL with optional sorted query parameters."""
-  url = f"{base_url}/{path.lstrip('/')}"
-  if params:
-    query = urllib_parse.urlencode(sorted(params.items()))
-    return f"{url}?{query}"
-  return url
-
-
-def _BuildRequestPayload(
-    body: Mapping[str, Any] | None,
-) -> tuple[dict[str, str], str | None]:
-  """Builds HTTP headers and serialized JSON body for a request."""
-  headers = {"Accept": "application/json"}
-  if body is None:
-    return headers, None
-  headers["Content-Type"] = "application/json"
-  return headers, _ToCompactJson(body)
-
-
-def _ToCompactJson(value: Any) -> str:
-  """Serializes `value` as deterministic compact JSON."""
-  return json.dumps(value, separators=(",", ":"), sort_keys=True, default=str)
-
-
-def _DecodeResponseText(response: Any) -> str:
-  """Returns the decoded text body of an HTTP `response`."""
-  if isinstance(response.text, str):
-    return response.text
-  content = response.content
+def _DecodeContent(content: bytes | str | None) -> str:
+  """Returns the text of an HTTP error response body."""
   if isinstance(content, bytes):
     return content.decode("utf-8", errors="replace")
-  if isinstance(content, str):
-    return content
-  return ""
-
-
-def _ParseJsonResponse(
-    method: str, url: str, body_text: str
-) -> dict[str, Any]:
-  """Parses a JSON object response body, returning `{}` if empty."""
-  stripped = body_text.strip()
-  if not stripped:
-    return {}
-  try:
-    parsed = json.loads(stripped)
-  except ValueError as e:
-    raise errors.OrchestrationApiError(
-        f"{method} {url} returned a reply that is not JSON: {stripped}"
-    ) from e
-  if not isinstance(parsed, Mapping):
-    raise errors.OrchestrationApiError(
-        f"{method} {url} returned a JSON reply that is not an object:"
-        f" {stripped}"
-    )
-  return dict(parsed)
+  return content or ""
 
 
 def _ExtractHttpError(

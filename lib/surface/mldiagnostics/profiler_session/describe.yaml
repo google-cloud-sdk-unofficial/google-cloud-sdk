@@ -1,0 +1,64 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks:
+  - ALPHA
+  auto_generated: false
+  help_text:
+    brief: Describe a profiler session.
+    description: Display the details of a specific profiler session, including its dashboard URL and target session status.
+    examples: |-
+      To get details of a specific profiler session by ID, run:
+
+          $ {command} auto-capture-session-01 --location=us-central1 --machine-learning-run=my-run-123 --format=json
+
+      To get details of an auto-captured profiler session using the full `profilerSession` resource name from `monitored-events describe`, run:
+
+          $ {command} projects/PROJECT_ID/locations/us-central1/machineLearningRuns/my-run-123/profilerSessions/auto-capture-session-01 --format=json
+
+          Sample output:
+          ```
+            {
+              "autoCaptured": true,
+              "createTime": "2026-05-01T12:00:05Z",
+              "dashboardUri": "https://console.cloud.google.com/kubernetes/profiler/us-central1/my-run-123/auto-capture-session-01?project=PROJECT_ID",
+              "deviceTracerLevel": "DEVICE_TRACER_LEVEL_ENABLED",
+              "duration": "10s",
+              "hostTracerLevel": "HOST_TRACER_LEVEL_INFO",
+              "kind": "KIND_SNAPSHOT",
+              "monitoredEvents": [
+                "projects/PROJECT_ID/locations/us-central1/machineLearningRuns/my-run-123/monitoredEvents/abc-123-def-456"
+              ],
+              "name": "projects/PROJECT_ID/locations/us-central1/machineLearningRuns/my-run-123/profilerSessions/auto-capture-session-01",
+              "profilerTargets": [
+                "projects/PROJECT_ID/locations/us-central1/machineLearningRuns/my-run-123/profilerTargets/target-0"
+              ],
+              "pythonTracerLevel": "PYTHON_TRACER_LEVEL_DISABLED",
+              "state": "SUCCEEDED",
+              "storageFolderUri": "gs://diagon-prod-data/my-run-123/auto-capture-session-01"
+            }
+          ```
+  arguments:
+    params:
+    - help_text: |-
+        projects/{project}/locations/{location}/machineLearningRuns/{machineLearningRun}/profilerSessions/{profilerSession}
+      is_positional: true
+      is_primary_resource: true
+      resource_spec: !REF googlecloudsdk.command_lib.mldiagnostics.machine_learning_run.v1alpha_resources:projects_locations_machine_learning_runs_profiler_sessions
+      required: true
+  request:
+    api_version: v1alpha
+    collection:
+    - hypercomputecluster.projects.locations.machineLearningRuns.profilerSessions
+    regional_endpoint_compatibility: SUPPORTED

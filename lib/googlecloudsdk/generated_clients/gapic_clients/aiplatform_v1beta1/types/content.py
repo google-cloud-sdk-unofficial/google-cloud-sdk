@@ -537,6 +537,12 @@ class AudioTranscriptionConfig(proto.Message):
             generation.
         diarization (bool):
             Optional. Configures speaker diarization.
+        source_text (str):
+            Optional. The source text to be edited or rewritten via
+            voice instructions. When provided in ``SMART`` mode, the
+            model evaluates the audio input against this text and emits
+            the complete replacement text in the candidate response
+            rather than appending to it.
         mode (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1beta1.types.AudioTranscriptionConfig.Mode):
             Optional. Configures transcription mode. Supported values:
             ``VERBATIM``, ``SMART``. If unspecified, defaults to
@@ -616,6 +622,10 @@ class AudioTranscriptionConfig(proto.Message):
     diarization: bool = proto.Field(
         proto.BOOL,
         number=6,
+    )
+    source_text: str = proto.Field(
+        proto.STRING,
+        number=10,
     )
     mode: Mode = proto.Field(
         proto.ENUM,

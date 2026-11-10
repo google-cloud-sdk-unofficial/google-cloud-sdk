@@ -37,7 +37,6 @@ def GetBodyForCreateReservation(
     ignore_idle_slots: bool,
     edition,
     target_job_concurrency: Optional[int],
-    multi_region_auxiliary: Optional[bool],
     autoscale_max_slots: Optional[int] = None,
     max_slots: Optional[int] = None,
     scaling_mode: Optional[str] = None,
@@ -54,8 +53,6 @@ def GetBodyForCreateReservation(
       other reservations.
     edition: The edition for this reservation.
     target_job_concurrency: Job concurrency target.
-    multi_region_auxiliary: Whether this reservation is for the auxiliary
-      region.
     autoscale_max_slots: Number of slots to be scaled when needed.
     max_slots: The overall max slots for the reservation.
     scaling_mode: The scaling mode for the reservation.
@@ -75,8 +72,6 @@ def GetBodyForCreateReservation(
   reservation = {}
   reservation['slot_capacity'] = slots
   reservation['ignore_idle_slots'] = ignore_idle_slots
-  if multi_region_auxiliary is not None:
-    reservation['multi_region_auxiliary'] = multi_region_auxiliary
   if target_job_concurrency is not None:
     reservation['concurrency'] = target_job_concurrency
 
@@ -131,6 +126,9 @@ def GetBodyForCreateReservationAssignment(
     principal: Optional[str] = None,
     precedence: Optional[int] = 0,
     condition: Optional[str] = None,
+    condition_expression: Optional[str] = None,
+    condition_title: Optional[str] = None,
+    condition_description: Optional[str] = None,
 ) -> Dict[str, Any]:
   """Creates a reservation assignment for a given project/folder/organization.
 
@@ -149,6 +147,10 @@ def GetBodyForCreateReservationAssignment(
       supported at the moment.
     precedence: Precedence of the reservation assignment.
     condition: Filter condition for the reservation assignment.
+    condition_expression: Common Expression Language (CEL) expression that
+      defines the matching criteria for this assignment.
+    condition_title: Title of the condition expression.
+    condition_description: Description of the condition expression.
 
   Returns:
     ReservationAssignment object that was created.
@@ -195,10 +197,31 @@ def GetBodyForCreateReservationAssignment(
   if principal is not None:
     reservation_assignment['principal'] = principal
   reservation_assignment['precedence'] = precedence
+  if condition and (
+      condition_expression is not None
+      or condition_title is not None
+      or condition_description is not None
+  ):
+    raise bq_error.BigqueryError(
+        'Cannot specify both condition and condition_expression,'
+        ' condition_title, or condition_description.'
+    )
   if condition is not None:
     reservation_assignment['condition'] = bq_client_utils.ParseCondition(
         condition
     )
+  if (
+      condition_expression is not None
+      or condition_title is not None
+      or condition_description is not None
+  ):
+    reservation_assignment['condition'] = {}
+    if condition_expression is not None:
+      reservation_assignment['condition']['expression'] = condition_expression
+    if condition_title is not None:
+      reservation_assignment['condition']['title'] = condition_title
+    if condition_description is not None:
+      reservation_assignment['condition']['description'] = condition_description
   return reservation_assignment
 
 
@@ -210,7 +233,6 @@ def CreateReservation(
     ignore_idle_slots: bool,
     edition,
     target_job_concurrency: Optional[int],
-    multi_region_auxiliary: Optional[bool],
     autoscale_max_slots: Optional[int] = None,
     max_slots: Optional[int] = None,
     scaling_mode: Optional[str] = None,
@@ -229,8 +251,6 @@ def CreateReservation(
       other reservations.
     edition: The edition for this reservation.
     target_job_concurrency: Job concurrency target.
-    multi_region_auxiliary: Whether this reservation is for the auxiliary
-      region.
     autoscale_max_slots: Number of slots to be scaled when needed.
     max_slots: The overall max slots for the reservation.
     scaling_mode: The scaling mode for the reservation.
@@ -250,7 +270,6 @@ def CreateReservation(
       ignore_idle_slots,
       edition,
       target_job_concurrency,
-      multi_region_auxiliary,
       autoscale_max_slots,
       max_slots,
       scaling_mode,
@@ -626,7 +645,6 @@ def CreateCapacityCommitment(
     slots: int,
     plan: str,
     renewal_plan: str,
-    multi_region_auxiliary: Optional[bool],
 ) -> Dict[str, Any]:
   """Create a capacity commitment.
 
@@ -637,7 +655,6 @@ def CreateCapacityCommitment(
     slots: Number of slots in this commitment.
     plan: Commitment plan for this capacity commitment.
     renewal_plan: Renewal plan for this capacity commitment.
-    multi_region_auxiliary: Whether this commitment is for the auxiliary region.
 
   Returns:
     Capacity commitment object that was created.
@@ -646,8 +663,6 @@ def CreateCapacityCommitment(
   capacity_commitment['slot_count'] = slots
   capacity_commitment['plan'] = plan
   capacity_commitment['renewal_plan'] = renewal_plan
-  if multi_region_auxiliary is not None:
-    capacity_commitment['multi_region_auxiliary'] = multi_region_auxiliary
   if edition is not None:
     capacity_commitment['edition'] = edition
   parent = 'projects/%s/locations/%s' % (
@@ -847,6 +862,9 @@ def CreateReservationAssignment(
     principal: Optional[str] = None,
     precedence: Optional[int] = 0,
     condition: Optional[str] = None,
+    condition_expression: Optional[str] = None,
+    condition_title: Optional[str] = None,
+    condition_description: Optional[str] = None,
 ):
   """Creates a reservation assignment for a given project/folder/organization.
 
@@ -872,6 +890,10 @@ def CreateReservationAssignment(
     condition: Common Expression Language (CEL) expression that defines the
       matching criteria for this assignment. The expression must resolve to a
       boolean value.
+    condition_expression: Common Expression Language (CEL) expression that
+      defines the matching criteria for this assignment.
+    condition_title: Title of the condition expression.
+    condition_description: Description of the condition expression.
 
   Returns:
     ReservationAssignment object that was created.
@@ -890,6 +912,9 @@ def CreateReservationAssignment(
       principal,
       precedence,
       condition,
+      condition_expression,
+      condition_title,
+      condition_description,
   )
   parent = (
       f'projects/{reference.projectId}/locations/{reference.location}/'
@@ -962,6 +987,9 @@ def UpdateReservationAssignment(
     scheduling_policy_concurrency: Optional[int] = None,
     precedence: Optional[int] = None,
     condition: Optional[str] = None,
+    condition_expression: Optional[str] = None,
+    condition_title: Optional[str] = None,
+    condition_description: Optional[str] = None,
 ) -> Dict[str, Any]:
   """Updates reservation assignment.
 
@@ -977,6 +1005,10 @@ def UpdateReservationAssignment(
     condition: Common Expression Language (CEL) expression that defines the
       matching criteria for this assignment. The expression must resolve to a
       boolean value.
+    condition_expression: Common Expression Language (CEL) expression that
+      defines the matching criteria for this assignment.
+    condition_title: Title of the condition expression.
+    condition_description: Description of the condition expression.
 
   Returns:
     Reservation assignment object that was updated.
@@ -1004,6 +1036,15 @@ def UpdateReservationAssignment(
         'concurrency'
     ] = scheduling_policy_concurrency
     update_mask += 'scheduling_policy.concurrency,'
+  if condition and (
+      condition_expression is not None
+      or condition_title is not None
+      or condition_description is not None
+  ):
+    raise bq_error.BigqueryError(
+        'Cannot specify both condition and condition_expression,'
+        ' condition_title, or condition_description.'
+    )
   if precedence is not None:
     reservation_assignment['precedence'] = precedence
     update_mask += 'precedence,'
@@ -1013,6 +1054,21 @@ def UpdateReservationAssignment(
           condition
       )
     update_mask += 'condition,'
+  if (
+      condition_expression is not None
+      or condition_title is not None
+      or condition_description is not None
+  ):
+    reservation_assignment['condition'] = {}
+    if condition_expression is not None:
+      reservation_assignment['condition']['expression'] = condition_expression
+      update_mask += 'condition.expression,'
+    if condition_title is not None:
+      reservation_assignment['condition']['title'] = condition_title
+      update_mask += 'condition.title,'
+    if condition_description is not None:
+      reservation_assignment['condition']['description'] = condition_description
+      update_mask += 'condition.description,'
 
   return (
       client.projects()

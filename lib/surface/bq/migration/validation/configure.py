@@ -22,7 +22,6 @@ from googlecloudsdk.command_lib.bq.migration import validation_flags
 @base.RegionalEndpointsSupported
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Configure(base.Command):
   """Generate the configuration for validating migrated data."""
 

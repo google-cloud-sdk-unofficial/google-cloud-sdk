@@ -20,6 +20,5 @@ from googlecloudsdk.calliope import base
 @base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-@base.Hidden
 class Validation(base.Group):
   """Validate data migrated to BigQuery against its source."""

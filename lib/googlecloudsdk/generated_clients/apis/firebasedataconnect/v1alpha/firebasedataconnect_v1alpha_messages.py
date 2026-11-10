@@ -2365,6 +2365,9 @@ class Service(_messages.Message):
   Fields:
     annotations: Optional. Stores small amounts of arbitrary data.
     connectors: Output only. The list of connectors in this service.
+      Connectors returned in this collection are a summary view. Authoritative
+      lifecycle metadata and entity tags are omitted from embedded
+      representations. Call `GetConnector` to retrieve the complete resource.
     createTime: Output only. [Output only] Create time stamp.
     displayName: Optional. Mutable human-readable name. 63 character limit.
     etag: Output only. This checksum is computed by the server based on the
@@ -2382,7 +2385,10 @@ class Service(_messages.Message):
       connections.
     reconciling: Output only. A field that if true, indicates that the system
       is working update the service.
-    schemas: Optional. The list of schemas in this service.
+    schemas: Optional. The list of schemas in this service. Schemas returned
+      in this collection are a summary view. Authoritative lifecycle metadata
+      and entity tags are omitted from embedded representations. Call
+      `GetSchema` to retrieve the complete resource.
     source: Optional. Input only. Deprecated: Use `sql_source` or
       `graphql_source` instead. The source files for service, schemas, and
       connectors.

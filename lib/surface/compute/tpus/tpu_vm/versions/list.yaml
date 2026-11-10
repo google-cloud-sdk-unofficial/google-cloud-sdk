@@ -1,4 +1,6 @@
 - release_tracks: [GA, ALPHA]
+  hints:
+    read_only: true
   help_text:
     brief: List available runtime versions for Cloud TPU VM nodes.
     description: List runtime versions available for Cloud TPU VM nodes.

@@ -2723,7 +2723,7 @@ class SecuritycenterV1(base_api.BaseApiClient):
           }
 
     def BatchCreate(self, request, global_params=None):
-      r"""Creates a ResourceValueConfig for an organization. Maps user's tags to difference resource values for use by the attack path simulation. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.resourcevalueconfigs.create`.
+      r"""Creates a ResourceValueConfig for an organization. Maps user's tags to different resource values for use by the attack path simulation. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.resourcevalueconfigs.create`.
 
       Args:
         request: (SecuritycenterOrganizationsResourceValueConfigsBatchCreateRequest) input message

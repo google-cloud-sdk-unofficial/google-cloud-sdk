@@ -280,7 +280,7 @@ class AlphaUpdate(BetaUpdate):
 
   @classmethod
   def Args(cls, parser) -> None:
-    cls.CommonArgs(parser)
+    super(AlphaUpdate, cls).Args(parser)
     flags.AddGracePeriodFlag(parser, object_to_shutdown='worker pool instances')
     flags.AddWorkerPoolCpuUtilizationFlag(parser)
     flags.AddWorkerPoolClearCpuUtilizationFlag(parser)
@@ -289,10 +289,6 @@ class AlphaUpdate(BetaUpdate):
     flags.AddWorkerPoolAddPubsubSubscriptionFlag(parser)
     flags.AddWorkerPoolRemovePubsubSubscriptionFlag(parser)
     flags.AddWorkerPoolClearPubsubSubscriptionsFlag(parser)
-    container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_parser.AddContainerFlags(
-        parser, container_args, cls.ReleaseTrack()
-    )
 
 
 AlphaUpdate.__doc__ = Update.__doc__

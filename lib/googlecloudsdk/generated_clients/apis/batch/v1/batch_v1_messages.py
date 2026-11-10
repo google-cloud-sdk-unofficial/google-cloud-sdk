@@ -787,11 +787,16 @@ class InstancePolicyOrTemplate(_messages.Message):
       installation/blob/main/linux/install_gpu_driver.py.
     installOpsAgent: Optional. Set this field true if you want Batch to
       install Ops Agent on your behalf. Default is false.
-    instanceTemplate: Name of an instance template used to create VMs. Named
-      the field as 'instance_template' instead of 'template' to avoid C++
-      keyword conflict. Batch only supports global instance templates from the
-      same project as the job. You can specify the global instance template as
-      a full or partial URL.
+    instanceTemplate: An instance template used to create VMs. Batch supports
+      global and regional instance templates from the same project as the job.
+      In case of a regional instance template, the job and the instance
+      template must be in the same region. You can specify the instance
+      template as only its name (not unique), only its ID, or a partial or
+      full URL. Acceptable formats: *
+      "projects/{project}/global/instanceTemplates/{instance_template}" * "pro
+      jects/{project}/regions/{region}/instanceTemplates/{instance_template}"
+      * "{instance_template}" If you specify only its name, Batch checks for a
+      global instance template first.
     policy: InstancePolicy.
   """
 

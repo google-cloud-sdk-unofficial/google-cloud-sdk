@@ -349,7 +349,7 @@ class Create(base.CreateCommand):
   _support_ipv6_assignment = False
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
-  _support_snp_svsm = False
+  _support_snp_svsm = True
   _support_confidential_compute_type_cca = True
   _support_confidential_compute_type_bmsai = True
   _support_local_ssd_recovery_timeout = True
@@ -934,7 +934,7 @@ class CreateBeta(Create):
   _support_ipv6_assignment = False
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
-  _support_snp_svsm = False
+  _support_snp_svsm = True
   _support_confidential_compute_type_cca = True
   _support_confidential_compute_type_bmsai = True
   _support_local_ssd_recovery_timeout = True

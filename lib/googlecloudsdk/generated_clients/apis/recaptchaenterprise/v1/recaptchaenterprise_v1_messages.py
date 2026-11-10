@@ -410,8 +410,8 @@ class GoogleCloudRecaptchaenterpriseV1Assessment(_messages.Message):
     name: Output only. Identifier. The resource name for the Assessment in the
       format `projects/{project}/assessments/{assessment}`.
     phoneFraudAssessment: Output only. Assessment returned when a site key, a
-      token, and a phone number as `user_id` are provided. SMS defense needs
-      to be enabled.
+      token, `user_info.account_id`, and a phone number in
+      `user_info.user_ids` are provided. SMS defense must be enabled.
     policyEvaluation: Output only. Provides information about the policy
       evaluation for this assessment.
     privatePasswordLeakVerification: Optional. The private password leak
@@ -467,14 +467,15 @@ class GoogleCloudRecaptchaenterpriseV1Bot(_messages.Message):
       bot, formatted in kebab-case. Current example values include the
       following: * google-agent - AI_AGENT * browser-base - AI_AGENT * chat-
       gpt - AI_AGENT * aws-bedrock - AI_AGENT * cybaa-bot - AI_AGENT *
-      cloudflare - AI_AGENT * payhawk - AI_AGENT * duck-duck-go -
-      SEARCH_INDEXER * mediaboard - CONTENT_SCRAPER * marker-io - AI_AGENT *
-      anchor-browser - AI_AGENT * shopify - AI_AGENT * stackscope -
-      CONTENT_SCRAPER * manus - AI_AGENT * kernel-sh - AI_AGENT * zvelo -
-      SEARCH_INDEXER * meta-muse - AI_AGENT Ensure that your applications can
-      handle identifier values not explicitly listed here. Deprecated values
-      might take some time to stop showing up in responses. New values can be
-      pushed so this list should be taken as non exhaustive.
+      cloudflare - AI_AGENT * payhawk - AI_AGENT * duck-duck-go - AI_AGENT *
+      mediaboard - CONTENT_SCRAPER * marker-io - AI_AGENT * anchor-browser -
+      AI_AGENT * shopify - AI_AGENT * stackscope - CONTENT_SCRAPER * manus -
+      AI_AGENT * kernel-sh - AI_AGENT * zvelo - SEARCH_INDEXER * meta-muse -
+      AI_AGENT * duck-duck-bot - SEARCH_INDEXER * my-porta - SEARCH_INDEXER *
+      ison-search - SEARCH_INDEXER * rokt - SEARCH_INDEXER Ensure that your
+      applications can handle identifier values not explicitly listed here.
+      Deprecated values might take some time to stop showing up in responses.
+      New values can be pushed so this list should be taken as non exhaustive.
   """
 
   class BotTypeValueValuesEnum(_messages.Enum):
@@ -530,7 +531,7 @@ class GoogleCloudRecaptchaenterpriseV1ChallengeRule(_messages.Message):
     condition: Optional. A CEL condition that must be met for this rule to
       apply. If unspecified, the rule applies unconditionally. The following
       fields can be referenced in the condition: * `score` * `user_ip_address`
-      * `user_asn` * `user_agent` * `verified_bots.name` *
+      * `user_asn` * `user_agent` * `region_code` * `verified_bots.name` *
       `verified_bots.bot_type` Examples: * `score < 0.5` * `user_ip_address ==
       "123.45.67.89"` * `user_agent.contains("Chrome")` * `score < 0.5 &&
       user_ip_address == "123.45.67.89"`
@@ -1767,22 +1768,24 @@ class GoogleCloudRecaptchaenterpriseV1TestingOptions(_messages.Message):
 
   Enums:
     TestingChallengeValueValuesEnum: Optional. For challenge-based keys only
-      (CHECKBOX, INVISIBLE), all challenge requests for this site return
-      nocaptcha if NOCAPTCHA, or an unsolvable challenge if CHALLENGE.
+      (`CHECKBOX`, `INVISIBLE`), all challenge requests for this site do not
+      show a challenge if `NOCAPTCHA`, or show an unsolvable challenge if
+      `UNSOLVABLE_CHALLENGE`.
 
   Fields:
-    testingChallenge: Optional. For challenge-based keys only (CHECKBOX,
-      INVISIBLE), all challenge requests for this site return nocaptcha if
-      NOCAPTCHA, or an unsolvable challenge if CHALLENGE.
+    testingChallenge: Optional. For challenge-based keys only (`CHECKBOX`,
+      `INVISIBLE`), all challenge requests for this site do not show a
+      challenge if `NOCAPTCHA`, or show an unsolvable challenge if
+      `UNSOLVABLE_CHALLENGE`.
     testingScore: Optional. All assessments for this Key return this score.
       Must be between 0 (likely not legitimate) and 1 (likely legitimate)
       inclusive.
   """
 
   class TestingChallengeValueValuesEnum(_messages.Enum):
-    r"""Optional. For challenge-based keys only (CHECKBOX, INVISIBLE), all
-    challenge requests for this site return nocaptcha if NOCAPTCHA, or an
-    unsolvable challenge if CHALLENGE.
+    r"""Optional. For challenge-based keys only (`CHECKBOX`, `INVISIBLE`), all
+    challenge requests for this site do not show a challenge if `NOCAPTCHA`,
+    or show an unsolvable challenge if `UNSOLVABLE_CHALLENGE`.
 
     Values:
       TESTING_CHALLENGE_UNSPECIFIED: Perform the normal risk analysis and
@@ -1844,10 +1847,10 @@ class GoogleCloudRecaptchaenterpriseV1TokenProperties(_messages.Message):
         the browser. Could easily be simulated by an attacker.
       UNEXPECTED_ACTION: The action provided at token generation was different
         than the `expected_action` in the assessment request. The comparison
-        is case-insensitive. This reason can only be returned if all of the
-        following are true: - your `site_key` has the POLICY_BASED_CHALLENGE
-        integration type - you set an action score threshold higher than 0.0 -
-        you provided a non-empty `expected_action`
+        is case-insensitive. This reason can only be returned if an
+        `expected_action` is provided and either: - your `site_key` is a
+        Universal key, or - your `site_key` has the `POLICY_BASED_CHALLENGE`
+        integration type with an action score threshold higher than 0.0
       KEY_MISMATCH: The key used to generate the token does not match the
         `site_key`.
       DOMAIN_MISMATCH: The domain of the page on which the token was generated
@@ -2012,7 +2015,7 @@ class GoogleCloudRecaptchaenterpriseV1TransactionDataUser(_messages.Message):
 
   Fields:
     accountId: Optional. Unique account identifier for this user. If using
-      Account defense, this should match the hashed_account_id field.
+      Account defense, this should match the `user_info.account_id` field.
       Otherwise, a unique and persistent identifier for this account.
     creationMs: Optional. The epoch milliseconds of the user's account
       creation.

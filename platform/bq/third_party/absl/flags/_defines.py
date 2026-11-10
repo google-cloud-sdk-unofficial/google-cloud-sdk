@@ -529,7 +529,7 @@ def DEFINE_boolean(  # pylint: disable=invalid-name
   Returns:
     a handle to defined flag.
   """
-  return DEFINE_flag(  # pytype: disable=bad-return-type
+  return DEFINE_flag(
       _flag.BooleanFlag(name, default, help, **args),
       flag_values,
       module_name,
@@ -776,8 +776,8 @@ def DEFINE_enum(  # pylint: disable=invalid-name
   Args:
     name: str, the flag name.
     default: str|None, the default value of the flag.
-    enum_values: [str], a non-empty list of strings with the possible values for
-      the flag.
+    enum_values: Iterable[str], a non-empty collection of strings with the
+      possible values for the flag.
     help: str, the help message.
     flag_values: :class:`FlagValues`, the FlagValues instance with which the
       flag will be registered. This should almost never need to be overridden.
@@ -1505,8 +1505,8 @@ def DEFINE_multi_enum(  # pylint: disable=invalid-name
     name: str, the flag name.
     default: Union[Iterable[str], str, None], the default value of the flag; see
       `DEFINE_multi`.
-    enum_values: [str], a non-empty list of strings with the possible values for
-      the flag.
+    enum_values: Iterable[str], a non-empty collection of strings with the
+      possible values for the flag.
     help: str, the help message.
     flag_values: :class:`FlagValues`, the FlagValues instance with which the
       flag will be registered. This should almost never need to be overridden.
@@ -1521,7 +1521,7 @@ def DEFINE_multi_enum(  # pylint: disable=invalid-name
   """
   parser = _argument_parser.EnumParser(enum_values, case_sensitive)
   serializer = _argument_parser.ArgumentSerializer()
-  joined_values = '|'.join(enum_values)
+  joined_values = '|'.join(parser.enum_values)
   return DEFINE_multi(
       parser,
       serializer,

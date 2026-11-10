@@ -2368,15 +2368,9 @@ class GoogleCloudVectorsearchV1betaUnstructuredProcessingConfigUnstructuredEmbed
       EMBEDDING_MODE_UNSPECIFIED: Unspecified. Treated as TEXT.
       TEXT: Text only. Images extracted from the document do not contribute to
         the embedding. Default.
-      MULTIMODAL: A segment's text and its images are embedded together into a
-        single multimodal vector, preserving the order they appear in the
-        document. Requires layout-aware parsing and chunk segmentation to
-        extract images; a config that sets digital parsing or page
-        segmentation with this mode is rejected.
     """
     EMBEDDING_MODE_UNSPECIFIED = 0
     TEXT = 1
-    MULTIMODAL = 2
 
   mode = _messages.EnumField('ModeValueValuesEnum', 1)
 
@@ -3660,10 +3654,6 @@ class VectorsearchProjectsLocationsDataStoresDocumentsListRequest(_messages.Mess
   r"""A VectorsearchProjectsLocationsDataStoresDocumentsListRequest object.
 
   Fields:
-    filter: Optional. Not currently supported. A request that sets this field
-      fails with `INVALID_ARGUMENT`.
-    orderBy: Optional. Not currently supported. A request that sets this field
-      fails with `INVALID_ARGUMENT`.
     pageSize: Optional. Requested page size. Server may return fewer items
       than requested. If unspecified, at most 10 Documents are returned. The
       maximum value is 1,000; larger values are coerced to 1,000.
@@ -3674,11 +3664,9 @@ class VectorsearchProjectsLocationsDataStoresDocumentsListRequest(_messages.Mess
       `projects/{project}/locations/{location}/dataStores/{data_store}`
   """
 
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
 
 
 class VectorsearchProjectsLocationsDataStoresDocumentsSearchRequest(_messages.Message):

@@ -211,6 +211,21 @@ def AddServiceAccount(
   )
 
 
+def AddEnableVulnerabilityScanning(
+    parser,
+    help_text=(
+        "Enable vulnerability scanning on the repository."
+    ),
+):
+  parser.add_argument(
+      "--enable-vulnerability-scanning",
+      dest="enable_vulnerability_scanning",
+      action=arg_parsers.StoreTrueFalseAction,
+      required=False,
+      help=help_text,
+  )
+
+
 def AddTitle(
     parser,
     help_text="The title of the pull request.",

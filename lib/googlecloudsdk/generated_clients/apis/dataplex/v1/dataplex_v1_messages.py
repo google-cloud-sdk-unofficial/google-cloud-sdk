@@ -11195,6 +11195,10 @@ class GoogleCloudDataplexV1RequestBatchMetadataChangeRequest(_messages.Message):
     changePayload: Required. The detailed specification of the proposed
       changes. This payload is intended to be embedded as the change_payload
       in the resulting ChangeRequest.
+    deferredValidation: Optional. If set to true, defers reference validation
+      between entries to when the change request is approved and applied.
+      Structural validation of entries and aspects is still performed at the
+      time of submission. The default is false.
     justification: Optional. Justification for the metadata change request.
     labels: Optional. User-defined labels for the metadata change request.
   """
@@ -11224,8 +11228,9 @@ class GoogleCloudDataplexV1RequestBatchMetadataChangeRequest(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   changePayload = _messages.MessageField('GoogleCloudDataplexV1BatchChangeMetadataRequest', 1)
-  justification = _messages.StringField(2)
-  labels = _messages.MessageField('LabelsValue', 3)
+  deferredValidation = _messages.BooleanField(2)
+  justification = _messages.StringField(3)
+  labels = _messages.MessageField('LabelsValue', 4)
 
 
 class GoogleCloudDataplexV1RequestBatchMetadataChangeResponse(_messages.Message):

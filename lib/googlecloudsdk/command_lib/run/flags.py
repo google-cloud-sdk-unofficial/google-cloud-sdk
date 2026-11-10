@@ -123,9 +123,9 @@ AMBIENT_NETWORKING_FLAG = base.Argument(
     action=arg_parsers.StoreTrueFalseAction,
     help=(
         'Enables ambient networking for the resource, allowing it to'
-        ' participate in a service mesh without sidecar injection.'
+        ' participate in a service mesh without sidecar injection. Use'
+        ' `--ambient-scope` to choose the scope.'
     ),
-    hidden=True,
 )
 
 _AMBIENT_SCOPE_CHOICES = {
@@ -136,8 +136,11 @@ _AMBIENT_SCOPE_CHOICES = {
 AMBIENT_SCOPE_FLAG = base.ChoiceArgument(
     '--ambient-scope',
     choices=_AMBIENT_SCOPE_CHOICES,
-    help_str='Configures the ambient networking scope.',
-    hidden=True,
+    help_str=(
+        'Configures the ambient networking scope. If ambient networking is'
+        ' enabled and no scope is specified, the scope defaults to'
+        ' `regional`. Cannot be used with `--no-ambient-networking`.'
+    ),
 )
 
 _FUNCTIONAL_TYPE_CHOICES = {
@@ -1848,12 +1851,12 @@ def AddServiceMinMaxInstancesFlag(parser):
   )
 
 
-def AddWorkerPoolMinInstancesFlag(parser):
+def AddWorkerPoolMinInstancesFlag(parser, *, hidden=False):
   """Add min instances flag for worker pools."""
   parser.add_argument(
       '--min',
       type=ScaleValue,
-      hidden=True,
+      hidden=hidden,
       help=(
           'The minimum number of container instances to run for this WorkerPool'
           " or 'default' to use system default of 1. These instances will be"
@@ -1863,12 +1866,12 @@ def AddWorkerPoolMinInstancesFlag(parser):
   )
 
 
-def AddWorkerPoolMaxInstancesFlag(parser):
+def AddWorkerPoolMaxInstancesFlag(parser, *, hidden=False):
   """Add max instances flag for worker pools."""
   parser.add_argument(
       '--max',
       type=ScaleValue,
-      hidden=True,
+      hidden=hidden,
       help=(
           'The maximum number of container instances to run for this WorkerPool'
           " or 'default' to use system default of 100. This instance limit will"
@@ -5568,6 +5571,17 @@ def RunUploadFlag():
   )
 
 
+def RunBuildFlag():
+  """Create the --run-build flag."""
+  return base.Argument(
+      '--run-build',
+      action='store_true',
+      default=False,
+      hidden=True,
+      help='Enables using Cloud Run API to orchestrate builds.',
+  )
+
+
 def LocalBuildArg():
   return base.Argument(
       '--local-build',
@@ -5604,6 +5618,8 @@ def SourceAndImageFlags(
       group.AddArgument(LocalBuildArg())
     if IsRunUploadSupported(release_track):
       group.AddArgument(RunUploadFlag())
+    if release_track == base.ReleaseTrack.ALPHA:
+      group.AddArgument(RunBuildFlag())
   return group
 
 
@@ -5782,13 +5798,13 @@ def AutomaticUpdatesFlag():
 
 
 def BuildWorkerPoolMutexGroup():
-  """Add flags for specifying Cloud Build Custom Build Worker Pool."""
+  """Add flags for specifying Cloud Build private pool."""
   group = base.ArgumentGroup(mutex=True)
   group.AddArgument(
       base.Argument(
           '--build-worker-pool',
           help="""
-          Name of the Cloud Build Custom Worker Pool that should be used to build
+          Name of the Cloud Build private pool that should be used to build
           the function. The format of this field is
           `projects/${PROJECT}/locations/${LOCATION}/workerPools/${WORKERPOOL}`
           where ${PROJECT} is the project id and ${LOCATION} is the location where
@@ -5802,7 +5818,7 @@ def BuildWorkerPoolMutexGroup():
           '--clear-build-worker-pool',
           action='store_true',
           help="""
-          Clears the Cloud Build Custom Worker Pool field.
+          Clears the Cloud Build private pool field.
         """,
       ),
   )

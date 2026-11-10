@@ -52,6 +52,13 @@ def AddClusterNameArgToParser(parser, api_version=None):
   concept_parsers.ConceptParser([presentation_spec]).AddToParser(parser)
 
 
+def SetUpdateMask(unused_ref: Any, unused_args: Any, request: Any) -> Any:
+  """Sets request.updateMask to '*' for cluster patch requests."""
+  if hasattr(request, "updateMask"):
+    request.updateMask = "*"
+  return request
+
+
 class ClusterUtil:
   """Represents a cluster utility class."""
 

@@ -909,8 +909,8 @@ class BuildOptions(_messages.Message):
         the same region as the build. The builder service account must have
         access to create and write to Cloud Storage buckets in the build
         project.
-      LEGACY_BUCKET: Bucket is located in a Google-owned project and is not
-        regionalized.
+      LEGACY_BUCKET: Deprecated: Use `REGIONAL_USER_OWNED_BUCKET` instead.
+        Bucket is located in a Google-owned project and is not regionalized.
     """
     DEFAULT_LOGS_BUCKET_BEHAVIOR_UNSPECIFIED = 0
     REGIONAL_USER_OWNED_BUCKET = 1
@@ -5679,8 +5679,9 @@ class PrivatePoolV1Config(_messages.Message):
       encrypt the worker disk. The expected format is
       projects/*/locations/*/keyRings/*/cryptoKeys/*.
     networkConfig: Network configuration for the pool.
-    privateServiceConnect: Immutable. Private Service Connect(PSC) Network
-      configuration for the pool.
+    privateServiceConnect: Immutable. Deprecated: Private Service Connect is
+      no longer supported. Private Service Connect(PSC) Network configuration
+      for the pool.
     workerConfig: Machine configuration for the workers in the pool.
   """
 
@@ -5691,7 +5692,8 @@ class PrivatePoolV1Config(_messages.Message):
 
 
 class PrivateServiceConnect(_messages.Message):
-  r"""Defines the Private Service Connect network configuration for the pool.
+  r"""Deprecated: Private Service Connect is no longer supported. Defines the
+  Private Service Connect network configuration for the pool.
 
   Fields:
     networkAttachment: Required. Immutable. The network attachment that the

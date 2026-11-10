@@ -21,6 +21,7 @@ from googlecloudsdk.command_lib.ml.speech import flags_v2
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
   """Delete a Speech-to-text recognizer."""
@@ -40,14 +41,17 @@ class Delete(base.Command):
 
     if is_async:
       log.DeletedResource(
-          operation.name, kind='speech recognizer', is_async=True)
+          operation.name, kind='speech recognizer', is_async=True
+      )
       return operation
 
     resource = speech_client.WaitForRecognizerOperation(
         location=recognizer.Parent().Name(),
         operation_ref=speech_client.GetOperationRef(operation),
         message='waiting for recognizer [{}] to be deleted'.format(
-            recognizer.RelativeName()))
+            recognizer.RelativeName()
+        ),
+    )
     log.DeletedResource(resource.name, kind='speech recognizer')
 
     return resource

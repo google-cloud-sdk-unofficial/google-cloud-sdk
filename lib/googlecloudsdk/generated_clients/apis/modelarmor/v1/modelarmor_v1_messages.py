@@ -156,6 +156,66 @@ class CsamFilterResult(_messages.Message):
   messageItems = _messages.MessageField('MessageItem', 3, repeated=True)
 
 
+class CsamFilterSettings(_messages.Message):
+  r"""Child sexual abuse material (CSAM) filter settings.
+
+  Enums:
+    ConfidenceLevelValueValuesEnum: Optional. Confidence level for this CSAM
+      filter. This field is used to determine the threshold for the filter. If
+      detection confidence is greater than or equal to the specified level, a
+      positive match is reported. Confidence level will only be used if the
+      filter is enabled.
+    FilterEnforcementValueValuesEnum: Optional. Specifies whether the CSAM
+      filter is enabled or disabled.
+
+  Fields:
+    confidenceLevel: Optional. Confidence level for this CSAM filter. This
+      field is used to determine the threshold for the filter. If detection
+      confidence is greater than or equal to the specified level, a positive
+      match is reported. Confidence level will only be used if the filter is
+      enabled.
+    filterEnforcement: Optional. Specifies whether the CSAM filter is enabled
+      or disabled.
+  """
+
+  class ConfidenceLevelValueValuesEnum(_messages.Enum):
+    r"""Optional. Confidence level for this CSAM filter. This field is used to
+    determine the threshold for the filter. If detection confidence is greater
+    than or equal to the specified level, a positive match is reported.
+    Confidence level will only be used if the filter is enabled.
+
+    Values:
+      DETECTION_CONFIDENCE_LEVEL_UNSPECIFIED: Same as LOW_AND_ABOVE.
+      LOW_AND_ABOVE: Highest chance of a false positive.
+      MEDIUM_AND_ABOVE: Some chance of false positives.
+      HIGH: Low chance of false positives.
+    """
+    DETECTION_CONFIDENCE_LEVEL_UNSPECIFIED = 0
+    LOW_AND_ABOVE = 1
+    MEDIUM_AND_ABOVE = 2
+    HIGH = 3
+
+  class FilterEnforcementValueValuesEnum(_messages.Enum):
+    r"""Optional. Specifies whether the CSAM filter is enabled or disabled.
+
+    Values:
+      CSAM_FILTER_ENFORCEMENT_UNSPECIFIED: Unused. Default value. If
+        unspecified, defaults to ENABLED (with HIGH confidence), except for
+        Data Residency (DRZ) compliant resources in regions where CSAM
+        detection is unsupported, where it defaults to DISABLED.
+      ENABLED: Enables CSAM detection filtering for user prompts and model
+        responses.
+      DISABLED: Disables CSAM detection filtering for user prompts and model
+        responses.
+    """
+    CSAM_FILTER_ENFORCEMENT_UNSPECIFIED = 0
+    ENABLED = 1
+    DISABLED = 2
+
+  confidenceLevel = _messages.EnumField('ConfidenceLevelValueValuesEnum', 1)
+  filterEnforcement = _messages.EnumField('FilterEnforcementValueValuesEnum', 2)
+
+
 class DataItem(_messages.Message):
   r"""Represents Data item
 
@@ -272,9 +332,10 @@ class FilterConfig(_messages.Message):
   r"""Filters configuration.
 
   Fields:
+    csamFilterSettings: Optional. Child sexual abuse material (CSAM) filter
+      settings.
     filterRuleSettings: Optional. Settings for customizing filter rules. Note:
-      This field is not supported in FloorSetting and Streaming Sanitization
-      APIs.
+      This field is not supported in FloorSetting.
     maliciousUriFilterSettings: Optional. Malicious URI filter settings.
     piAndJailbreakFilterSettings: Optional. Prompt injection and Jailbreak
       filter settings.
@@ -282,11 +343,12 @@ class FilterConfig(_messages.Message):
     sdpSettings: Optional. Sensitive Data Protection settings.
   """
 
-  filterRuleSettings = _messages.MessageField('FilterRuleSettings', 1)
-  maliciousUriFilterSettings = _messages.MessageField('MaliciousUriFilterSettings', 2)
-  piAndJailbreakFilterSettings = _messages.MessageField('PiAndJailbreakFilterSettings', 3)
-  raiSettings = _messages.MessageField('RaiFilterSettings', 4)
-  sdpSettings = _messages.MessageField('SdpFilterSettings', 5)
+  csamFilterSettings = _messages.MessageField('CsamFilterSettings', 1)
+  filterRuleSettings = _messages.MessageField('FilterRuleSettings', 2)
+  maliciousUriFilterSettings = _messages.MessageField('MaliciousUriFilterSettings', 3)
+  piAndJailbreakFilterSettings = _messages.MessageField('PiAndJailbreakFilterSettings', 4)
+  raiSettings = _messages.MessageField('RaiFilterSettings', 5)
+  sdpSettings = _messages.MessageField('SdpFilterSettings', 6)
 
 
 class FilterResult(_messages.Message):

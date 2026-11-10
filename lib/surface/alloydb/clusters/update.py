@@ -126,6 +126,7 @@ class UpdateBeta(Update):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.parameters.append('--enable-agent-mode')
+    self.parameters.append('--enable-lakehouse-integration')
     self.parameters.append('--enable-express')
 
   @classmethod

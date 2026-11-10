@@ -2376,6 +2376,33 @@ class NetappV1beta1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def FetchQuotaReport(self, request, global_params=None):
+      r"""Fetches the live quota usage report (explicit and derived quotas) for a volume.
+
+      Args:
+        request: (NetappProjectsLocationsVolumesFetchQuotaReportRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchQuotaReportResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchQuotaReport')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchQuotaReport.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1beta1/projects/{projectsId}/locations/{locationsId}/volumes/{volumesId}:fetchQuotaReport',
+        http_method='GET',
+        method_id='netapp.projects.locations.volumes.fetchQuotaReport',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1beta1/{+name}:fetchQuotaReport',
+        request_field='',
+        request_type_name='NetappProjectsLocationsVolumesFetchQuotaReportRequest',
+        response_type_name='FetchQuotaReportResponse',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details of a single Volume.
 

@@ -23,6 +23,7 @@ from apitools.base.protorpclite import messages
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet import resources as fleet_resources
@@ -106,20 +107,28 @@ class RolloutSequenceFlags:
   def AddAutoRolloutScope(self) -> None:
     self.parser.add_argument(
         '--auto-rollout-scope',
-        type=arg_parsers.ArgList(),
+        type=arg_parsers.ArgList(
+            element_type=lambda val: val.upper().replace('-', '_'),
+            choices=[
+                'CONTROL_PLANE_MINOR',
+                'CONTROL_PLANE_PATCH',
+                'NODE_MINOR',
+                'NODE_PATCH',
+                'ALL',
+                'NONE',
+            ],
+        ),
         metavar='SCOPE',
         help=textwrap.dedent("""\
             Specifies the types of upgrades for which rollouts are automatically
-            created. Supported values: `CONTROL_PLANE_MINOR`, `CONTROL_PLANE_PATCH`,
-            `NODE_MINOR`, `NODE_PATCH`, `ALL`, `NONE`.
+            created. `ALL` and `NONE` cannot be combined with other values.
         """),
-        hidden=True,
     )
 
   def AddIgnoredClustersSelectorFlags(self, is_update: bool = False):
     """Add flags for ignored clusters selector."""
     if is_update:
-      group = self.parser.add_mutually_exclusive_group(hidden=True)
+      group = self.parser.add_mutually_exclusive_group()
       self._AddIgnoredClustersSelectorFlag(group)
       self._AddClearIgnoredClustersSelectorFlag(group)
     else:
@@ -134,7 +143,6 @@ class RolloutSequenceFlags:
             Must be a valid Common Expression Language (CEL) expression.
             Example: "resource.labels.ignored=='true'"
             """,
-        hidden=True,
     )
 
   def _AddClearIgnoredClustersSelectorFlag(self, group):
@@ -142,7 +150,6 @@ class RolloutSequenceFlags:
         '--clear-ignored-clusters-selector',
         action='store_true',
         help='Clear the ignored clusters selector.',
-        hidden=True,
     )
 
   def AddUpgradeFlags(self):
@@ -400,7 +407,8 @@ class RolloutSequenceFlagParser:
     if '--auto-rollout-scope' not in self.args.GetSpecifiedArgs():
       return None
 
-    auto_rollout_scope = self.args.auto_rollout_scope
+    # Values are already upper-cased and validated by the flag's ArgList type.
+    upper_vals = self.args.auto_rollout_scope
 
     scope_enum = (
         self.messages.RolloutCreationScope.UpgradeTypesValueListEntryValuesEnum
@@ -412,7 +420,13 @@ class RolloutSequenceFlagParser:
         'NODE_PATCH': scope_enum.NODE_PATCH,
     }
 
-    upper_vals = [val.upper().replace('-', '_') for val in auto_rollout_scope]
+    if ('ALL' in upper_vals or 'NONE' in upper_vals) and len(
+        set(upper_vals)
+    ) > 1:
+      raise exceptions.InvalidArgumentException(
+          '--auto-rollout-scope',
+          'ALL and NONE cannot be combined with other values.',
+      )
 
     if 'ALL' not in upper_vals:
       log.warning(
@@ -440,13 +454,7 @@ class RolloutSequenceFlagParser:
     if 'NONE' in upper_vals:
       return self.messages.RolloutCreationScope(upgradeTypes=[])
 
-    upgrade_types = []
-    for val in upper_vals:
-      if val in upgrade_type_by_name:
-        upgrade_types.append(upgrade_type_by_name[val])
-      else:
-        raise ValueError(f'Invalid value for --auto-rollout-scope: {val}')
-
+    upgrade_types = [upgrade_type_by_name[val] for val in upper_vals]
     return self.messages.RolloutCreationScope(upgradeTypes=upgrade_types)
 
   def Async(self) -> bool:

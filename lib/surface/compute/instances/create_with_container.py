@@ -187,7 +187,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_visible_core_count = True
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
-  _support_snp_svsm = False
+  _support_snp_svsm = True
   _support_confidential_compute_type_cca = True
   _support_confidential_compute_type_bmsai = True
   _support_local_ssd_recovery_timeout = True
@@ -211,7 +211,7 @@ class CreateWithContainer(base.CreateCommand):
         support_multi_writer=False,
         support_confidential_compute_type=True,
         support_confidential_compute_type_tdx=True,
-        support_snp_svsm=False,
+        support_snp_svsm=True,
         support_confidential_compute_type_cca=True,
         support_confidential_compute_type_bmsai=True,
         support_specific_then_x_affinity=False,
@@ -585,7 +585,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_visible_core_count = True
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
-  _support_snp_svsm = False
+  _support_snp_svsm = True
   _support_confidential_compute_type_cca = True
   _support_confidential_compute_type_bmsai = True
   _support_host_error_timeout_seconds = True
@@ -605,7 +605,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         container_mount_enabled=True,
         support_confidential_compute_type=True,
         support_confidential_compute_type_tdx=True,
-        support_snp_svsm=False,
+        support_snp_svsm=True,
         support_confidential_compute_type_cca=True,
         support_confidential_compute_type_bmsai=True,
         support_specific_then_x_affinity=True,

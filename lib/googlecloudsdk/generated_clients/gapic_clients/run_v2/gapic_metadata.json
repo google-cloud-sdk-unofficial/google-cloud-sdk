@@ -39,6 +39,100 @@
         }
       }
     },
+    "DomainMappings": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "DomainMappingsClient",
+          "rpcs": {
+            "CreateDomainMapping": {
+              "methods": [
+                "create_domain_mapping"
+              ]
+            },
+            "DeleteDomainMapping": {
+              "methods": [
+                "delete_domain_mapping"
+              ]
+            },
+            "GetDomainMapping": {
+              "methods": [
+                "get_domain_mapping"
+              ]
+            },
+            "ListDomainMappings": {
+              "methods": [
+                "list_domain_mappings"
+              ]
+            },
+            "UpdateDomainMapping": {
+              "methods": [
+                "update_domain_mapping"
+              ]
+            }
+          }
+        },
+        "grpc-async": {
+          "libraryClient": "DomainMappingsAsyncClient",
+          "rpcs": {
+            "CreateDomainMapping": {
+              "methods": [
+                "create_domain_mapping"
+              ]
+            },
+            "DeleteDomainMapping": {
+              "methods": [
+                "delete_domain_mapping"
+              ]
+            },
+            "GetDomainMapping": {
+              "methods": [
+                "get_domain_mapping"
+              ]
+            },
+            "ListDomainMappings": {
+              "methods": [
+                "list_domain_mappings"
+              ]
+            },
+            "UpdateDomainMapping": {
+              "methods": [
+                "update_domain_mapping"
+              ]
+            }
+          }
+        },
+        "rest": {
+          "libraryClient": "DomainMappingsClient",
+          "rpcs": {
+            "CreateDomainMapping": {
+              "methods": [
+                "create_domain_mapping"
+              ]
+            },
+            "DeleteDomainMapping": {
+              "methods": [
+                "delete_domain_mapping"
+              ]
+            },
+            "GetDomainMapping": {
+              "methods": [
+                "get_domain_mapping"
+              ]
+            },
+            "ListDomainMappings": {
+              "methods": [
+                "list_domain_mappings"
+              ]
+            },
+            "UpdateDomainMapping": {
+              "methods": [
+                "update_domain_mapping"
+              ]
+            }
+          }
+        }
+      }
+    },
     "Executions": {
       "clients": {
         "grpc": {

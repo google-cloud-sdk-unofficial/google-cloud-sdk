@@ -150,7 +150,7 @@ class Create(base.Command):
   _support_igmp_query = True
   _support_secure_tags = False
   _support_numa_node_count = False
-  _support_snp_svsm = False
+  _support_snp_svsm = True
   _support_max_count_per_zone = True
   _support_custom_hostnames = False
   _support_specific_then_x_affinity = False
@@ -379,7 +379,7 @@ class CreateBeta(Create):
   _support_display_device = True
   _support_secure_tags = False
   _support_numa_node_count = False
-  _support_snp_svsm = False
+  _support_snp_svsm = True
   _support_max_count_per_zone = True
   _support_custom_hostnames = True
   _support_specific_then_x_affinity = True

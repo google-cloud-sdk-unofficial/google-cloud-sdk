@@ -59,7 +59,7 @@ def GetParent(args):
 
 
 def _ValidateProject(flag_value):
-  if not re.match('^[a-z0-9-]+$', flag_value):
+  if not re.match('^[a-z0-9:-]+$', flag_value):
     raise exceptions.InvalidArgumentException('project', flag_value)
 
 

@@ -188,10 +188,13 @@ class EventImpact(_messages.Message):
       Output only.
 
   Fields:
-    endTime: Output only. The end time of the impact.
+    endTime: Output only. The end time of the impact. It may be empty if the
+      event is an emerging incident, the issue is still ongoing or if the end
+      time is still being determined.
     location: Location impacted by the event.
     product: Google Cloud product impacted by the event.
-    startTime: Output only. The start time of the impact.
+    startTime: Output only. The start time of the impact. It may be empty for
+      an emerging incident.
     state: Output only. The impact is affected or resolved. Output only.
   """
 

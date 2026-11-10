@@ -24,8 +24,10 @@ from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Export(base.DescribeCommand):
   """Export a cluster.
 
@@ -103,6 +105,33 @@ def RemoveNonImportableFields(cluster):
       # not return auto_delete_ttl. So TTLs are effectively excluded from
       # templates, at least until that FR is resolved.
       config.lifecycleConfig.autoDeleteTime = None
+
+    if (
+        config.masterFlexibleConfig is not None
+        or config.workerFlexibleConfig is not None
+        or config.secondaryWorkerFlexibleConfig is not None
+    ):
+      config.masterConfig = None
+      config.workerConfig = None
+      config.secondaryWorkerConfig = None
+      if config.gceClusterConfig is not None:
+        config.gceClusterConfig.zoneUri = None
+      if (
+          config.softwareConfig is not None
+          and getattr(
+              config.softwareConfig.properties, 'additionalProperties', None
+          )
+          is not None
+      ):
+        config.softwareConfig.properties.additionalProperties = [
+            prop
+            for prop in config.softwareConfig.properties.additionalProperties
+            if not prop.key.startswith(
+                ('master:', 'primary_worker:', 'secondary_worker:')
+            )
+        ]
+        if not config.softwareConfig.properties.additionalProperties:
+          config.softwareConfig.properties = None
 
     instance_group_configs = [
         config.masterConfig, config.workerConfig, config.secondaryWorkerConfig

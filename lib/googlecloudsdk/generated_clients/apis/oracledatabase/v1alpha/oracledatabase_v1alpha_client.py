@@ -3465,6 +3465,33 @@ class OracledatabaseV1alpha(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Patch(self, request, global_params=None):
+      r"""Updates the `labels` of a single ODB DNS Zone.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/odbNetworks/{odbNetworksId}/odbDnsZones/{odbDnsZonesId}',
+        http_method='PATCH',
+        method_id='oracledatabase.projects.locations.odbNetworks.odbDnsZones.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='odbDnsZone',
+        request_type_name='OracledatabaseProjectsLocationsOdbNetworksOdbDnsZonesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
   class ProjectsLocationsOdbNetworksOdbSubnetsService(base_api.BaseApiService):
     """Service class for the projects_locations_odbNetworks_odbSubnets resource."""
 

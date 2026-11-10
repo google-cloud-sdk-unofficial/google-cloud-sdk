@@ -17,12 +17,13 @@
       in a specified project.
 
       To apply session settings to all workforce pools in an organization, specify the
-      `restrictedProject` scope in the `--binding-file` with `--federated-principal` set to
+      `restrictedProject` or `restrictedClientApplication` scope in the `--binding-file` with
+      `--federated-principal` set to
       `principalSet://cloudresourcemanager.googleapis.com/organizations/{organization_id}/type/WorkforcePool`.
       Bindings created for all workforce pools in an organization support only `scopedAccessSettings`
-      with the `restrictedProject` client scope and active `sessionSettings`. Application scopes
-      (`restrictedClientApplication`), top-level session settings, access levels, and dry run
-      levels are not allowed for this principal type.
+      with the `restrictedProject` or `restrictedClientApplication` client scope and active
+      `sessionSettings`. Top-level session settings, access levels, dry run access levels, and dry
+      run session settings are not allowed for this principal type.
 
       Binding session settings to other principal types isn't supported, and those requests are
       rejected. You can bind session settings only to the following principal types:
@@ -115,6 +116,39 @@
             --federated-principal='principalSet://cloudresourcemanager.googleapis.com/organizations/1234567890/type/WorkforcePool' \
             --organization='1234567890' --binding-file='binding.yaml'
 
+      To create a new cloud access binding for all workforce pools in a given organization with
+      application-scoped session settings:
+
+        Create a binding.yaml file containing scopedAccessSettings with restrictedClientApplication
+        and activeSettings (session length between 1 hour and 90 days, sessionReauthMethod: LOGIN,
+        and sessionLengthEnabled: true):
+
+          scopedAccessSettings:
+          - scope:
+              clientScope:
+                restrictedClientApplication:
+                  name: "Gemini Enterprise mobile Android"
+            activeSettings:
+              sessionSettings:
+                sessionLength: 7776000s
+                sessionLengthEnabled: true
+                sessionReauthMethod: LOGIN
+          - scope:
+              clientScope:
+                restrictedClientApplication:
+                  name: "Gemini Enterprise mobile IOS"
+            activeSettings:
+              sessionSettings:
+                sessionLength: 7776000s
+                sessionLengthEnabled: true
+                sessionReauthMethod: LOGIN
+
+        Then run the following command:
+
+          $ {command} \
+            --federated-principal='principalSet://cloudresourcemanager.googleapis.com/organizations/1234567890/type/WorkforcePool' \
+            --organization='1234567890' --binding-file='binding.yaml'
+
   request:
     collection: accesscontextmanager.organizations.gcpUserAccessBindings
     api_version: v1
@@ -148,15 +182,23 @@
 
         For bindings tied to all workforce pools in an organization
         (`principalSet://cloudresourcemanager.googleapis.com/organizations/{organization_id}/type/WorkforcePool`),
-        `scopedAccessSettings` must only contain `restrictedProject` (format: `name: projects/{project_number}`)
-        within the `scope.clientScope` and `sessionSettings` within `activeSettings`.
+        `scopedAccessSettings` can contain `restrictedProject` (format: `name: projects/{project_number}`)
+        or `restrictedClientApplication` within `scope.clientScope`, and `sessionSettings` within
+        `activeSettings`.
         For this configuration, the following requirements apply:
         * `sessionLength` must be set and must be between 1 hour and 90 days (for example, `7776000s`).
         * `sessionReauthMethod` must be `LOGIN` or omitted (defaults to `LOGIN`).
         * `sessionLengthEnabled` must be set to `true`.
         * `maxInactivity` must be set to 0 or omitted.
         * `useOidcMaxAge` must be set to `false` or omitted.
-        * No application scopes (`restrictedClientApplication`), access levels, or dry run settings are allowed.
+        * For project scopes (`restrictedProject`), the session settings apply to all OAuth apps
+          owned by the specified project.
+        * For application scopes (`restrictedClientApplication`), only supported Google Cloud
+          applications are allowed. `name` must be set to one of the following case-sensitive
+          values: `"Gemini Enterprise mobile Android"`, `"Gemini Enterprise mobile IOS"`, or
+          `"Gemini Enterprise Desktop"`. Identifying applications by OAuth client ID (`clientId`)
+          is not supported for workforce pools.
+        * Access levels, dry run access levels, and dry run session settings are not allowed.
 
         The `restrictedProject` scope is usable only with bindings tied to all workforce pools in
         an organization.
@@ -207,8 +249,7 @@
         The session length applies only to Google Group bindings (`--group-key`). It isn't
         supported for bindings tied to all workforce pools in an organization, or for any other
         principal type. For bindings tied to all workforce pools in an organization, configure
-        session settings through `--binding-file`, under `scopedAccessSettings` on the
-        `restrictedProject` scope.
+        session settings through `--binding-file`, under `scopedAccessSettings`.
     - api_field: gcpUserAccessBinding.sessionSettings.sessionReauthMethod
       arg_name: session-reauth-method
       default: login
@@ -279,8 +320,9 @@
           `principalSet://cloudresourcemanager.googleapis.com/organizations/{organization_id}/type/WorkforcePool`
 
         Bindings created for all Workforce Pools in an organization support only `scopedAccessSettings`
-        with the `restrictedProject` client scope and active `sessionSettings`. No other configurations
-        (such as application scopes, access levels, or dry run settings) are allowed.
+        with the `restrictedProject` or `restrictedClientApplication` client scope and active
+        `sessionSettings`. No other configurations (such as top-level session settings, access
+        levels, dry run access levels, or dry run session settings) are allowed.
 
         Session settings cannot be configured for individual federated principals or workload identity pools.
         At most one of `--group-key`, `--federated-principal`, `--service-account`, or

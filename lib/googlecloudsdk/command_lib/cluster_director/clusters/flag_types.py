@@ -93,12 +93,113 @@ EXISTING_NFS_TYPE = arg_parsers.ArgObject(
     disable_key_description=True,
 )
 
+SLURM_CONFIG_TYPE = arg_parsers.ArgObject(
+    spec={
+        "accountingStorageEnforceFlags": arg_parsers.ArgObject(
+            value_type=str, repeated=True
+        ),
+        "accountingStorageTres": str,
+        "additionalSettings": arg_parsers.ArgObject(
+            key_type=str,
+            value_type=str,
+            enable_shorthand=True,
+            disable_key_description=True,
+        ),
+        "defMemPerCpu": str,
+        "enforcePartLimits": str,
+        "fairShareDampeningFactor": str,
+        "firstJobId": str,
+        "healthCheckInterval": int,
+        "healthCheckNodeState": str,
+        "healthCheckProgram": str,
+        "jobRequeue": str,
+        "overTimeLimit": str,
+        "preemptExemptTime": str,
+        "preemptMode": arg_parsers.ArgObject(value_type=str, repeated=True),
+        "preemptParameters": arg_parsers.ArgObject(
+            spec={
+                "minExemptPriority": str,
+                "reclaimLicenses": bool,
+                "reorderCount": str,
+                "sendUserSignal": bool,
+                "strictOrder": bool,
+                "suspendGraceTime": str,
+                "youngestFirst": bool,
+            },
+            enable_shorthand=True,
+            disable_key_description=True,
+        ),
+        "preemptType": str,
+        "priorityCalcPeriod": str,
+        "priorityDecayHalfLife": str,
+        "priorityFavorSmall": str,
+        "priorityFlags": str,
+        "priorityMaxAge": str,
+        "priorityType": str,
+        "priorityUsageResetPeriod": str,
+        "priorityWeightAge": int,
+        "priorityWeightAssoc": int,
+        "priorityWeightFairshare": int,
+        "priorityWeightJobSize": int,
+        "priorityWeightPartition": int,
+        "priorityWeightQos": int,
+        "priorityWeightTres": str,
+        "prologEpilogTimeout": str,
+        "prologFlags": arg_parsers.ArgObject(value_type=str, repeated=True),
+        "requeueExitCodes": arg_parsers.ArgObject(
+            value_type=int, repeated=True
+        ),
+        "requeueHoldExitCodes": arg_parsers.ArgObject(
+            value_type=int, repeated=True
+        ),
+        "schedulerParameters": arg_parsers.ArgObject(
+            spec={
+                "bfBusyNodes": bool,
+                "bfContinue": bool,
+                "bfInterval": str,
+                "bfMaxJobPart": str,
+                "bfMaxJobTest": str,
+                "bfMaxJobUser": str,
+                "bfMinAgeReserve": str,
+                "bfResolution": str,
+                "bfWindow": str,
+                "defaultQueueDepth": str,
+                "noholdOnPrologFail": bool,
+            },
+            enable_shorthand=True,
+            disable_key_description=True,
+        ),
+        "selectTypeParameters": str,
+    },
+    enable_shorthand=True,
+    disable_key_description=True,
+)
+
 
 SERVICE_ACCOUNT_TYPE = arg_parsers.ArgObject(
     spec={
         "email": str,
         "scopes": arg_parsers.ArgObject(value_type=str, repeated=True),
     }
+)
+
+ADDITIONAL_DISK_TYPE = arg_parsers.ArgObject(
+    spec={
+        "type": str,
+        "sizeGb": int,
+        "image": str,
+        "snapshot": str,
+        "existingDisk": str,
+    },
+    enable_shorthand=True,
+    disable_key_description=True,
+)
+
+ADDITIONAL_DISKS_TYPE = arg_parsers.ArgObject(
+    key_type=str,
+    value_type=ADDITIONAL_DISK_TYPE,
+    enable_shorthand=True,
+    disable_key_description=True,
 )
 
 
@@ -435,10 +536,14 @@ class FlagTypes:
         "computeId": str,
         "targetSize": int,
         "acceleratorTopology": str,
+        "enableOsLogin": bool,
         "enablePublicIps": bool,
         "startupScript": arg_parsers.ArgObject(),
         "startupScriptTimeout": str,
         "bootDisk": self.GetProtoBootDiskType(),
+        "additionalDisks": ADDITIONAL_DISKS_TYPE,
+        "labels": LABEL,
+        "metadata": LABEL,
         "storageConfigs": STORAGE_CONFIG,
     }
 
@@ -458,6 +563,25 @@ class FlagTypes:
     """Returns an ArgObject for parsing Managed Instance Group updates."""
     return arg_parsers.ArgObject(
         spec=self._GetManagedInstanceGroupSpec(),
+        required_keys=["id"],
+        enable_shorthand=True,
+        repeated=True,
+        disable_key_description=True,
+    )
+
+  def GetExistingInstancesObject(self) -> arg_parsers.ArgObject:
+    """Returns an ArgObject for parsing ExistingInstances configs."""
+    return arg_parsers.ArgObject(
+        spec={
+            "id": str,
+            "project": str,
+            "instanceGroupManager": str,
+            "regionInstanceGroupManager": str,
+            "reservation": str,
+            "reservationBlock": str,
+            "reservationSubBlock": str,
+            "labels": LABEL,
+        },
         required_keys=["id"],
         enable_shorthand=True,
         repeated=True,

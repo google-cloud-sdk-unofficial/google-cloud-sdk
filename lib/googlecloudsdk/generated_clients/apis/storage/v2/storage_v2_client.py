@@ -52,6 +52,8 @@ class StorageV2(base_api.BaseApiClient):
     self.projects_locations_intelligenceFindings = self.ProjectsLocationsIntelligenceFindingsService(self)
     self.projects_locations_objectIndexes = self.ProjectsLocationsObjectIndexesService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_smartBuckets_vectorIndexes = self.ProjectsLocationsSmartBucketsVectorIndexesService(self)
+    self.projects_locations_smartBuckets = self.ProjectsLocationsSmartBucketsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
 
@@ -1660,6 +1662,296 @@ class StorageV2(base_api.BaseApiClient):
         request_field='',
         request_type_name='StorageProjectsLocationsOperationsListRequest',
         response_type_name='ListOperationsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSmartBucketsVectorIndexesService(base_api.BaseApiService):
+    """Service class for the projects_locations_smartBuckets_vectorIndexes resource."""
+
+    _NAME = 'projects_locations_smartBuckets_vectorIndexes'
+
+    def __init__(self, client):
+      super(StorageV2.ProjectsLocationsSmartBucketsVectorIndexesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new VectorIndex synchronously.
+
+      Args:
+        request: (StorageProjectsLocationsSmartBucketsVectorIndexesCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (VectorIndex) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/smartBuckets/{smartBucketsId}/vectorIndexes',
+        http_method='POST',
+        method_id='storage.projects.locations.smartBuckets.vectorIndexes.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['vectorIndexId'],
+        relative_path='v2/{+parent}/vectorIndexes',
+        request_field='vectorIndex',
+        request_type_name='StorageProjectsLocationsSmartBucketsVectorIndexesCreateRequest',
+        response_type_name='VectorIndex',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a VectorIndex (and all VectorDocuments contained therein; `force` in DeleteVectorIndexRequest must currently be set to true) synchronously.
+
+      Args:
+        request: (StorageProjectsLocationsSmartBucketsVectorIndexesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/smartBuckets/{smartBucketsId}/vectorIndexes/{vectorIndexesId}',
+        http_method='DELETE',
+        method_id='storage.projects.locations.smartBuckets.vectorIndexes.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag', 'force'],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='StorageProjectsLocationsSmartBucketsVectorIndexesDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a VectorIndex.
+
+      Args:
+        request: (StorageProjectsLocationsSmartBucketsVectorIndexesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (VectorIndex) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/smartBuckets/{smartBucketsId}/vectorIndexes/{vectorIndexesId}',
+        http_method='GET',
+        method_id='storage.projects.locations.smartBuckets.vectorIndexes.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='StorageProjectsLocationsSmartBucketsVectorIndexesGetRequest',
+        response_type_name='VectorIndex',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists VectorIndexes.
+
+      Args:
+        request: (StorageProjectsLocationsSmartBucketsVectorIndexesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListVectorIndexesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/smartBuckets/{smartBucketsId}/vectorIndexes',
+        http_method='GET',
+        method_id='storage.projects.locations.smartBuckets.vectorIndexes.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v2/{+parent}/vectorIndexes',
+        request_field='',
+        request_type_name='StorageProjectsLocationsSmartBucketsVectorIndexesListRequest',
+        response_type_name='ListVectorIndexesResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a VectorIndex.
+
+      Args:
+        request: (StorageProjectsLocationsSmartBucketsVectorIndexesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (VectorIndex) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/smartBuckets/{smartBucketsId}/vectorIndexes/{vectorIndexesId}',
+        http_method='PATCH',
+        method_id='storage.projects.locations.smartBuckets.vectorIndexes.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v2/{+name}',
+        request_field='vectorIndex',
+        request_type_name='StorageProjectsLocationsSmartBucketsVectorIndexesPatchRequest',
+        response_type_name='VectorIndex',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSmartBucketsService(base_api.BaseApiService):
+    """Service class for the projects_locations_smartBuckets resource."""
+
+    _NAME = 'projects_locations_smartBuckets'
+
+    def __init__(self, client):
+      super(StorageV2.ProjectsLocationsSmartBucketsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new SmartBucket.
+
+      Args:
+        request: (StorageProjectsLocationsSmartBucketsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SmartBucket) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/smartBuckets',
+        http_method='POST',
+        method_id='storage.projects.locations.smartBuckets.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['smartBucketId'],
+        relative_path='v2/{+parent}/smartBuckets',
+        request_field='smartBucket',
+        request_type_name='StorageProjectsLocationsSmartBucketsCreateRequest',
+        response_type_name='SmartBucket',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a SmartBucket. A SmartBucket must be empty (i.e., must contain no VectorIndexes) before it can be deleted.
+
+      Args:
+        request: (StorageProjectsLocationsSmartBucketsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Empty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/smartBuckets/{smartBucketsId}',
+        http_method='DELETE',
+        method_id='storage.projects.locations.smartBuckets.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['etag'],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='StorageProjectsLocationsSmartBucketsDeleteRequest',
+        response_type_name='Empty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets a SmartBucket.
+
+      Args:
+        request: (StorageProjectsLocationsSmartBucketsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SmartBucket) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/smartBuckets/{smartBucketsId}',
+        http_method='GET',
+        method_id='storage.projects.locations.smartBuckets.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}',
+        request_field='',
+        request_type_name='StorageProjectsLocationsSmartBucketsGetRequest',
+        response_type_name='SmartBucket',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists SmartBuckets.
+
+      Args:
+        request: (StorageProjectsLocationsSmartBucketsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSmartBucketsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/smartBuckets',
+        http_method='GET',
+        method_id='storage.projects.locations.smartBuckets.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v2/{+parent}/smartBuckets',
+        request_field='',
+        request_type_name='StorageProjectsLocationsSmartBucketsListRequest',
+        response_type_name='ListSmartBucketsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates a SmartBucket synchronously.
+
+      Args:
+        request: (StorageProjectsLocationsSmartBucketsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SmartBucket) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/locations/{locationsId}/smartBuckets/{smartBucketsId}',
+        http_method='PATCH',
+        method_id='storage.projects.locations.smartBuckets.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v2/{+name}',
+        request_field='smartBucket',
+        request_type_name='StorageProjectsLocationsSmartBucketsPatchRequest',
+        response_type_name='SmartBucket',
         supports_download=False,
     )
 

@@ -18,10 +18,13 @@
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Images(base.Group):
+  # pylint: disable=line-too-long
   """Manage Artifact Registry container images.
 
-  To list images under the current project, repository, and location:
+  To list images in the default repository, as specified by the
+  `core/project`, `artifacts/location`, and `artifacts/repository` properties:
 
       $ {command} list
 
@@ -30,15 +33,15 @@ class Images(base.Group):
 
       $ {command} list us-central1-docker.pkg.dev/my-project/my-repo
 
-  To list images with tags, under repository `my-repo`, project `my-project`
-  across all locations:
+  To list images with tags, under repository `my-repo`, project `my-project`,
+  in `us-central1`:
 
-      $ {command} list docker.pkg.dev/my-project/my-repo --include-tags
+      $ {command} list us-central1-docker.pkg.dev/my-project/my-repo --include-tags
 
   To list all images under image `busy-box`, in repository `my-repo`, project
-  `my-project` across all locations:
+  `my-project`, in `us-central1`:
 
-      $ {command} list docker.pkg.dev/my-project/my-repo/busy-box
+      $ {command} list us-central1-docker.pkg.dev/my-project/my-repo/busy-box
 
   To delete image `busy-box` in `us-west1` and all of its digests and tags:
 

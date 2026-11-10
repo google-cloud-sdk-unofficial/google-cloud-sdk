@@ -34,6 +34,16 @@ from googlecloudsdk.command_lib.storage.tasks import task
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
+from googlecloudsdk.core.util import platforms
+
+
+def _normalize_file_url_delimiters(text):
+  """Normalizes Windows file:// URL delimiters to cloud URL delimiters."""
+  if platforms.OperatingSystem.IsWindows() and text.startswith(
+      storage_url.ProviderPrefix.FILE.value + storage_url.SCHEME_DELIMITER
+  ):
+    return text.replace(os.sep, storage_url.CLOUD_URL_DELIMITER)
+  return text
 
 
 def sorting_key_for_csv_line(csv_line):
@@ -51,7 +61,7 @@ def sorting_key_for_csv_line(csv_line):
     str: The sorting key for the CSV line.
   """
   fields = rsync_command_util.get_fields_from_csv_line(csv_line)
-  return fields[0]
+  return _normalize_file_url_delimiters(fields[0])
 
 
 def get_resource_chunk(
@@ -193,6 +203,18 @@ class GetSortedContainerContentsTask(task.Task):
     chunk_file_paths = []
     chunk_file_readers = []
     chunk_size = properties.VALUES.storage.rsync_list_chunk_size.GetInt()
+    if properties.VALUES.storage.use_url_based_rsync_sorting.GetBool():
+      sorting_key = sorting_key_for_csv_line
+    elif (
+        platforms.OperatingSystem.IsWindows()
+        and self._container_query_path.startswith(
+            storage_url.ProviderPrefix.FILE.value + storage_url.SCHEME_DELIMITER
+        )
+    ):
+      sorting_key = _normalize_file_url_delimiters
+    else:
+      sorting_key = None
+
     try:
       while True:
         resources_chunk = get_resource_chunk(
@@ -215,19 +237,13 @@ class GetSortedContainerContentsTask(task.Task):
                 is_managed_folder_list=self._managed_folders_only,
             )
         )
-        if properties.VALUES.storage.use_url_based_rsync_sorting.GetBool():
-          sorted_encoded_chunk = sorted(
-              [
-                  rsync_command_util.get_csv_line_from_resource(x)
-                  for x in resources_chunk
-              ],
-              key=sorting_key_for_csv_line,
-          )
-        else:
-          sorted_encoded_chunk = sorted([
-              rsync_command_util.get_csv_line_from_resource(x)
-              for x in resources_chunk
-          ])
+        sorted_encoded_chunk = sorted(
+            [
+                rsync_command_util.get_csv_line_from_resource(x)
+                for x in resources_chunk
+            ],
+            key=sorting_key,
+        )
 
         sorted_encoded_chunk.append('')  # Add trailing newline.
         files.WriteFileContents(
@@ -237,12 +253,9 @@ class GetSortedContainerContentsTask(task.Task):
 
       chunk_file_readers = [files.FileReader(path) for path in chunk_file_paths]
       with files.FileWriter(self._output_path, create_path=True) as file_writer:
-        if properties.VALUES.storage.use_url_based_rsync_sorting.GetBool():
-          file_writer.writelines(
-              heapq.merge(*chunk_file_readers, key=sorting_key_for_csv_line)
-          )
-        else:
-          file_writer.writelines(heapq.merge(*chunk_file_readers))
+        file_writer.writelines(
+            heapq.merge(*chunk_file_readers, key=sorting_key)
+        )
 
     except OSError as e:
       if e.errno == errno.EMFILE:

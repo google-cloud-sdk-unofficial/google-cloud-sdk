@@ -620,21 +620,7 @@ class Update(base.UpdateCommand):
   _support_scheduling_type = True
   _support_early_access_maintenance = True
   _support_folder_share_setting = False
-
-  @classmethod
-  def _SupportRequireSpecificReservation(cls):
-    """Whether --require-specific-reservation is supported on this track.
-
-    Updating `specificReservationRequired` is currently an allowlist-only
-    feature, so the flag is only exposed on the ALPHA and PREVIEW tracks.
-
-    Returns:
-      True if the flag should be available.
-    """
-    return cls.ReleaseTrack() in (
-        base.ReleaseTrack.ALPHA,
-        base.ReleaseTrack.PREVIEW,
-    )
+  _support_require_specific_reservation = True
 
   @classmethod
   def Args(cls, parser):
@@ -652,10 +638,7 @@ class Update(base.UpdateCommand):
     ).AddToParser(parser)
     r_flags.GetSchedulingTypeFlag().AddToParser(parser)
     r_flags.GetEarlyAccessMaintenanceFlag().AddToParser(parser)
-    if cls._SupportRequireSpecificReservation():
-      r_flags.GetRequireSpecificAllocation(is_update=True).AddToParser(
-          parser
-      )
+    r_flags.GetRequireSpecificAllocation(is_update=True).AddToParser(parser)
 
   def Run(self, args):
     """Common routine for updating reservation."""
@@ -673,7 +656,7 @@ class Update(base.UpdateCommand):
         self._support_share_type,
         self._support_scheduling_type,
         self._support_early_access_maintenance,
-        self._SupportRequireSpecificReservation(),
+        self._support_require_specific_reservation,
     )
     reservation_ref = (
         resource_args.GetReservationResourceArg().ResolveAsResource(
@@ -823,7 +806,7 @@ class Update(base.UpdateCommand):
         if errors:
           utils.RaiseToolException(errors)
 
-    if self._SupportRequireSpecificReservation():
+    if self._support_require_specific_reservation:
       if args.IsKnownAndSpecified('require_specific_reservation'):
         r_update_request = _RequireSpecificReservationUpdateRequest(
             args, reservation_ref, holder
@@ -855,6 +838,7 @@ class UpdateBeta(Update):
   _support_share_type = True
   _support_scheduling_type = True
   _support_early_access_maintenance = True
+  _support_require_specific_reservation = True
 
   @classmethod
   def Args(cls, parser):
@@ -873,6 +857,7 @@ class UpdateBeta(Update):
     ).AddToParser(parser)
     r_flags.GetSchedulingTypeFlag().AddToParser(parser)
     r_flags.GetEarlyAccessMaintenanceFlag().AddToParser(parser)
+    r_flags.GetRequireSpecificAllocation(is_update=True).AddToParser(parser)
 
     auto_delete_group = base.ArgumentGroup(
         'Manage auto-delete properties for reservations.',
@@ -897,6 +882,7 @@ class UpdateAlpha(Update):
   _support_scheduling_type = True
   _support_early_access_maintenance = True
   _support_folder_share_setting = True
+  _support_require_specific_reservation = True
 
   @classmethod
   def Args(cls, parser):

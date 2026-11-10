@@ -41,6 +41,9 @@ class GapicWrapperClient(object):
     self.builds = gapic_util.MakeAsyncClient(
         run_v2.services.builds.async_client.BuildsAsyncClient,
         credentials, **kwargs)
+    self.domain = gapic_util.MakeAsyncClient(
+        run_v2.services.domain_mappings.async_client.DomainMappingsAsyncClient,
+        credentials, **kwargs)
     self.executions = gapic_util.MakeAsyncClient(
         run_v2.services.executions.async_client.ExecutionsAsyncClient,
         credentials, **kwargs)
@@ -68,6 +71,7 @@ class GapicWrapperClient(object):
 
   async def __aenter__(self):
     await self._aexit_stack.enter_async_context(self.builds)
+    await self._aexit_stack.enter_async_context(self.domain)
     await self._aexit_stack.enter_async_context(self.executions)
     await self._aexit_stack.enter_async_context(self.instances)
     await self._aexit_stack.enter_async_context(self.jobs)

@@ -1,27 +1,14 @@
 #!/usr/bin/env python
 """Method decorator helpers."""
 
+# pyright: reportOptionalContextManager=false, reportOptionalMemberAccess=false
+
 __all__ = ()
 
 import functools
-import warnings
 import weakref
 
-
-def _warn_classmethod(stacklevel):
-    warnings.warn(
-        "decorating class methods with @cachedmethod is deprecated",
-        DeprecationWarning,
-        stacklevel=stacklevel,
-    )
-
-
-def _warn_instance_dict(msg, stacklevel):
-    warnings.warn(
-        msg,
-        DeprecationWarning,
-        stacklevel=stacklevel,
-    )
+from ._descriptor import _ClassMethodDescriptor, _MethodDescriptor, _warn_classmethod
 
 
 def _none(_):
@@ -64,82 +51,6 @@ class _WrapperBase:
         return self.__cond(self._obj)
 
 
-class _DescriptorBase:
-    """Descriptor base class implementing the basic descriptor protocol."""
-
-    def __init__(self, deprecated=False):
-        self.__attrname = None
-        self.__deprecated = deprecated
-
-    def __set_name__(self, owner, name):
-        if self.__attrname is None:
-            self.__attrname = name
-        elif name != self.__attrname:
-            raise TypeError(
-                "Cannot assign the same @cachedmethod to two different names "
-                f"({self.__attrname!r} and {name!r})."
-            )
-
-    def __get__(self, obj, objtype=None):
-        wrapper = self.Wrapper(obj)  # type: ignore
-        if obj is None:
-            # Return the wrapper itself without modification when accessed
-            # through the class to support class-level introspection, such
-            # as for mocking with autospec=True in unittest.mock.
-            pass
-        elif self.__attrname is not None:
-            # replace descriptor instance with wrapper in instance dict
-            try:
-                # In case of a race condition where another thread already replaced
-                # the descriptor, prefer the initial wrapper.
-                wrapper = obj.__dict__.setdefault(self.__attrname, wrapper)
-            except AttributeError:
-                # not all objects have __dict__ (e.g. class defines slots)
-                msg = (
-                    f"No '__dict__' attribute on {type(obj).__name__!r} "
-                    f"instance to cache {self.__attrname!r} property."
-                )
-                if self.__deprecated:
-                    _warn_instance_dict(msg, 3)
-                else:
-                    raise TypeError(msg) from None
-            except TypeError:
-                msg = (
-                    f"The '__dict__' attribute on {type(obj).__name__!r} "
-                    f"instance does not support item assignment for "
-                    f"caching {self.__attrname!r} property."
-                )
-                if self.__deprecated:
-                    _warn_instance_dict(msg, 3)
-                else:
-                    raise TypeError(msg) from None
-        elif self.__deprecated:
-            pass  # deprecated @classmethod, warning already raised elsewhere
-        else:
-            msg = "Cannot use @cachedmethod instance without calling __set_name__ on it"
-            raise TypeError(msg) from None
-        return wrapper
-
-
-class _DeprecatedDescriptorBase(_DescriptorBase):
-    """Descriptor base class supporting deprecated @classmethod use."""
-
-    def __init__(self, wrapper, cache_clear):
-        super().__init__(deprecated=True)
-        self.__wrapper = wrapper
-        self.__cache_clear = cache_clear
-
-    # called for @classmethod with Python >= 3.13
-    def __call__(self, *args, **kwargs):
-        _warn_classmethod(stacklevel=3)
-        return self.__wrapper(*args, **kwargs)
-
-    # backward-compatible @classmethod handling with Python >= 3.13
-    def cache_clear(self, objtype):
-        _warn_classmethod(stacklevel=3)
-        return self.__cache_clear(objtype)
-
-
 # At least for now, the implementation prefers clarity and performance
 # over ease of maintenance, thus providing separate descriptors for
 # all valid combinations of decorator parameters lock, condition and
@@ -147,7 +58,7 @@ class _DeprecatedDescriptorBase(_DescriptorBase):
 
 
 def _condition_info(method, cache, key, lock, cond, info):
-    class Descriptor(_DescriptorBase):
+    class Descriptor(_MethodDescriptor):
         class Wrapper(_WrapperBase):
             def __init__(self, obj):
                 super().__init__(obj, method, cache, key, lock, cond)
@@ -195,7 +106,7 @@ def _condition_info(method, cache, key, lock, cond, info):
 
 
 def _locked_info(method, cache, key, lock, info):
-    class Descriptor(_DescriptorBase):
+    class Descriptor(_MethodDescriptor):
         class Wrapper(_WrapperBase):
             def __init__(self, obj):
                 super().__init__(obj, method, cache, key, lock)
@@ -235,7 +146,7 @@ def _locked_info(method, cache, key, lock, info):
 
 
 def _unlocked_info(method, cache, key, info):
-    class Descriptor(_DescriptorBase):
+    class Descriptor(_MethodDescriptor):
         class Wrapper(_WrapperBase):
             def __init__(self, obj):
                 super().__init__(obj, method, cache, key)
@@ -302,7 +213,7 @@ def _condition(method, cache, key, lock, cond):
         p = pending.setdefault(self, set())
         return wrapper(self, p, *args, **kwargs)
 
-    class Descriptor(_DeprecatedDescriptorBase):
+    class Descriptor(_ClassMethodDescriptor):
         class Wrapper(_WrapperBase):
             def __init__(self, obj):
                 super().__init__(obj, method, cache, key, lock, cond)
@@ -342,7 +253,7 @@ def _locked(method, cache, key, lock):
         with lock(self):
             c.clear()
 
-    class Descriptor(_DeprecatedDescriptorBase):
+    class Descriptor(_ClassMethodDescriptor):
         class Wrapper(_WrapperBase):
             def __init__(self, obj):
                 super().__init__(obj, method, cache, key, lock)
@@ -376,7 +287,7 @@ def _unlocked(method, cache, key):
         c = cache(self)
         c.clear()
 
-    class Descriptor(_DeprecatedDescriptorBase):
+    class Descriptor(_ClassMethodDescriptor):
         class Wrapper(_WrapperBase):
             def __init__(self, obj):
                 super().__init__(obj, method, cache, key)

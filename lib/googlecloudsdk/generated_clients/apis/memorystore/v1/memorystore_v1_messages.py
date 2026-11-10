@@ -4348,6 +4348,8 @@ class PscAutoConnection(_messages.Message):
 
   Enums:
     ConnectionTypeValueValuesEnum: Output only. Type of the PSC connection.
+    IpVersionValueValuesEnum: Optional. Immutable. The IP version used for the
+      PSC auto-created endpoint. If not specified, defaults to IPV4.
     PscConnectionStatusValueValuesEnum: Output only. The status of the PSC
       connection: whether a connection exists and ACTIVE or it no longer
       exists. Please note that this value is updated periodically. Please use
@@ -4360,6 +4362,8 @@ class PscAutoConnection(_messages.Message):
       projects/{project}/regions/{region}/forwardingRules/{forwarding_rule}
     ipAddress: Output only. The IP allocated on the consumer network for the
       PSC forwarding rule.
+    ipVersion: Optional. Immutable. The IP version used for the PSC auto-
+      created endpoint. If not specified, defaults to IPV4.
     network: Required. The network where the PSC endpoints are created, in the
       form of projects/{project_id}/global/networks/{network_name}.
     port: Optional. port will only be set for Primary/Reader or Discovery
@@ -4395,6 +4399,20 @@ class PscAutoConnection(_messages.Message):
     CONNECTION_TYPE_PRIMARY = 2
     CONNECTION_TYPE_READER = 3
 
+  class IpVersionValueValuesEnum(_messages.Enum):
+    r"""Optional. Immutable. The IP version used for the PSC auto-created
+    endpoint. If not specified, defaults to IPV4.
+
+    Values:
+      IP_VERSION_UNSPECIFIED: Not specified. Defaults to IPV4 on
+        CreateInstance.
+      IPV4: IPv4 address family.
+      IPV6: IPv6 address family.
+    """
+    IP_VERSION_UNSPECIFIED = 0
+    IPV4 = 1
+    IPV6 = 2
+
   class PscConnectionStatusValueValuesEnum(_messages.Enum):
     r"""Output only. The status of the PSC connection: whether a connection
     exists and ACTIVE or it no longer exists. Please note that this value is
@@ -4414,12 +4432,13 @@ class PscAutoConnection(_messages.Message):
   connectionType = _messages.EnumField('ConnectionTypeValueValuesEnum', 1)
   forwardingRule = _messages.StringField(2)
   ipAddress = _messages.StringField(3)
-  network = _messages.StringField(4)
-  port = _messages.IntegerField(5, variant=_messages.Variant.INT32)
-  projectId = _messages.StringField(6)
-  pscConnectionId = _messages.StringField(7)
-  pscConnectionStatus = _messages.EnumField('PscConnectionStatusValueValuesEnum', 8)
-  serviceAttachment = _messages.StringField(9)
+  ipVersion = _messages.EnumField('IpVersionValueValuesEnum', 4)
+  network = _messages.StringField(5)
+  port = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  projectId = _messages.StringField(7)
+  pscConnectionId = _messages.StringField(8)
+  pscConnectionStatus = _messages.EnumField('PscConnectionStatusValueValuesEnum', 9)
+  serviceAttachment = _messages.StringField(10)
 
 
 class PscConnection(_messages.Message):

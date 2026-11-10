@@ -38,6 +38,14 @@ class Collections(enum.Enum):
       ['project', 'location'],
       True
   )
+  PROJECTS_LOCATIONS_DOMAINMAPPINGS = (
+      'projects.locations.domainMappings',
+      'projects/{project}/locations/{location}/domainMappings/'
+      '{domain_mapping}',
+      {},
+      ['project', 'location', 'domain_mapping'],
+      True
+  )
   PROJECTS_LOCATIONS_INSTANCES = (
       'projects.locations.instances',
       'projects/{project}/locations/{location}/instances/{instance}',

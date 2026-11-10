@@ -84,10 +84,7 @@ class Create(base.CreateCommand):
             ' does not exist.'
         ),
     )
-    parser.add_argument(
-        '--sql-source-dir',
-        help='Path to a local directory containing SQL migration files.',
-    )
+    flags.AddSqlSourceDirFlag(parser)
 
   def Run(self, args):
     service_id = args.service

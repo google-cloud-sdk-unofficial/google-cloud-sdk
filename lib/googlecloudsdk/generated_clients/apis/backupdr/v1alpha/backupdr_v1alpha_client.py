@@ -311,7 +311,7 @@ class BackupdrV1alpha(base_api.BaseApiClient):
         method_id='backupdr.projects.locations.autoProtectionPolicies.bindings.create',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['autoProtectionPolicyBindingId'],
+        query_params=['autoProtectionPolicyBindingId', 'requestId'],
         relative_path='v1alpha/{+parent}/bindings',
         request_field='autoProtectionPolicyBinding',
         request_type_name='BackupdrProjectsLocationsAutoProtectionPoliciesBindingsCreateRequest',
@@ -429,7 +429,7 @@ class BackupdrV1alpha(base_api.BaseApiClient):
         method_id='backupdr.projects.locations.autoProtectionPolicies.create',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['autoProtectionPolicyId'],
+        query_params=['autoProtectionPolicyId', 'requestId'],
         relative_path='v1alpha/{+parent}/autoProtectionPolicies',
         request_field='autoProtectionPolicy',
         request_type_name='BackupdrProjectsLocationsAutoProtectionPoliciesCreateRequest',
@@ -456,7 +456,7 @@ class BackupdrV1alpha(base_api.BaseApiClient):
         method_id='backupdr.projects.locations.autoProtectionPolicies.delete',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['etag'],
+        query_params=['etag', 'requestId'],
         relative_path='v1alpha/{+name}',
         request_field='',
         request_type_name='BackupdrProjectsLocationsAutoProtectionPoliciesDeleteRequest',
@@ -537,7 +537,7 @@ class BackupdrV1alpha(base_api.BaseApiClient):
         method_id='backupdr.projects.locations.autoProtectionPolicies.patch',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['updateMask'],
+        query_params=['requestId', 'updateMask'],
         relative_path='v1alpha/{+name}',
         request_field='autoProtectionPolicy',
         request_type_name='BackupdrProjectsLocationsAutoProtectionPoliciesPatchRequest',
@@ -1186,6 +1186,33 @@ class BackupdrV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='BackupdrProjectsLocationsBackupVaultsDataSourcesBackupsFetchForResourceTypeRequest',
         response_type_name='FetchBackupsForResourceTypeResponse',
+        supports_download=False,
+    )
+
+    def GenerateInsights(self, request, global_params=None):
+      r"""Starts generating insights for a Backup. The operation completes once the insight generation job is queued. Track the progress of insight generation using the insight status fields on the Backup.
+
+      Args:
+        request: (BackupdrProjectsLocationsBackupVaultsDataSourcesBackupsGenerateInsightsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('GenerateInsights')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GenerateInsights.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/backupVaults/{backupVaultsId}/dataSources/{dataSourcesId}/backups/{backupsId}:generateInsights',
+        http_method='POST',
+        method_id='backupdr.projects.locations.backupVaults.dataSources.backups.generateInsights',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}:generateInsights',
+        request_field='generateInsightsRequest',
+        request_type_name='BackupdrProjectsLocationsBackupVaultsDataSourcesBackupsGenerateInsightsRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

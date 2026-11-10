@@ -55,8 +55,8 @@ class Dataflow(base.Group):
         [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]
     )
 
-    # b/190530367: Dataflow config-store-settings commands require numeric
-    # project numbers. Other subcommands continue to require project IDs.
+    # b/565463876: Dataflow config-store-settings commands accept both project
+    # IDs and project numbers.
     if not (
         hasattr(args, 'command_path')
         and 'config-store-settings' in args.command_path

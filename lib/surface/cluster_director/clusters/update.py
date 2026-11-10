@@ -187,6 +187,7 @@ class Update(base.UpdateCommand):
       flags.AddEnableSlurmHealthCheck(
           parser=slurm_group, api_version=api_version
       )
+    if api_version in ("v1alpha", "v1beta"):
       compute_engine_group = orchestrator_group.add_group(
           help=(
               "Configuration of orchestration type for Managed Compute"

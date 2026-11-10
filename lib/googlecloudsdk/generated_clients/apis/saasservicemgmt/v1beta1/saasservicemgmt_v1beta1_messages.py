@@ -1791,6 +1791,9 @@ class RolloutKind(_messages.Message):
   built-in and customizable policies.
 
   Enums:
+    LocationTypeValueValuesEnum: Optional. The location type of the rollout.
+      Based on the location type, the rollout will target the corresponding
+      locations.
     UpdateUnitKindStrategyValueValuesEnum: Optional. The config for updating
       the unit kind. By default, the unit kind will be updated on the rollout
       start.
@@ -1820,6 +1823,8 @@ class RolloutKind(_messages.Message):
       server agree on the ordering of a resource being written.
     labels: Optional. The labels on the resource, which can be used for
       categorization. similar to Kubernetes resource labels.
+    locationType: Optional. The location type of the rollout. Based on the
+      location type, the rollout will target the corresponding locations.
     name: Identifier. The resource name (full URI of the resource) following
       the standard naming scheme:
       "projects/{project}/locations/{location}/rolloutKinds/{rollout_kind_id}"
@@ -1851,6 +1856,21 @@ class RolloutKind(_messages.Message):
     updateUnitKindStrategy: Optional. The config for updating the unit kind.
       By default, the unit kind will be updated on the rollout start.
   """
+
+  class LocationTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. The location type of the rollout. Based on the location
+    type, the rollout will target the corresponding locations.
+
+    Values:
+      LOCATION_TYPE_UNSPECIFIED: Unspecified location type.
+      CLOUD_GLOBAL: Cloud global.
+      CLOUD_REGION: Cloud region.
+      CLOUD_ZONE: Cloud zone.
+    """
+    LOCATION_TYPE_UNSPECIFIED = 0
+    CLOUD_GLOBAL = 1
+    CLOUD_REGION = 2
+    CLOUD_ZONE = 3
 
   class UpdateUnitKindStrategyValueValuesEnum(_messages.Enum):
     r"""Optional. The config for updating the unit kind. By default, the unit
@@ -1924,14 +1944,15 @@ class RolloutKind(_messages.Message):
   errorBudget = _messages.MessageField('ErrorBudget', 3)
   etag = _messages.StringField(4)
   labels = _messages.MessageField('LabelsValue', 5)
-  name = _messages.StringField(6)
-  rolloutOrchestrationStrategy = _messages.StringField(7)
-  uid = _messages.StringField(8)
-  unitFilter = _messages.StringField(9)
-  unitKind = _messages.StringField(10)
-  unitUpdatePacing = _messages.MessageField('UnitUpdatePacing', 11)
-  updateTime = _messages.StringField(12)
-  updateUnitKindStrategy = _messages.EnumField('UpdateUnitKindStrategyValueValuesEnum', 13)
+  locationType = _messages.EnumField('LocationTypeValueValuesEnum', 6)
+  name = _messages.StringField(7)
+  rolloutOrchestrationStrategy = _messages.StringField(8)
+  uid = _messages.StringField(9)
+  unitFilter = _messages.StringField(10)
+  unitKind = _messages.StringField(11)
+  unitUpdatePacing = _messages.MessageField('UnitUpdatePacing', 12)
+  updateTime = _messages.StringField(13)
+  updateUnitKindStrategy = _messages.EnumField('UpdateUnitKindStrategyValueValuesEnum', 14)
 
 
 class RolloutStats(_messages.Message):

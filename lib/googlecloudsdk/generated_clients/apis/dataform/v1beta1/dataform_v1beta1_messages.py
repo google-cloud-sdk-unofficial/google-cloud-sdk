@@ -1636,6 +1636,24 @@ class DataformProjectsLocationsRepositoriesWorkspacesCommitRequest(_messages.Mes
   name = _messages.StringField(2, required=True)
 
 
+class DataformProjectsLocationsRepositoriesWorkspacesCreateLongRunningRequest(_messages.Message):
+  r"""A
+  DataformProjectsLocationsRepositoriesWorkspacesCreateLongRunningRequest
+  object.
+
+  Fields:
+    parent: Required. The repository in which to create the workspace. Must be
+      in the format `projects/*/locations/*/repositories/*`.
+    workspace: A Workspace resource to be passed as the request body.
+    workspaceId: Required. The ID to use for the workspace, which will become
+      the final component of the workspace's resource name.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  workspace = _messages.MessageField('Workspace', 2)
+  workspaceId = _messages.StringField(3)
+
+
 class DataformProjectsLocationsRepositoriesWorkspacesCreateRequest(_messages.Message):
   r"""A DataformProjectsLocationsRepositoriesWorkspacesCreateRequest object.
 

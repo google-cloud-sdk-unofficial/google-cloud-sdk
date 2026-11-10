@@ -18,10 +18,29 @@
 import re
 
 from googlecloudsdk.core import exceptions
+from googlecloudsdk.core import properties
 
 
 class UnavailableRegionError(exceptions.Error):
   """Error for when a region is not available for a service."""
+
+
+def IsRegionalEndpointCompatible():
+  """Returns whether the running command supports regional endpoints.
+
+  The hidden `regional/endpoint_compatibility` property is set for the running
+  command by the `@base.RegionalEndpointsSupported` and
+  `@base.RegionalEndpointsRequired` annotations. Prefer this helper over reading
+  the property directly.
+
+  Returns:
+    bool, True if the running command or group is annotated as supporting or
+    requiring regional endpoints.
+  """
+  return properties.VALUES.regional.endpoint_compatibility.Get() in (
+      properties.constants.regional.SUPPORTED,
+      properties.constants.regional.REQUIRED,
+  )
 
 
 def LocationToRegion(location):

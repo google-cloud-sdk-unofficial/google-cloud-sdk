@@ -74,7 +74,7 @@ class Update(base.UpdateCommand):
     workstations_flags.AddMaxUsableWorkstationsCount(parser)
     workstations_flags.AddNetworkTags(parser)
     workstations_flags.AddPersistentDirectoriesOrHyperdisks(
-        parser, use_default=False, release_track=cls.ReleaseTrack()
+        parser, use_default=False
     )
     workstations_flags.AddPoolSize(parser, use_default=False)
     workstations_flags.AddRunningTimeoutFlag(parser, use_default=False)

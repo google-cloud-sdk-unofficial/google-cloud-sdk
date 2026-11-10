@@ -4041,9 +4041,10 @@ class GooglePrivacyDlpV2ByteContentItem(_messages.Message):
       CSV: csv
       TSV: tsv
       AUDIO: Audio file types. Only used for profiling.
-      VIDEO: Video file types. Only used for profiling.
+      VIDEO: Video file types.
       EXECUTABLE: Executable file types. Only used for profiling.
       AI_MODEL: AI model file types. Only used for profiling.
+      IMAGE_TIFF: TIFF image format.
     """
     BYTES_TYPE_UNSPECIFIED = 0
     IMAGE = 1
@@ -4063,6 +4064,7 @@ class GooglePrivacyDlpV2ByteContentItem(_messages.Message):
     VIDEO = 15
     EXECUTABLE = 16
     AI_MODEL = 17
+    IMAGE_TIFF = 18
 
   data = _messages.BytesField(1)
   type = _messages.EnumField('TypeValueValuesEnum', 2)
@@ -4357,10 +4359,10 @@ class GooglePrivacyDlpV2CloudStorageOptions(_messages.Message):
         scala, sh, sql, swift, tex, shtml, shtm, xhtml, lhs, ics, ini, java,
         js, json, jsonl, kix, kml, ocaml, md, txt, text, tsv, vb, vcard, vcs,
         wml, xcodeproj, xml, xsl, xsd, yml, yaml.
-      IMAGE: Included file extensions: bmp, gif, jpg, jpeg, jpe, png. Setting
-        bytes_limit_per_file or bytes_limit_per_file_percent has no effect on
-        image files. Image inspection is restricted to the `global`, `us`,
-        `asia`, and `europe` regions.
+      IMAGE: Included file extensions: bmp, gif, jpg, jpeg, jpe, png, tif,
+        tiff. Setting bytes_limit_per_file or bytes_limit_per_file_percent has
+        no effect on image files. Image inspection is restricted to the
+        `global`, `us`, `asia`, and `europe` regions.
       WORD: Microsoft Word files larger than 30 MB will be scanned as binary
         files. Included file extensions: docx, dotx, docm, dotm. Setting
         `bytes_limit_per_file` or `bytes_limit_per_file_percent` has no effect
@@ -5956,10 +5958,10 @@ class GooglePrivacyDlpV2Deidentify(_messages.Message):
         scala, sh, sql, swift, tex, shtml, shtm, xhtml, lhs, ics, ini, java,
         js, json, jsonl, kix, kml, ocaml, md, txt, text, tsv, vb, vcard, vcs,
         wml, xcodeproj, xml, xsl, xsd, yml, yaml.
-      IMAGE: Included file extensions: bmp, gif, jpg, jpeg, jpe, png. Setting
-        bytes_limit_per_file or bytes_limit_per_file_percent has no effect on
-        image files. Image inspection is restricted to the `global`, `us`,
-        `asia`, and `europe` regions.
+      IMAGE: Included file extensions: bmp, gif, jpg, jpeg, jpe, png, tif,
+        tiff. Setting bytes_limit_per_file or bytes_limit_per_file_percent has
+        no effect on image files. Image inspection is restricted to the
+        `global`, `us`, `asia`, and `europe` regions.
       WORD: Microsoft Word files larger than 30 MB will be scanned as binary
         files. Included file extensions: docx, dotx, docm, dotm. Setting
         `bytes_limit_per_file` or `bytes_limit_per_file_percent` has no effect
@@ -8353,9 +8355,12 @@ class GooglePrivacyDlpV2ImageLocation(_messages.Message):
   Fields:
     boundingBoxes: Bounding boxes locating the pixels within the image
       containing the finding.
+    pageNumber: The 0-indexed page number or frame index for multi-page image
+      formats.
   """
 
   boundingBoxes = _messages.MessageField('GooglePrivacyDlpV2BoundingBox', 1, repeated=True)
+  pageNumber = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
 class GooglePrivacyDlpV2ImageRedactionConfig(_messages.Message):

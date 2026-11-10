@@ -544,6 +544,8 @@ class BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsListRequest(_messages
         same as CATALOG_VIEW_BASIC.
       CATALOG_VIEW_BASIC: Include only the name and catalog type.
       CATALOG_VIEW_FULL: Include all fields of the catalog.
+        `replication_status` is populated only when `region` is specified and
+        refers to a secondary replica region of the catalog.
     """
     CATALOG_VIEW_UNSPECIFIED = 0
     CATALOG_VIEW_BASIC = 1
@@ -802,6 +804,79 @@ class BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesUpdatePropertiesReq
 
   icebergNamespaceUpdate = _messages.MessageField('IcebergNamespaceUpdate', 1)
   name = _messages.StringField(2, required=True)
+
+
+class BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsCreateRequest(_messages.Message):
+  r"""A
+  BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsCreateRequest
+  object.
+
+  Fields:
+    createIcebergViewRequest: A CreateIcebergViewRequest resource to be passed
+      as the request body.
+    parent: Required. The parent resource where this view will be created.
+      Format:
+      projects/{project_id}/catalogs/{catalog_id}/namespaces/{namespace}
+  """
+
+  createIcebergViewRequest = _messages.MessageField('CreateIcebergViewRequest', 1)
+  parent = _messages.StringField(2, required=True)
+
+
+class BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsDeleteRequest(_messages.Message):
+  r"""A
+  BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. View to delete in the format: `projects/{project_id}/catal
+      ogs/{catalog_id}/namespaces/{namespace}/views/{view}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsGetRequest(_messages.Message):
+  r"""A BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsGetRequest
+  object.
+
+  Fields:
+    name: Required. View to get in the format: `projects/{project_id}/catalogs
+      /{catalog_id}/namespaces/{namespace}/views/{view}`.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsListRequest(_messages.Message):
+  r"""A
+  BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. Page size for pagination.
+    pageToken: Optional. PageToken for pagination.
+    parent: Required. The namespace to list view identifiers for.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsUpdateIcebergViewRequest(_messages.Message):
+  r"""A BiglakeIcebergV1RestcatalogV1ProjectsCatalogsNamespacesViewsUpdateIceb
+  ergViewRequest object.
+
+  Fields:
+    name: Required. View to commit in the format: `projects/{projectId}/catalo
+      gs/{catalogId}/namespaces/{namespace}/views/{view}`.
+    updateIcebergViewRequest: A UpdateIcebergViewRequest resource to be passed
+      as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  updateIcebergViewRequest = _messages.MessageField('UpdateIcebergViewRequest', 2)
 
 
 class BiglakeProjectsCatalogsGetIamPolicyRequest(_messages.Message):
@@ -1130,6 +1205,19 @@ class CreateIcebergTableRequest(_messages.Message):
 
   Fields:
     httpBody: Required.
+  """
+
+  httpBody = _messages.MessageField('HttpBody', 1)
+
+
+class CreateIcebergViewRequest(_messages.Message):
+  r"""The request message for the `CreateIcebergView` API.
+
+  Fields:
+    httpBody: Required. The raw HTTP body is bound to this field. Our handler
+      will validate that content_type is `application/json` and that data
+      adheres to the Apache Iceberg Rest Catalog Spec OpenAPI schema: #
+      /components/schemas/CreateViewRequest
   """
 
   httpBody = _messages.MessageField('HttpBody', 1)
@@ -1559,8 +1647,6 @@ class HiveCatalog(_messages.Message):
     createTime: Output only. The creation time of the catalog.
     description: Optional. Stores the catalog description. The maximum length
       is 4000 characters.
-    encryptionConfig: Optional. Custom encryption configuration (e.g., Cloud
-      KMS keys).
     locationUri: Required. The Cloud Storage location path where the catalog
       exists. Format: gs://bucket/path/to/catalog The maximum length is 4000
       characters.
@@ -1572,23 +1658,10 @@ class HiveCatalog(_messages.Message):
 
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
-  encryptionConfig = _messages.MessageField('HiveCatalogEncryptionConfig', 3)
-  locationUri = _messages.StringField(4)
-  name = _messages.StringField(5)
-  replicas = _messages.MessageField('HiveCatalogReplica', 6, repeated=True)
-  updateTime = _messages.StringField(7)
-
-
-class HiveCatalogEncryptionConfig(_messages.Message):
-  r"""Custom encryption configuration (e.g., Cloud KMS keys).
-
-  Fields:
-    kmsKeyName: Optional. Cloud KMS key name used to encrypt cached data
-      fetched from the catalog. Format: `projects/{project}/locations/{locatio
-      n}/keyRings/{keyRing}/cryptoKeys/{cryptoKey}`
-  """
-
-  kmsKeyName = _messages.StringField(1)
+  locationUri = _messages.StringField(3)
+  name = _messages.StringField(4)
+  replicas = _messages.MessageField('HiveCatalogReplica', 5, repeated=True)
+  updateTime = _messages.StringField(6)
 
 
 class HiveCatalogReplica(_messages.Message):
@@ -2200,6 +2273,18 @@ class ListIcebergTableIdentifiersResponse(_messages.Message):
   next_page_token = _messages.StringField(2)
 
 
+class ListIcebergViewIdentifiersResponse(_messages.Message):
+  r"""The response message for the `ListIcebergViewIdentifiers` API.
+
+  Fields:
+    identifiers: Output only. The list of view identifiers.
+    next_page_token: Output only. The next page token for pagination.
+  """
+
+  identifiers = _messages.MessageField('TableIdentifier', 1, repeated=True)
+  next_page_token = _messages.StringField(2)
+
+
 class ListPartitionsResponse(_messages.Message):
   r"""Response message for ListPartitions.
 
@@ -2596,13 +2681,19 @@ class SnowflakeCatalogInfo(_messages.Message):
     snowflake_role: Optional. The Snowflake role used to scope access to
       Snowflake Horizon Catalog in the Workload Identity Federation (OIDC)
       authentication flow.
+    snowflake_user_identity_federation_role: Optional. The Snowflake role used
+      to scope end user access to Snowflake Horizon Catalog for user identity
+      federation. Must be set when google.cloud.biglake.v1main.IcebergCatalog.
+      FederatedCatalogOptions.IdentityMode is set to
+      `IDENTITY_MODE_USER_IDENTITY_FEDERATION`.
     warehouse: Required. Immutable. The database name in Snowflake Horizon
       Catalog.
   """
 
   account_identifier = _messages.StringField(1)
   snowflake_role = _messages.StringField(2)
-  warehouse = _messages.StringField(3)
+  snowflake_user_identity_federation_role = _messages.StringField(3)
+  warehouse = _messages.StringField(4)
 
 
 class StandardQueryParameters(_messages.Message):
@@ -2968,6 +3059,19 @@ class UpdateIcebergTableRequest(_messages.Message):
   httpBody = _messages.MessageField('HttpBody', 1)
 
 
+class UpdateIcebergViewRequest(_messages.Message):
+  r"""The update message for the `UpdateIcebergView` API.
+
+  Fields:
+    httpBody: Required. The raw HTTP body is bound to this field. Our handler
+      will validate that content_type is `application/json` and that data
+      adheres to the Apache Iceberg Rest Catalog Spec OpenAPI schema: #
+      /components/schemas/CommitViewRequest
+  """
+
+  httpBody = _messages.MessageField('HttpBody', 1)
+
+
 class UpdatePartitionRequest(_messages.Message):
   r"""Request message for UpdatePartition.
 
@@ -3122,6 +3226,8 @@ encoding.AddCustomJsonFieldMapping(
 encoding.AddCustomJsonFieldMapping(
     ListIcebergTableIdentifiersResponse, 'next_page_token', 'next-page-token')
 encoding.AddCustomJsonFieldMapping(
+    ListIcebergViewIdentifiersResponse, 'next_page_token', 'next-page-token')
+encoding.AddCustomJsonFieldMapping(
     LoadIcebergTableCredentialsResponse, 'storage_credentials', 'storage-credentials')
 encoding.AddCustomJsonFieldMapping(
     RefreshOptions, 'refresh_schedule', 'refresh-schedule')
@@ -3143,6 +3249,8 @@ encoding.AddCustomJsonFieldMapping(
     SnowflakeCatalogInfo, 'account_identifier', 'account-identifier')
 encoding.AddCustomJsonFieldMapping(
     SnowflakeCatalogInfo, 'snowflake_role', 'snowflake-role')
+encoding.AddCustomJsonFieldMapping(
+    SnowflakeCatalogInfo, 'snowflake_user_identity_federation_role', 'snowflake-user-identity-federation-role')
 encoding.AddCustomJsonFieldMapping(
     UnityCatalogInfo, 'catalog_name', 'catalog-name')
 encoding.AddCustomJsonFieldMapping(

@@ -266,7 +266,6 @@ class Update(bigquery_command.BigqueryCmd):
         '\n--condition=\'{"expression": "job.label[\\"env\\"]==\\"prod\\"",'
         ' "title": "Prod Jobs", "description": "Matches prod jobs"}\''
         '\nUsed in conjunction with --reservation_assignment.'
-        '\nPass an empty string to unset condition.'
         '\nSee https://cel.dev/ for more details.',
         flag_values=fv,
     )
@@ -280,6 +279,42 @@ class Update(bigquery_command.BigqueryCmd):
         '\nWhen a CEL expression is specified, it is recommended to enter'
         ' precedence explicitly to avoid collisions in the same assignee'
         ' scope.'
+        '\nUsed in conjunction with --reservation_assignment.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'condition_expression',
+        None,
+        'Common Expression Language (CEL) expression that defines the'
+        ' matching criteria for this assignment. The expression must resolve'
+        ' to a boolean value.'
+        '\nFormat:'
+        '\n--condition_expression="<CEL expression>"'
+        '\nExample:'
+        '\n--condition_expression="job.label[\\"env\\"]==\\"prod\\""'
+        '\nUsed in conjunction with --reservation_assignment.'
+        '\nSee https://cel.dev/ for more details.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'condition_title',
+        None,
+        'Title of the condition expression.'
+        '\nFormat:'
+        '\n--condition_title="<title>"'
+        '\nExample:'
+        '\n--condition_title="Prod Jobs"'
+        '\nUsed in conjunction with --reservation_assignment.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'condition_description',
+        None,
+        'Description of the condition expression.'
+        '\nFormat:'
+        '\n--condition_description="<description>"'
+        '\nExample:'
+        '\n--condition_description="Matches prod jobs"'
         '\nUsed in conjunction with --reservation_assignment.',
         flag_values=fv,
     )
@@ -1085,6 +1120,16 @@ class Update(bigquery_command.BigqueryCmd):
           raise bq_error.BigqueryError(
               'Cannot specify both --destination_reservation_id and --priority.'
           )
+        if self.condition and (
+            self.condition_expression is not None
+            or self.condition_title is not None
+            or self.condition_description is not None
+        ):
+          raise bq_error.BigqueryError(
+              'Cannot specify --condition with its constituent flags:'
+              ' --condition_expression, --condition_title, or'
+              ' --condition_description.'
+          )
         if self.destination_reservation_id:
           if (
               self.scheduling_policy_max_slots is not None
@@ -1110,6 +1155,9 @@ class Update(bigquery_command.BigqueryCmd):
             or self.scheduling_policy_concurrency is not None
             or self.precedence is not None
             or self.condition is not None
+            or self.condition_expression is not None
+            or self.condition_title is not None
+            or self.condition_description is not None
         ):
           object_info = client_reservation.UpdateReservationAssignment(
               client=client.GetReservationApiClient(),
@@ -1119,14 +1167,20 @@ class Update(bigquery_command.BigqueryCmd):
               scheduling_policy_concurrency=self.scheduling_policy_concurrency,
               precedence=self.precedence,
               condition=self.condition,
+              condition_expression=self.condition_expression,
+              condition_title=self.condition_title,
+              condition_description=self.condition_description,
           )
         else:
           raise bq_error.BigqueryError(
               'Either --destination_reservation_id, --priority, '
-              '--precedence,'
-              ' --condition,'
-              ' --scheduling_policy_max_slots, or'
-              ' --scheduling_policy_concurrency must be specified.'
+              '--precedence, '
+              '--condition, '
+              '--condition_expression, '
+              '--condition_title, '
+              '--condition_description, '
+              '--scheduling_policy_max_slots, or '
+              '--scheduling_policy_concurrency must be specified.'
           )
 
         frontend_utils.PrintObjectInfo(

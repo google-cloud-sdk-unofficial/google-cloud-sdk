@@ -20,6 +20,5 @@ from googlecloudsdk.calliope import base
 @base.RegionalEndpointsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-@base.Hidden
 class Metadata(base.Group):
   """Manage source metadata for BigQuery migrations."""

@@ -17,6 +17,7 @@
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.concepts import concepts
+from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -32,16 +33,20 @@ SAMPLE_RATE_MAX_VALUE = 48000
 SAMPLE_RATE_MIN_VALUE = 8000
 
 
-def AddRecognizerArgToParser(parser):
+def AddRecognizerArgToParser(parser, required=True):
   """Sets up an argument for the recognizer resource."""
   resource_data = yaml_data.ResourceYAMLData.FromPath('ml.speech.recognizer')
   resource_spec = concepts.ResourceSpec.FromYaml(
       resource_data.GetData(), api_version='v2'
   )
+  if not required:
+    resource_spec.anchor.fallthroughs.append(
+        deps.ValueFallthrough('_', hint='default is the default recognizer')
+    )
   presentation_spec = presentation_specs.ResourcePresentationSpec(
       name='recognizer',
       concept_spec=resource_spec,
-      required=True,
+      required=required,
       group_help='recognizer.',
   )
   return concept_parsers.ConceptParser([presentation_spec]).AddToParser(parser)
@@ -94,7 +99,7 @@ def AddAllFlagsToParser(
 
 def AddRecognizeRequestFlagsToParser(parser, add_async_flag=False):
   """Parses all flags for v2 STT API for command run-batch."""
-  AddRecognizerArgToParser(parser)
+  AddRecognizerArgToParser(parser, required=False)
   parser.add_argument(
       '--audio',
       required=True,

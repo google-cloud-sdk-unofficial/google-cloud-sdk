@@ -393,6 +393,37 @@ class CustomClaimsList(_messages.Message):
   claims = _messages.StringField(1, repeated=True)
 
 
+class CustomSchemaDefinition(_messages.Message):
+  r"""Custom attribute schema definition for a SCIM tenant.
+
+  Enums:
+    ResourceTypeValueValuesEnum: Required. The SCIM resource type to which the
+      custom attribute applies.
+
+  Fields:
+    attribute: Required. The logical name of the custom attribute (for
+      example, `project_code`).
+    resourceType: Required. The SCIM resource type to which the custom
+      attribute applies.
+  """
+
+  class ResourceTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The SCIM resource type to which the custom attribute
+    applies.
+
+    Values:
+      RESOURCE_TYPE_UNSPECIFIED: Resource type unspecified.
+      USER: The custom attribute applies to a SCIM User resource.
+      GROUP: The custom attribute applies to a SCIM Group resource.
+    """
+    RESOURCE_TYPE_UNSPECIFIED = 0
+    USER = 1
+    GROUP = 2
+
+  attribute = _messages.StringField(1)
+  resourceType = _messages.EnumField('ResourceTypeValueValuesEnum', 2)
+
+
 class DisableServiceAccountKeyRequest(_messages.Message):
   r"""The service account key disable request."""
 
@@ -555,7 +586,7 @@ class GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client(_messages
       ATTRIBUTES_TYPE_UNSPECIFIED: No AttributesType specified.
       AZURE_AD_GROUPS_MAIL: Used to get the user's group claims from the
         Microsoft Entra ID identity provider using the configuration provided
-        in ExtraAttributesOAuth2Client. The `mail` property of the
+        in `ExtraAttributesOAuth2Client`. The `mail` property of the
         `microsoft.graph.group` object is used for claim mapping. See
         https://learn.microsoft.com/en-
         us/graph/api/resources/group?view=graph-rest-1.0#properties for more
@@ -565,7 +596,7 @@ class GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client(_messages
         `assertion.groups` * SAML: `assertion.attributes.groups`
       AZURE_AD_GROUPS_ID: Used to get the user's group claims from the
         Microsoft Entra ID identity provider using the configuration provided
-        in ExtraAttributesOAuth2Client. The `id` property of the
+        in `ExtraAttributesOAuth2Client`. The `id` property of the
         `microsoft.graph.group` object is used for claim mapping. See
         https://learn.microsoft.com/en-
         us/graph/api/resources/group?view=graph-rest-1.0#properties for more
@@ -575,8 +606,8 @@ class GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client(_messages
         `assertion.attributes.groups`
       AZURE_AD_GROUPS_DISPLAY_NAME: Used to get the user's group claims from
         the Microsoft Entra ID identity provider using the configuration
-        provided in ExtraAttributesOAuth2Client. The `displayName` property of
-        the `microsoft.graph.group` object is used for claim mapping. See
+        provided in `ExtraAttributesOAuth2Client`. The `displayName` property
+        of the `microsoft.graph.group` object is used for claim mapping. See
         https://learn.microsoft.com/en-
         us/graph/api/resources/group?view=graph-rest-1.0#properties for more
         details on `microsoft.graph.group` properties. The display names of
@@ -5030,7 +5061,7 @@ class QueryGrantableRolesRequest(_messages.Message):
       project` will be named
       `//cloudresourcemanager.googleapis.com/projects/my-project`.
     pageSize: Optional limit on the number of roles to include in the
-      response. The default is 300, and the maximum is 2,000.
+      response. The default is 300, and the maximum is 3,000.
     pageToken: Optional pagination token returned in an earlier
       QueryGrantableRolesResponse.
     view: A ViewValueValuesEnum attribute.
@@ -6513,6 +6544,8 @@ class WorkforcePoolProviderScimTenant(_messages.Message):
       `google.subject` and the SCIM group's `externalId` to `google.group`:
       ``` { "google.subject": "user.externalId", "google.group":
       "group.externalId" } ```
+    customSchemaDefinitions: Optional. Custom attribute schema definitions for
+      the SCIM tenant. A maximum of 50 custom attributes may be defined.
     description: Optional. Gemini Enterprise only. The description of the SCIM
       tenant. Cannot exceed 256 characters.
     displayName: Optional. Gemini Enterprise only. The display name of the
@@ -6589,13 +6622,14 @@ class WorkforcePoolProviderScimTenant(_messages.Message):
 
   baseUri = _messages.StringField(1)
   claimMapping = _messages.MessageField('ClaimMappingValue', 2)
-  description = _messages.StringField(3)
-  displayName = _messages.StringField(4)
-  name = _messages.StringField(5)
-  purgeTime = _messages.StringField(6)
-  serviceAgent = _messages.StringField(7)
-  state = _messages.EnumField('StateValueValuesEnum', 8)
-  workloadIdentityFederationConfig = _messages.MessageField('WorkloadIdentityFederationConfig', 9)
+  customSchemaDefinitions = _messages.MessageField('CustomSchemaDefinition', 3, repeated=True)
+  description = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  name = _messages.StringField(6)
+  purgeTime = _messages.StringField(7)
+  serviceAgent = _messages.StringField(8)
+  state = _messages.EnumField('StateValueValuesEnum', 9)
+  workloadIdentityFederationConfig = _messages.MessageField('WorkloadIdentityFederationConfig', 10)
 
 
 class WorkforcePoolProviderScimToken(_messages.Message):

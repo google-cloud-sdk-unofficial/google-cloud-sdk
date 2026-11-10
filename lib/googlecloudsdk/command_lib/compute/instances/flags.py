@@ -1152,17 +1152,9 @@ def AddCreateDiskArgs(
 
   if source_snapshot_csek:
     disk_help += """
-      *source-snapshot-csek-required*::: The CSK protected source disk snapshot
-      that will be used to create the disk. This can be provided as a full URL
-      to the snapshot or just the snapshot name. Must be specified with
-      `source-snapshot-csek-key-file`. The following are valid values:
-
-        * https://www.googleapis.com/compute/v1/projects/myproject/global/snapshots/snapshot
-        * snapshot
-
       *source-snapshot-csek-key-file*::: Path to a Customer-Supplied Encryption
       Key (CSEK) key file for the source snapshot. Must be specified with
-      `source-snapshot-csek-required`.
+      `source-snapshot`.
       """
     spec['source-snapshot-csek-key-file'] = str
 
@@ -1594,8 +1586,18 @@ def ValidateCreateDiskFlags(
     image_family_value = disk.get('image-family')
     source_snapshot = disk.get('source-snapshot')
     image_csek_file = disk.get('image_csek')
-    source_snapshot_csek_file = disk.get('source_snapshot_csek_file')
+    source_snapshot_csek_key_file = disk.get('source-snapshot-csek-key-file')
     source_instant_snapshot = disk.get('source-instant-snapshot')
+
+    if (
+        enable_source_snapshot_csek
+        and source_snapshot_csek_key_file
+        and not source_snapshot
+    ):
+      raise compute_exceptions.ArgumentError(
+          'Must specify [source-snapshot] when specifying '
+          '[source-snapshot-csek-key-file] for [--create-disk].'
+      )
 
     disk_source = set()
     if image_value:
@@ -1606,8 +1608,6 @@ def ValidateCreateDiskFlags(
       disk_source.add(source_snapshot)
     if image_csek_file:
       disk_source.add(image_csek_file)
-    if source_snapshot_csek_file:
-      disk_source.add(source_snapshot_csek_file)
     if source_instant_snapshot:
       disk_source.add(source_instant_snapshot)
 
@@ -1616,8 +1616,6 @@ def ValidateCreateDiskFlags(
       mutex_attributes.append('[image-csek-required]')
     if enable_snapshots:
       mutex_attributes.append('[source-snapshot]')
-    if enable_source_snapshot_csek:
-      mutex_attributes.append('[source-snapshot-csek-required]')
     if enable_source_instant_snapshot:
       mutex_attributes.append('[source-instant-snapshot]')
     formatted_attributes = '{}, or {}'.format(', '.join(mutex_attributes[:-1]),
@@ -3576,7 +3574,6 @@ def AddConfidentialComputeArgs(
       }
       parser.add_argument(
           '--svsm-config',
-          hidden=True,
           type=arg_parsers.ArgDict(spec=svsm_congfig_spec),
           metavar='PROPERTY=VALUE',
           help=svsm_help_text,

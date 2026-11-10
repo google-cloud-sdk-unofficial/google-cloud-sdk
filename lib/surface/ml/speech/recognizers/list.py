@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ml.speech import flags_v2
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.ListCommand):
   """List Speech-to-text recognizers."""
@@ -33,7 +34,8 @@ class Create(base.ListCommand):
         'createTime.date(tz=LOCAL),'
         'updateTime.date(tz=LOCAL),'
         'model,'
-        'language_codes.join(sep=","))')
+        'language_codes.join(sep=","))'
+    )
 
   def Run(self, args):
     location = args.CONCEPTS.location.Parse()

@@ -191,14 +191,25 @@ class Ssh:
       exceptions.ArgumentError: If the revision is invalid, or if there is a
         traffic split and the user cannot be prompted to select a revision.
     """
-    revisions_serving_traffic = workload_json.get(constants.STATUS, {}).get(
+    traffic_targets = workload_json.get(constants.STATUS, {}).get(
         constants.TRAFFIC, []
     )
-    active_revisions = [
-        t.get(constants.REVISION_NAME)
-        for t in revisions_serving_traffic
-        if t.get(constants.PERCENT, 0) > 0
-    ]
+    serving_revisions = list(
+        dict.fromkeys(
+            t.get(constants.REVISION_NAME)
+            for t in traffic_targets
+            if t.get(constants.REVISION_NAME)
+            and (t.get(constants.PERCENT) or 0) > 0
+        )
+    )
+    active_revisions = list(
+        dict.fromkeys(
+            t.get(constants.REVISION_NAME)
+            for t in traffic_targets
+            if t.get(constants.REVISION_NAME)
+            and ((t.get(constants.PERCENT) or 0) > 0 or t.get(constants.TAG))
+        )
+    )
 
     if not active_revisions:
       raise exceptions.NoActiveRevisionsError(
@@ -213,6 +224,9 @@ class Ssh:
           " traffic. Please specify one of the following revisions:"
           f" {active_revisions} using the --revision flag."
       )
+
+    if len(serving_revisions) == 1:
+      return serving_revisions[0]
 
     # The user did not specify a revision, and there is a traffic split.
     if len(active_revisions) > 1:

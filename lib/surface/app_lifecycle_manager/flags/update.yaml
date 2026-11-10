@@ -58,7 +58,7 @@
 
       To update a percentage rollout (50% Enabled) using a userID attribute, run:
 
-          $ {command} my-flag --location=global --evaluation-spec='{"allocations": [{"id": "p10", "randomizedOn": "userID", "slots": [{"variant": "Disabled", "weight": 50}, {"variant": "Enabled", "weight": 50}]}], "defaultTarget": "p10", "attributes": ["projects/my-project/locations/global/flagAttributes/id-attr"]}'
+          $ {command} my-flag --location=global --evaluation-spec='{"allocations": [{"id": "p10", "randomizedOn": "userID", "slots": [{"variant": "Disabled", "weight": 50}, {"variant": "Enabled", "weight": 50}]}], "defaultAllocation": "p10", "attributes": ["projects/my-project/locations/global/flagAttributes/id-attr"]}'
 
       To add labels to a flag, run:
 
@@ -88,13 +88,16 @@
       required: false
       repeated: false
       spec:
-      - api_field: defaultTarget
+      - api_field: defaultVariant
         help_text: |-
-          Default variant for the flag.
+          Name of a variant to use as the default.
+      - api_field: defaultAllocation
+        help_text: |-
+          ID of an allocation to use as the default.
       - api_field: defaultDynamicAllocation
         hidden: true
         help_text: |-
-          The ID of a dynamic allocation to use as the default.
+          ID of a dynamic allocation to use as the default.
       - api_field: dynamicAllocations
         hidden: true
         help_text: |-
@@ -158,9 +161,16 @@
         - api_field: id
           help_text: |-
             A unique identifier for the rule.
-        - api_field: target
+        - api_field: variantId
           help_text: |-
-            The ID of the variant to return if the condition evaluates to true.
+            Name of a variant to target.
+        - api_field: allocationId
+          help_text: |-
+            ID of an allocation to target.
+        - api_field: dynamicAllocationId
+          hidden: true
+          help_text: |-
+            ID of a dynamic allocation to target.
       - api_field: attributes
         help_text: |-
           Names of the context attributes that are used in the evaluation rules and allocations.

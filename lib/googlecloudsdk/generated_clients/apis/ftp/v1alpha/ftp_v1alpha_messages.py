@@ -361,8 +361,8 @@ class FtpProjectsLocationsServersUsersDeleteRequest(_messages.Message):
   r"""A FtpProjectsLocationsServersUsersDeleteRequest object.
 
   Fields:
-    force: Optional. If set to true, the request will force the deletion of
-      the User.
+    force: Optional. If set to `true`, the request will `force` the deletion
+      of the User.
     name: Required. Name of the resource
   """
 
@@ -621,6 +621,46 @@ class Location(_messages.Message):
   name = _messages.StringField(5)
 
 
+class LoggingConfig(_messages.Message):
+  r"""Configuration for Cloud Logging on the Server.
+
+  Enums:
+    VerbosityValueValuesEnum: Optional. The verbosity level of logs emitted
+      when `enabled` is `true`. Defaults to `ALL_EVENTS` if unspecified when
+      `enabled` is `true`.
+
+  Fields:
+    enabled: Optional. Whether platform logging
+      (`ftp.googleapis.com/ftp_events`) is enabled for this server. Defaults
+      to `false`.
+    verbosity: Optional. The verbosity level of logs emitted when `enabled` is
+      `true`. Defaults to `ALL_EVENTS` if unspecified when `enabled` is
+      `true`.
+  """
+
+  class VerbosityValueValuesEnum(_messages.Enum):
+    r"""Optional. The verbosity level of logs emitted when `enabled` is
+    `true`. Defaults to `ALL_EVENTS` if unspecified when `enabled` is `true`.
+
+    Values:
+      LOG_VERBOSITY_UNSPECIFIED: Default value. Defaults to `ALL_EVENTS` when
+        logging is `enabled`.
+      ALL_EVENTS: Logs all SFTP events, including authentication, session
+        lifecycle, file transfers, and directory/metadata commands.
+      TRANSFERS_AND_AUTH_ONLY: Logs authentication, session lifecycle, file
+        transfers, and failed commands. Suppresses successful non-transfer
+        commands (such as LIST or STAT).
+      ERRORS_ONLY: Logs only failed operations and errors.
+    """
+    LOG_VERBOSITY_UNSPECIFIED = 0
+    ALL_EVENTS = 1
+    TRANSFERS_AND_AUTH_ONLY = 2
+    ERRORS_ONLY = 3
+
+  enabled = _messages.BooleanField(1)
+  verbosity = _messages.EnumField('VerbosityValueValuesEnum', 2)
+
+
 class Operation(_messages.Message):
   r"""This resource represents a long-running operation that is the result of
   a network API call.
@@ -791,6 +831,7 @@ class Server(_messages.Message):
     googleManagedServerCredential: Output only. Credentials of the FTP Server.
     internalConfig: Configuration for internal access.
     labels: Optional. Labels as key value pairs
+    loggingConfig: Optional. Configuration for Cloud Logging on the Server.
     name: Identifier. name of resource
     satisfiesPzi: Output only. Reserved for future use.
     satisfiesPzs: Output only. Reserved for future use.
@@ -867,12 +908,13 @@ class Server(_messages.Message):
   googleManagedServerCredential = _messages.MessageField('ServerCredential', 5)
   internalConfig = _messages.MessageField('InternalServerConfig', 6)
   labels = _messages.MessageField('LabelsValue', 7)
-  name = _messages.StringField(8)
-  satisfiesPzi = _messages.BooleanField(9)
-  satisfiesPzs = _messages.BooleanField(10)
-  serviceAgent = _messages.StringField(11)
-  state = _messages.EnumField('StateValueValuesEnum', 12)
-  updateTime = _messages.StringField(13)
+  loggingConfig = _messages.MessageField('LoggingConfig', 8)
+  name = _messages.StringField(9)
+  satisfiesPzi = _messages.BooleanField(10)
+  satisfiesPzs = _messages.BooleanField(11)
+  serviceAgent = _messages.StringField(12)
+  state = _messages.EnumField('StateValueValuesEnum', 13)
+  updateTime = _messages.StringField(14)
 
 
 class ServerCredential(_messages.Message):

@@ -30,3 +30,15 @@ def AddServicePositionalArg(parser):
       'service',
       help='Firebase SQL Connect service ID.',
   )
+
+
+def AddSqlSourceDirFlag(parser):
+  """Adds the --sql-source-dir flag."""
+  parser.add_argument(
+      '--sql-source-dir',
+      help=(
+          'Path to the local SQL root directory (e.g. ./sql). Migration files'
+          ' are loaded from its migrations/ subdirectory.'
+      ),
+  )
+

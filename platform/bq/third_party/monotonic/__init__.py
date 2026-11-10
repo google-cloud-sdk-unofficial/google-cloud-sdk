@@ -39,11 +39,6 @@
   limitations under the License.
 
 """
-import ctypes
-import ctypes.util
-import os
-import sys
-import threading
 import time
 
 
@@ -53,6 +48,11 @@ __all__ = ('monotonic',)
 try:
     monotonic = time.monotonic
 except AttributeError:
+    import ctypes
+    import ctypes.util
+    import os
+    import sys
+    import threading
     try:
         if sys.platform == 'darwin':  # OS X, iOS
             # See Technical Q&A QA1398 of the Mac Developer Library:
@@ -69,11 +69,12 @@ except AttributeError:
 
             timebase = mach_timebase_info_data_t()
             libc.mach_timebase_info(ctypes.byref(timebase))
-            ticks_per_second = timebase.numer / timebase.denom * 1.0e9
+            nanoseconds_in_second = 1.0e9
 
             def monotonic():
                 """Monotonic clock, cannot go backward."""
-                return mach_absolute_time() / ticks_per_second
+                nanoseconds = mach_absolute_time() * timebase.numer / timebase.denom
+                return nanoseconds / nanoseconds_in_second
 
         elif sys.platform.startswith('win32') or sys.platform.startswith('cygwin'):
             if sys.platform.startswith('cygwin'):

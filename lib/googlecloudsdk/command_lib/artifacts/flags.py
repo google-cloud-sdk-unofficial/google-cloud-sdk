@@ -159,7 +159,8 @@ def GetImagePathOptionalArg():
   """Gets IMAGE_PATH optional positional argument."""
   help_txt = textwrap.dedent("""\
   An Artifact Registry repository or a container image.
-  If not specified, default config values are used.
+  If not specified, the values of the `core/project`, `artifacts/location`,
+  and `artifacts/repository` properties are used.
 
   A valid docker repository has the format of
     LOCATION-docker.pkg.dev/PROJECT-ID/REPOSITORY-ID

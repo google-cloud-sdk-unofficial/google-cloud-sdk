@@ -876,7 +876,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
+      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, findings are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterFoldersSourcesFindingsListRequest) input message
@@ -1112,7 +1112,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
+      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, findings are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterFoldersSourcesLocationsFindingsListRequest) input message
@@ -1897,7 +1897,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def BatchCreate(self, request, global_params=None):
-      r"""Creates a ResourceValueConfig for an organization. Maps user's tags to difference resource values for use by the attack path simulation. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.resourcevalueconfigs.create`.
+      r"""Creates a ResourceValueConfig for an organization. Maps user's tags to different resource values for use by the attack path simulation. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.resourcevalueconfigs.create`.
 
       Args:
         request: (SecuritycenterOrganizationsLocationsResourceValueConfigsBatchCreateRequest) input message
@@ -2473,7 +2473,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
           }
 
     def BatchCreate(self, request, global_params=None):
-      r"""Creates a ResourceValueConfig for an organization. Maps user's tags to difference resource values for use by the attack path simulation. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.resourcevalueconfigs.create`.
+      r"""Creates a ResourceValueConfig for an organization. Maps user's tags to different resource values for use by the attack path simulation. # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.resourcevalueconfigs.create`.
 
       Args:
         request: (SecuritycenterOrganizationsResourceValueConfigsBatchCreateRequest) input message
@@ -2968,7 +2968,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
+      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, findings are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesFindingsListRequest) input message
@@ -3231,7 +3231,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
+      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, findings are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterOrganizationsSourcesLocationsFindingsListRequest) input message
@@ -4397,7 +4397,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
+      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, findings are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterProjectsSourcesFindingsListRequest) input message
@@ -4633,7 +4633,7 @@ class SecuritycenterV2(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, finding are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
+      r"""Lists an organization or source's findings. To list across all sources for a given location provide a `-` as the source id. If no location is specified, findings are assumed to be in global. The following list shows some examples: + `/v2/organizations/{organization_id}/sources/-/findings` + `/v2/organizations/{organization_id}/sources/-/locations/{location_id}/findings` # IAM Permissions Requires the following IAM permission on the resource specified in the `parent` field: - `securitycenter.findings.list`.
 
       Args:
         request: (SecuritycenterProjectsSourcesLocationsFindingsListRequest) input message

@@ -37,11 +37,316 @@ class TelemetrymanagementV1alpha(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.projects_locations_collectors = self.ProjectsLocationsCollectorsService(self)
+    self.projects_locations_fleets_rollouts = self.ProjectsLocationsFleetsRolloutsService(self)
+    self.projects_locations_fleets = self.ProjectsLocationsFleetsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_pipelines_routes = self.ProjectsLocationsPipelinesRoutesService(self)
     self.projects_locations_pipelines = self.ProjectsLocationsPipelinesService(self)
+    self.projects_locations_policySets_revisions = self.ProjectsLocationsPolicySetsRevisionsService(self)
+    self.projects_locations_policySets = self.ProjectsLocationsPolicySetsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
+
+  class ProjectsLocationsCollectorsService(base_api.BaseApiService):
+    """Service class for the projects_locations_collectors resource."""
+
+    _NAME = 'projects_locations_collectors'
+
+    def __init__(self, client):
+      super(TelemetrymanagementV1alpha.ProjectsLocationsCollectorsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists Collectors in a given project and location.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsCollectorsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListCollectorsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/collectors',
+        http_method='GET',
+        method_id='telemetrymanagement.projects.locations.collectors.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/collectors',
+        request_field='',
+        request_type_name='TelemetrymanagementProjectsLocationsCollectorsListRequest',
+        response_type_name='ListCollectorsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsFleetsRolloutsService(base_api.BaseApiService):
+    """Service class for the projects_locations_fleets_rollouts resource."""
+
+    _NAME = 'projects_locations_fleets_rollouts'
+
+    def __init__(self, client):
+      super(TelemetrymanagementV1alpha.ProjectsLocationsFleetsRolloutsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new Rollout for a Fleet. The returned operation will be marked done with a success status when all "compliant" collectors that have reported metrics within the past 5 minutes are reporting that they are using the policy set revision that was rolled out. Also creates a new Rollout resource with state = RUNNING If the operation is not determined to have completed within 1 day, it will be marked as done with a status of DEADLINE_EXCEEDED and the corresponding Rollout resource will have its state updated to FAILED If a rollout is already in flight, creating a new rollout on the same fleet will supersede the existing one and mark the in-flight rollout operation done with a status of ABORTED. The corresponding Rollout resource will have its state updated to ABORTED. Rollout operations cannot be cancelled via CancelOperation.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsFleetsRolloutsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/fleets/{fleetsId}/rollouts',
+        http_method='POST',
+        method_id='telemetrymanagement.projects.locations.fleets.rollouts.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['requestId', 'rolloutId'],
+        relative_path='v1alpha/{+parent}/rollouts',
+        request_field='rollout',
+        request_type_name='TelemetrymanagementProjectsLocationsFleetsRolloutsCreateRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single Rollout.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsFleetsRolloutsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/fleets/{fleetsId}/rollouts/{rolloutsId}',
+        http_method='DELETE',
+        method_id='telemetrymanagement.projects.locations.fleets.rollouts.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='TelemetrymanagementProjectsLocationsFleetsRolloutsDeleteRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single Rollout.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsFleetsRolloutsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Rollout) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/fleets/{fleetsId}/rollouts/{rolloutsId}',
+        http_method='GET',
+        method_id='telemetrymanagement.projects.locations.fleets.rollouts.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='TelemetrymanagementProjectsLocationsFleetsRolloutsGetRequest',
+        response_type_name='Rollout',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Rollouts in a given project, location, and fleet.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsFleetsRolloutsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListRolloutsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/fleets/{fleetsId}/rollouts',
+        http_method='GET',
+        method_id='telemetrymanagement.projects.locations.fleets.rollouts.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/rollouts',
+        request_field='',
+        request_type_name='TelemetrymanagementProjectsLocationsFleetsRolloutsListRequest',
+        response_type_name='ListRolloutsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsFleetsService(base_api.BaseApiService):
+    """Service class for the projects_locations_fleets resource."""
+
+    _NAME = 'projects_locations_fleets'
+
+    def __init__(self, client):
+      super(TelemetrymanagementV1alpha.ProjectsLocationsFleetsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new Fleet in a given project and location.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsFleetsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Fleet) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/fleets',
+        http_method='POST',
+        method_id='telemetrymanagement.projects.locations.fleets.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['fleetId', 'requestId'],
+        relative_path='v1alpha/{+parent}/fleets',
+        request_field='fleet',
+        request_type_name='TelemetrymanagementProjectsLocationsFleetsCreateRequest',
+        response_type_name='Fleet',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single Fleet.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsFleetsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/fleets/{fleetsId}',
+        http_method='DELETE',
+        method_id='telemetrymanagement.projects.locations.fleets.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='TelemetrymanagementProjectsLocationsFleetsDeleteRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a single Fleet.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsFleetsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Fleet) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/fleets/{fleetsId}',
+        http_method='GET',
+        method_id='telemetrymanagement.projects.locations.fleets.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='TelemetrymanagementProjectsLocationsFleetsGetRequest',
+        response_type_name='Fleet',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists Fleets in a given project and location.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsFleetsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListFleetsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/fleets',
+        http_method='GET',
+        method_id='telemetrymanagement.projects.locations.fleets.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/fleets',
+        request_field='',
+        request_type_name='TelemetrymanagementProjectsLocationsFleetsListRequest',
+        response_type_name='ListFleetsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single Fleet.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsFleetsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Fleet) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/fleets/{fleetsId}',
+        http_method='PATCH',
+        method_id='telemetrymanagement.projects.locations.fleets.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='fleet',
+        request_type_name='TelemetrymanagementProjectsLocationsFleetsPatchRequest',
+        response_type_name='Fleet',
+        supports_download=False,
+    )
 
   class ProjectsLocationsOperationsService(base_api.BaseApiService):
     """Service class for the projects_locations_operations resource."""
@@ -163,7 +468,7 @@ class TelemetrymanagementV1alpha(base_api.BaseApiClient):
         method_id='telemetrymanagement.projects.locations.pipelines.routes.create',
         ordered_params=['parent'],
         path_params=['parent'],
-        query_params=['routeId'],
+        query_params=['requestId', 'routeId'],
         relative_path='v1alpha/{+parent}/routes',
         request_field='route',
         request_type_name='TelemetrymanagementProjectsLocationsPipelinesRoutesCreateRequest',
@@ -190,7 +495,7 @@ class TelemetrymanagementV1alpha(base_api.BaseApiClient):
         method_id='telemetrymanagement.projects.locations.pipelines.routes.delete',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=[],
+        query_params=['requestId'],
         relative_path='v1alpha/{+name}',
         request_field='',
         request_type_name='TelemetrymanagementProjectsLocationsPipelinesRoutesDeleteRequest',
@@ -271,7 +576,7 @@ class TelemetrymanagementV1alpha(base_api.BaseApiClient):
         method_id='telemetrymanagement.projects.locations.pipelines.routes.patch',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['updateMask'],
+        query_params=['requestId', 'updateMask'],
         relative_path='v1alpha/{+name}',
         request_field='route',
         request_type_name='TelemetrymanagementProjectsLocationsPipelinesRoutesPatchRequest',
@@ -340,6 +645,242 @@ class TelemetrymanagementV1alpha(base_api.BaseApiClient):
         request_field='',
         request_type_name='TelemetrymanagementProjectsLocationsPipelinesListRequest',
         response_type_name='ListPipelinesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsPolicySetsRevisionsService(base_api.BaseApiService):
+    """Service class for the projects_locations_policySets_revisions resource."""
+
+    _NAME = 'projects_locations_policySets_revisions'
+
+    def __init__(self, client):
+      super(TelemetrymanagementV1alpha.ProjectsLocationsPolicySetsRevisionsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a given PolicySetRevision. If the supplied revision is the only remaining revision, FAILED_PRECONDITION will be returned Note: Any rollouts in flight that reference a deleted revision will be unaffected.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsPolicySetsRevisionsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleProtobufEmpty) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/policySets/{policySetsId}/revisions/{revisionsId}',
+        http_method='DELETE',
+        method_id='telemetrymanagement.projects.locations.policySets.revisions.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='TelemetrymanagementProjectsLocationsPolicySetsRevisionsDeleteRequest',
+        response_type_name='GoogleProtobufEmpty',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of a specific revision of a single PolicySet.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsPolicySetsRevisionsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PolicySetRevision) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/policySets/{policySetsId}/revisions/{revisionsId}',
+        http_method='GET',
+        method_id='telemetrymanagement.projects.locations.policySets.revisions.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='TelemetrymanagementProjectsLocationsPolicySetsRevisionsGetRequest',
+        response_type_name='PolicySetRevision',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists revisions of a given PolicySet.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsPolicySetsRevisionsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListPolicySetRevisionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/policySets/{policySetsId}/revisions',
+        http_method='GET',
+        method_id='telemetrymanagement.projects.locations.policySets.revisions.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/revisions',
+        request_field='',
+        request_type_name='TelemetrymanagementProjectsLocationsPolicySetsRevisionsListRequest',
+        response_type_name='ListPolicySetRevisionsResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsPolicySetsService(base_api.BaseApiService):
+    """Service class for the projects_locations_policySets resource."""
+
+    _NAME = 'projects_locations_policySets'
+
+    def __init__(self, client):
+      super(TelemetrymanagementV1alpha.ProjectsLocationsPolicySetsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new PolicySet in a given project and location. This also creates a PolicySetRevision Example: projects/my-project/locations/us-east1/policySets/my-policy-set/revisions/1.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsPolicySetsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PolicySet) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/policySets',
+        http_method='POST',
+        method_id='telemetrymanagement.projects.locations.policySets.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['policySetId', 'requestId'],
+        relative_path='v1alpha/{+parent}/policySets',
+        request_field='policySet',
+        request_type_name='TelemetrymanagementProjectsLocationsPolicySetsCreateRequest',
+        response_type_name='PolicySet',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes a single PolicySet and all of its child revisions. If a PolicySet is attached to a Fleet or a Collector, FAILED_PRECONDITION will be returned.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsPolicySetsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/policySets/{policySetsId}',
+        http_method='DELETE',
+        method_id='telemetrymanagement.projects.locations.policySets.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['force', 'requestId'],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='TelemetrymanagementProjectsLocationsPolicySetsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Gets details of the latest revision of a single PolicySet.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsPolicySetsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PolicySet) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/policySets/{policySetsId}',
+        http_method='GET',
+        method_id='telemetrymanagement.projects.locations.policySets.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha/{+name}',
+        request_field='',
+        request_type_name='TelemetrymanagementProjectsLocationsPolicySetsGetRequest',
+        response_type_name='PolicySet',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists PolicySets in a given project and location.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsPolicySetsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListPolicySetsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/policySets',
+        http_method='GET',
+        method_id='telemetrymanagement.projects.locations.policySets.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'orderBy', 'pageSize', 'pageToken'],
+        relative_path='v1alpha/{+parent}/policySets',
+        request_field='',
+        request_type_name='TelemetrymanagementProjectsLocationsPolicySetsListRequest',
+        response_type_name='ListPolicySetsResponse',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the parameters of a single PolicySet. This also creates a new PolicySetRevision Example: projects/my-project/locations/us-east1/policySets/my-policy-set/revisions/2 There is a maximum of 100 revisions that can exist at any one time.
+
+      Args:
+        request: (TelemetrymanagementProjectsLocationsPolicySetsPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (PolicySet) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha/projects/{projectsId}/locations/{locationsId}/policySets/{policySetsId}',
+        http_method='PATCH',
+        method_id='telemetrymanagement.projects.locations.policySets.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha/{+name}',
+        request_field='policySet',
+        request_type_name='TelemetrymanagementProjectsLocationsPolicySetsPatchRequest',
+        response_type_name='PolicySet',
         supports_download=False,
     )
 

@@ -67,10 +67,10 @@ class AnswerQueryRequest(_messages.Message):
       whole string. Partial match, prefix match, and regexp match are not
       supported. TIMESTAMP fields support `=`, `<`, `<=`, `>`, and `>=`
       operators. Timestamps must be in RFC-3339 format, e.g.,
-      `"2025-01-01T00:00:00Z"`. You can combine expressions using `AND`,
-      `OR`, and `NOT` (or `-`) logical operators. `OR` has higher precedence
-      than `AND`. Use parentheses for explicit precedence grouping. Examples:
-      * Filter by `Document.content_length_bytes`: `content_length_bytes <
+      `"2025-01-01T00:00:00Z"`. You can combine expressions using `AND`, `OR`,
+      and `NOT` (or `-`) logical operators. `OR` has higher precedence than
+      `AND`. Use parentheses for explicit precedence grouping. Examples: *
+      Filter by `Document.content_length_bytes`: `content_length_bytes <
       50000` * `data_source = "docs.cloud.google.com" OR data_source =
       "firebase.google.com"` * `data_source != "firebase.google.com"` *
       `update_time < "2024-01-01T00:00:00Z"` * `update_time >=

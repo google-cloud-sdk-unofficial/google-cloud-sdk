@@ -7294,7 +7294,11 @@ class SourceObjectsConfig(_messages.Message):
       of the migration job.
 
   Fields:
-    objectConfigs: Optional. The list of the objects to be migrated.
+    excludedObjectConfigs: Optional. The list of the objects to be excluded
+      from the migration. Exclusion takes precedence over inclusion in
+      `object_configs`.
+    objectConfigs: Optional. The list of the objects to be included in the
+      migration.
     objectsSelectionType: Optional. The objects selection type of the
       migration job.
   """
@@ -7312,8 +7316,9 @@ class SourceObjectsConfig(_messages.Message):
     ALL_OBJECTS = 1
     SPECIFIED_OBJECTS = 2
 
-  objectConfigs = _messages.MessageField('SourceObjectConfig', 1, repeated=True)
-  objectsSelectionType = _messages.EnumField('ObjectsSelectionTypeValueValuesEnum', 2)
+  excludedObjectConfigs = _messages.MessageField('SourceObjectConfig', 1, repeated=True)
+  objectConfigs = _messages.MessageField('SourceObjectConfig', 2, repeated=True)
+  objectsSelectionType = _messages.EnumField('ObjectsSelectionTypeValueValuesEnum', 3)
 
 
 class SourceSqlChange(_messages.Message):

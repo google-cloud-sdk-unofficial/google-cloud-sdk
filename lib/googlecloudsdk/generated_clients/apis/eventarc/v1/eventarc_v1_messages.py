@@ -957,6 +957,17 @@ class EventarcProjectsLocationsEnrollmentsTestIamPermissionsRequest(_messages.Me
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
+class EventarcProjectsLocationsGetDefaultMessageBusRequest(_messages.Message):
+  r"""A EventarcProjectsLocationsGetDefaultMessageBusRequest object.
+
+  Fields:
+    name: Required. The name of the default message bus to get. Format:
+      `projects/{project}/locations/{location}/defaultMessageBus`
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class EventarcProjectsLocationsGetGoogleChannelConfigRequest(_messages.Message):
   r"""A EventarcProjectsLocationsGetGoogleChannelConfigRequest object.
 
@@ -1831,6 +1842,24 @@ class EventarcProjectsLocationsTriggersTestIamPermissionsRequest(_messages.Messa
 
   resource = _messages.StringField(1, required=True)
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
+
+
+class EventarcProjectsLocationsUpdateDefaultMessageBusRequest(_messages.Message):
+  r"""A EventarcProjectsLocationsUpdateDefaultMessageBusRequest object.
+
+  Fields:
+    messageBus: A MessageBus resource to be passed as the request body.
+    name: Identifier. Resource name of the form
+      projects/{project}/locations/{location}/messageBuses/{message_bus}
+    updateMask: Optional. The fields to be updated.
+    validateOnly: Optional. If set, validate the request and preview the
+      results, but do not actually update the resource.
+  """
+
+  messageBus = _messages.MessageField('MessageBus', 1)
+  name = _messages.StringField(2, required=True)
+  updateMask = _messages.StringField(3)
+  validateOnly = _messages.BooleanField(4)
 
 
 class EventarcProjectsLocationsUpdateGoogleChannelConfigRequest(_messages.Message):
@@ -3868,11 +3897,18 @@ class Trigger(_messages.Message):
       used to group resources.
 
   Fields:
+    celMatch: Optional. The CEL expression used to match events for the
+      trigger. Mutually exclusive with `event_filters`. When specified,
+      `message_bus` is also required.
     channel: Optional. The name of the channel associated with the trigger in
       `projects/{project}/locations/{location}/channels/{channel}` format. You
       must provide a channel to receive events from Eventarc SaaS partners.
     conditions: Output only. The reason(s) why a trigger is in FAILED state.
     createTime: Output only. The creation time.
+    cryptoKeyName: Optional. Resource name of a KMS crypto key (managed by the
+      user) used to encrypt/decrypt their event data. Only supported when the
+      Trigger has a MessageBus. It must match the pattern
+      `projects/*/locations/*/keyRings/*/cryptoKeys/*`.
     destination: Required. Destination specifies where the events should be
       sent to.
     etag: Output only. This checksum is computed by the server based on the
@@ -3881,11 +3917,17 @@ class Trigger(_messages.Message):
     eventDataContentType: Optional. EventDataContentType specifies the type of
       payload in MIME format that is expected from the CloudEvent data field.
       This is set to `application/json` if the value is not defined.
-    eventFilters: Required. Unordered list. The list of filters that applies
+    eventFilters: Optional. Unordered list. The list of filters that applies
       to event attributes. Only events that match all the provided filters are
       sent to the destination.
     labels: Optional. User labels attached to the triggers that can be used to
       group resources.
+    messageBus: Optional. The resource name of the MessageBus to which the
+      trigger is bound. Format:
+      `projects/{project}/locations/{location}/messageBuses/{message_bus}` or
+      `projects/{project}/locations/{location}/defaultMessageBus`. Required
+      when `cel_match` is specified. When specified, `cel_match` is also
+      required.
     name: Required. The resource name of the trigger. Must be unique within
       the location of the project and must be in
       `projects/{project}/locations/{location}/triggers/{trigger}` format.
@@ -3960,21 +4002,24 @@ class Trigger(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  channel = _messages.StringField(1)
-  conditions = _messages.MessageField('ConditionsValue', 2)
-  createTime = _messages.StringField(3)
-  destination = _messages.MessageField('Destination', 4)
-  etag = _messages.StringField(5)
-  eventDataContentType = _messages.StringField(6)
-  eventFilters = _messages.MessageField('EventFilter', 7, repeated=True)
-  labels = _messages.MessageField('LabelsValue', 8)
-  name = _messages.StringField(9)
-  retryPolicy = _messages.MessageField('RetryPolicy', 10)
-  satisfiesPzs = _messages.BooleanField(11)
-  serviceAccount = _messages.StringField(12)
-  transport = _messages.MessageField('Transport', 13)
-  uid = _messages.StringField(14)
-  updateTime = _messages.StringField(15)
+  celMatch = _messages.StringField(1)
+  channel = _messages.StringField(2)
+  conditions = _messages.MessageField('ConditionsValue', 3)
+  createTime = _messages.StringField(4)
+  cryptoKeyName = _messages.StringField(5)
+  destination = _messages.MessageField('Destination', 6)
+  etag = _messages.StringField(7)
+  eventDataContentType = _messages.StringField(8)
+  eventFilters = _messages.MessageField('EventFilter', 9, repeated=True)
+  labels = _messages.MessageField('LabelsValue', 10)
+  messageBus = _messages.StringField(11)
+  name = _messages.StringField(12)
+  retryPolicy = _messages.MessageField('RetryPolicy', 13)
+  satisfiesPzs = _messages.BooleanField(14)
+  serviceAccount = _messages.StringField(15)
+  transport = _messages.MessageField('Transport', 16)
+  uid = _messages.StringField(17)
+  updateTime = _messages.StringField(18)
 
 
 encoding.AddCustomJsonFieldMapping(

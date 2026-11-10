@@ -41,6 +41,7 @@ from cloudsdk.google.protobuf import duration_pb2  # type: ignore
 from cloudsdk.google.protobuf import timestamp_pb2  # type: ignore
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.services.revisions import pagers
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import condition
+from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import container_status
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import k8s_min
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import revision
 from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import sandbox
@@ -86,6 +87,8 @@ class RevisionsAsyncClient:
     parse_secret_version_path = staticmethod(RevisionsClient.parse_secret_version_path)
     service_path = staticmethod(RevisionsClient.service_path)
     parse_service_path = staticmethod(RevisionsClient.parse_service_path)
+    volume_path = staticmethod(RevisionsClient.volume_path)
+    parse_volume_path = staticmethod(RevisionsClient.parse_volume_path)
     common_billing_account_path = staticmethod(RevisionsClient.common_billing_account_path)
     parse_common_billing_account_path = staticmethod(RevisionsClient.parse_common_billing_account_path)
     common_folder_path = staticmethod(RevisionsClient.common_folder_path)

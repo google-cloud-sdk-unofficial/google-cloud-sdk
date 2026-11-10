@@ -25,9 +25,11 @@ from six.moves import urllib
 
 
 # For a string /b/bucket-name/o/obj.txt?alt=json, this should match
-# b/bucket-name/o/obj.txt
+# b/bucket-name/o/obj.txt. Object names are URL-encoded in request paths, so a
+# "/" after the object name starts a sub-resource path, such as
+# b/bucket-name/o/obj.txt/viewFullContext, which should not match.
 OBJECT_RESOURCE_PATH_PATTERN = re.compile(
-    r'b/(?P<bucket>.*)/o/(?P<object>.*?)(\?|$)')
+    r'^b/(?P<bucket>[^/?]+)/o/(?P<object>[^/?]+)(\?|$)')
 
 # This regex matches all resource paths for buckets operations.
 # To see a complete list, check the following:

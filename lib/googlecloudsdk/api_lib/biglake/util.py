@@ -369,6 +369,11 @@ def CheckValidUnityArgCombinations(args):
     raise arg_parsers.ArgumentTypeError(
         '--snowflake-role is not supported for Unity federated catalogs.'
     )
+  if args.IsKnownAndSpecified('snowflake_user_identity_federation_role'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-user-identity-federation-role is not supported for Unity'
+        ' federated catalogs.'
+    )
   if args.IsKnownAndSpecified('workday_base_url'):
     raise arg_parsers.ArgumentTypeError(
         '--workday-base-url is not supported for Unity federated catalogs.'
@@ -442,6 +447,11 @@ def CheckValidGlueArgCombinations(args):
     raise arg_parsers.ArgumentTypeError(
         '--snowflake-role is not supported for Glue federated catalogs.'
     )
+  if args.IsKnownAndSpecified('snowflake_user_identity_federation_role'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-user-identity-federation-role is not supported for Glue'
+        ' federated catalogs.'
+    )
   if args.IsKnownAndSpecified('workday_base_url'):
     raise arg_parsers.ArgumentTypeError(
         '--workday-base-url is not supported for Glue federated catalogs.'
@@ -484,6 +494,29 @@ def CheckValidSnowflakeArgCombinations(args):
     raise arg_parsers.ArgumentTypeError(
         'Exactly one of --secret-name or --snowflake-role must be specified'
         ' when federated catalog type is snowflake.'
+    )
+  if args.IsKnownAndSpecified('snowflake_user_identity_federation_role'):
+    if (
+        not args.IsKnownAndSpecified('federated_catalog_identity_mode')
+        or args.federated_catalog_identity_mode != 'user-identity-federation'
+    ):
+      raise arg_parsers.ArgumentTypeError(
+          '--federated-catalog-identity-mode must be set to'
+          ' user-identity-federation when'
+          ' --snowflake-user-identity-federation-role is specified.'
+      )
+  if (
+      args.IsKnownAndSpecified('federated_catalog_identity_mode')
+      and args.federated_catalog_identity_mode == 'user-identity-federation'
+      and hasattr(args, 'snowflake_user_identity_federation_role')
+      and not args.IsKnownAndSpecified(
+          'snowflake_user_identity_federation_role'
+      )
+  ):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-user-identity-federation-role must be specified when'
+        ' --federated-catalog-identity-mode is user-identity-federation for'
+        ' Snowflake federated catalogs.'
     )
   if args.IsSpecified('unity_instance_name'):
     raise arg_parsers.ArgumentTypeError(
@@ -605,6 +638,11 @@ def CheckValidWorkdayArgCombinations(args):
     raise arg_parsers.ArgumentTypeError(
         '--snowflake-role is not supported for Workday federated catalogs.'
     )
+  if args.IsKnownAndSpecified('snowflake_user_identity_federation_role'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-user-identity-federation-role is not supported for Workday'
+        ' federated catalogs.'
+    )
   if args.IsKnownAndSpecified('catalog_url'):
     raise arg_parsers.ArgumentTypeError(
         '--catalog-url is not supported for Workday federated catalogs.'
@@ -696,6 +734,11 @@ def CheckValidGenericIcebergArgCombinations(args):
         '--snowflake-role is not supported for Generic Iceberg federated'
         ' catalogs.'
     )
+  if args.IsKnownAndSpecified('snowflake_user_identity_federation_role'):
+    raise arg_parsers.ArgumentTypeError(
+        '--snowflake-user-identity-federation-role is not supported for Generic'
+        ' Iceberg federated catalogs.'
+    )
   if args.IsKnownAndSpecified('workday_base_url'):
     raise arg_parsers.ArgumentTypeError(
         '--workday-base-url is not supported for Generic Iceberg federated'
@@ -741,6 +784,7 @@ def CheckValidFederatedArgCombinations(args):
       'snowflake_warehouse',
       'snowflake_account_identifier',
       'snowflake_role',
+      'snowflake_user_identity_federation_role',
       'workday_base_url',
       'workday_tenant',
       'workday_api_client_client_id',
@@ -912,6 +956,11 @@ def _BuildSnowflakeCatalogInfo(
       ),
       'snowflake-role': getattr(
           snowflake_catalog_info_option, 'snowflake_role', None
+      ),
+      'snowflake-user-identity-federation-role': getattr(
+          snowflake_catalog_info_option,
+          'snowflake_user_identity_federation_role',
+          None,
       ),
   }
   return {k: v for k, v in snowflake_catalog_info.items() if v}

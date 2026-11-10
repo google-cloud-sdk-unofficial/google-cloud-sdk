@@ -291,6 +291,25 @@
           "items": {
             "type": "string"
           }
+        },
+        "reservationType": {
+          "description": "Optional. Immutable. The type of the reservation. Can only be set when the reservation is created. If unset, the reservation is treated as STANDARD.",
+          "type": "string",
+          "enumDescriptions": [
+            "Default value of ReservationType. Treated the same as STANDARD.",
+            "A standard reservation.",
+            "A reservation dedicated to latency-optimized query jobs. Only QUERY assignments can be created under it, and it doesn't share idle slots."
+          ],
+          "enum": [
+            "RESERVATION_TYPE_UNSPECIFIED",
+            "STANDARD",
+            "LATENCY_OPTIMIZED"
+          ]
+        },
+        "failoverEvent": {
+          "description": "Output only. Information about the most recent failover operation on this reservation.",
+          "readOnly": true,
+          "$ref": "FailoverEvent"
         }
       }
     },
@@ -389,6 +408,54 @@
           "description": "Optional. If present and > 0, the reservation will attempt to limit the slot consumption of queries running for any particular project within it to the given value. This feature is not yet generally available.",
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "FailoverEvent": {
+      "id": "FailoverEvent",
+      "description": "Describes the most recent failover operation on a reservation, including one that is still in progress.",
+      "type": "object",
+      "properties": {
+        "softFailoverStatus": {
+          "description": "Output only. Status of the most recent soft failover. Retained after completion until the next failover operation overwrites it.",
+          "readOnly": true,
+          "$ref": "SoftFailoverStatus"
+        }
+      }
+    },
+    "SoftFailoverStatus": {
+      "id": "SoftFailoverStatus",
+      "description": "Status of a soft failover operation on a reservation.",
+      "type": "object",
+      "properties": {
+        "currentState": {
+          "description": "Output only. The current stage of the soft failover.",
+          "readOnly": true,
+          "type": "string",
+          "enumDescriptions": [
+            "Default value. This value is unused.",
+            "The failover has been initiated and is being processed.",
+            "Datasets are being replicated to the new primary. This is typically the longest stage; its duration depends on the volume of data.",
+            "The current secondary reservation is being promoted to new primary.",
+            "Query routing is being switched to the new primary.",
+            "The last stage of the soft failover process.",
+            "The failover completed successfully."
+          ],
+          "enum": [
+            "STATE_UNSPECIFIED",
+            "INITIATING_FAILOVER",
+            "REPLICATING_DATASET",
+            "ACTIVATING_RESERVATION",
+            "UPDATING_ROUTING",
+            "FINALIZING_FAILOVER",
+            "COMPLETED"
+          ]
+        },
+        "lastStateChangeTime": {
+          "description": "Output only. The time at which the reservation entered the current stage.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
         }
       }
     },
@@ -959,11 +1026,11 @@
     },
     "UpgradeEditionRequest": {
       "id": "UpgradeEditionRequest",
-      "description": "The request of UpgradeEdition. At least one reservation or capacity commitment should be specified.",
+      "description": "The request for ReservationService.UpgradeEdition. You must specify at least one reservation or capacity commitment.",
       "type": "object",
       "properties": {
         "targetEdition": {
-          "description": "The edition to upgrade to.",
+          "description": "The edition to upgrade the capacity commitments and reservations to. Supported values are `ENTERPRISE` and `ENTERPRISE_PLUS`.",
           "type": "string",
           "enumDescriptions": [
             "Default value, which will be treated as ENTERPRISE.",
@@ -991,14 +1058,14 @@
           ]
         },
         "capacityCommitments": {
-          "description": "Optional. Resource names of the capacity commitments to upgrade. These capacity commitments must exist under the specified parent. Commitment start\/end time won\u2019t be changed after updating.",
+          "description": "Optional. The resource names of the capacity commitments to upgrade, in the format `projects\/{project}\/locations\/{location}\/capacityCommitments\/{capacity_commitment}`. For example, `projects\/myproject\/locations\/us-west1\/capacityCommitments\/123`. These capacity commitments must be in the `ACTIVE` state and must exist under the specified `parent`. The `commitment_start_time` and `commitment_end_time` fields don't change after the upgrade.",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "reservations": {
-          "description": "Optional. Resource names of the reservations to upgrade. These reservations must exist under the specified parent.",
+          "description": "Optional. The resource names of the reservations to upgrade, in the format `projects\/{project}\/locations\/{location}\/reservations\/{reservation}`. For example, `projects\/myproject\/locations\/us-west1\/reservations\/team1-prod`. These reservations must exist under the specified `parent`.",
           "type": "array",
           "items": {
             "type": "string"
@@ -1008,18 +1075,18 @@
     },
     "UpgradeEditionResponse": {
       "id": "UpgradeEditionResponse",
-      "description": "The response of UpgradeEdition.",
+      "description": "The response for ReservationService.UpgradeEdition.",
       "type": "object",
       "properties": {
         "capacityCommitments": {
-          "description": "Impacted capacity commitments after the upgrade.",
+          "description": "The updated capacity commitments after the upgrade.",
           "type": "array",
           "items": {
             "$ref": "CapacityCommitment"
           }
         },
         "reservations": {
-          "description": "Impacted reservations after the upgrade.",
+          "description": "The updated reservations after the upgrade.",
           "type": "array",
           "items": {
             "$ref": "Reservation"
@@ -1480,6 +1547,11 @@
           "description": "Output only. Contains the corresponding PAM grant identifier if the access was granted by a Privileged Access Manager (PAM) binding.",
           "readOnly": true,
           "$ref": "PrivilegedAccessManagerMetadata"
+        },
+        "traceContextLoggingEnabled": {
+          "description": "Output only. Indicates whether trace context logging is enabled. Set by IAM when the request originates from an agent. When true, the Cloud Authorization Library records the trace context in the LogEntry.",
+          "readOnly": true,
+          "type": "boolean"
         }
       }
     },
@@ -1510,7 +1582,7 @@
     },
     "AgentMetadata": {
       "id": "AgentMetadata",
-      "description": "Metadata about the agent that is used for logging.",
+      "description": "Metadata about the agent that is used for logging. LINT.IfChange(AgentMetadata)",
       "type": "object",
       "properties": {
         "agentName": {
@@ -1799,7 +1871,7 @@
               "httpMethod": "POST",
               "parameters": {
                 "parent": {
-                  "description": "Parent resource that identifies admin project and location e.g., `projects\/myproject\/locations\/us`",
+                  "description": "The parent resource name that identifies the admin project and location, in the format `projects\/{project}\/locations\/{location}`. For example, `projects\/myproject\/locations\/us-west1`.",
                   "pattern": "^projects\/[^\/]+\/locations\/[^\/]+$",
                   "location": "path",
                   "required": true,
@@ -1819,7 +1891,7 @@
                 "https://www.googleapis.com/auth/bigquery",
                 "https://www.googleapis.com/auth/cloud-platform"
               ],
-              "description": "Upgrade the Edition for a list of reservations and capacity commitments. Edition can only be upgraded (From STANDARD to ENTERPRISE\/ENTERPRISE_PLUS, from ENTERPRISE to ENTERPRISE_PLUS, from EDITION_UNSPECIFIED to ENTERPRISE_PLUS). Please make sure this won't cause slot increase in both original and upgraded edition. E.g. only upgrade the reservation but leave the commitment untouched. Otherwise, RPC will fail with the error code `google.rpc.Code.FAILED_PRECONDITION`. Restrications of the target Edition will be checked before the upgrade."
+              "description": "Upgrades the edition for a list of reservations and capacity commitments. You can only upgrade to a higher edition (from `STANDARD` to `ENTERPRISE` or `ENTERPRISE_PLUS`, from `ENTERPRISE` to `ENTERPRISE_PLUS`, or from `EDITION_UNSPECIFIED` to `ENTERPRISE` or `ENTERPRISE_PLUS`). You can't downgrade an edition. The upgrade must not cause an overall flexible slot increase across the original and target editions (for example, by upgrading a reservation without upgrading its corresponding capacity commitment). Otherwise, the method fails with a `google.rpc.Code.FAILED_PRECONDITION` error. Before the upgrade, the service validates that the resources meet the requirements of the target edition (for example, all reservations within a reservation group must be upgraded together)."
             }
           }
           ,
@@ -2830,6 +2902,11 @@
     {
       "endpointUrl": "https://bigqueryreservation.europe-west1.rep.googleapis.com/",
       "location": "europe-west1",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigqueryreservation.europe-west10.rep.googleapis.com/",
+      "location": "europe-west10",
       "description": "Regional Endpoint"
     },
     {

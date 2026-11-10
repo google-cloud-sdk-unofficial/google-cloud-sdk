@@ -119,6 +119,28 @@ kafka-version:
     The Apache Kafka version of the cluster (for example, `3.7.x`, `4.3.x`).
     If not specified during cluster creation, defaults to `3.7.x`.
 
+kafka-version-update:
+  api_field: cluster.kafkaVersion
+  arg_name: kafka-version
+  hidden: true
+  help_text: |
+    Finalized Apache Kafka metadata version of the cluster (for example, `4.3.x`).
+    Raising this value is the second and final step of a Kafka version upgrade and
+    cannot be undone. It must be less than or equal to the cluster's binary version
+    and cannot be combined with `--binary-version` in the same command.
+
+binary-version:
+  api_field: cluster.binaryVersion
+  arg_name: binary-version
+  hidden: true
+  help_text: |
+    Version of the cluster's broker and controller binaries (for example, `4.3.x`).
+    Changing this value is the first step of a Kafka version upgrade and triggers a
+    rolling restart of the brokers and controllers. It can be reverted to the current
+    `--kafka-version` until the metadata version is finalized. It must be greater than
+    or equal to the cluster's Kafka version and cannot be combined with
+    `--kafka-version` in the same command.
+
 # Trying to define this as a resouce causes test failures in yaml_command_schema_test so we define
 # it as a flag instead.
 kafka-cluster:

@@ -1,0 +1,36 @@
+- release_tracks: [ALPHA]
+  command_type: LIST
+  hints:
+    read_only: true
+
+  help_text:
+    brief: List scanned resources of a Workload Manager evaluation execution.
+    description: |
+      List scanned resources of a Workload Manager evaluation execution.
+    examples: |
+      To list scanned resources of execution ``my-execution'' under evaluation
+      ``my-evaluation'' in location ``us-central1'', run:
+
+        $ {command} --execution=my-execution --evaluation=my-evaluation \
+            --location=us-central1
+
+  request:
+    collection: workloadmanager.projects.locations.evaluations.executions.scannedResources
+    method: list
+    regional_endpoint_compatibility: SUPPORTED
+
+  arguments:
+    resource:
+      help_text: execution for which to list scanned resources.
+      spec: !REF googlecloudsdk.command_lib.workload_manager.resources:execution
+    params:
+    - arg_name: rule
+      api_field: rule
+      help_text: Rule name to filter scanned resources by.
+
+  output:
+    format: |
+      table(
+        resource:label=RESOURCE,
+        type:label=TYPE
+      )

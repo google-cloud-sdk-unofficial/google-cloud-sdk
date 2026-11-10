@@ -399,24 +399,30 @@ class IapTunnelWebSocket(object):
         raise EcpProxyStartError(
             'ECP HTTP Proxy is enabled but could not be started.'
         )
+      proxy_auth_token = ecp_proxy_manager.get_proxy_auth_token()
+      if not proxy_auth_token:
+        raise EcpProxyStartError(
+            'ECP HTTP Proxy auth token is not set.'
+        )
 
       parsed_url = parse.urlsplit(url)
       original_host = parsed_url.hostname
 
       # Rewrite URL to target local ECP proxy
-      # wss://mtls.tunnel.cloudproxy.app/... -> ws://localhost:<port>/...
+      # wss://mtls.tunnel.cloudproxy.app/... -> ws://127.0.0.1:<port>/...
       url = parse.urlunsplit((
           'ws',
-          'localhost:{}'.format(proxy_port),
+          '{}:{}'.format(ecp_proxy_manager.get_proxy_host(), proxy_port),
           parsed_url.path,
           parsed_url.query,
           parsed_url.fragment,
       ))
 
-      # Add target host header for ECP proxy
+      # Add target host and auth token headers for ECP proxy
       headers.append('x-goog-ecpproxy-target-host: {}'.format(original_host))
+      headers.append('x-goog-ecpproxy-auth-token: {}'.format(proxy_auth_token))
 
-      # Bypass standard proxy for the localhost connection
+      # Bypass standard proxy for the loopback connection
       proxy_info = None
       log.debug(
           'Routing IAP WebSocket through ECP HTTP Proxy on port %d', proxy_port

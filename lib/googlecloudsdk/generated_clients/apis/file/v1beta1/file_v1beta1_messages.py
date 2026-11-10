@@ -310,10 +310,6 @@ class Date(_messages.Message):
   year = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
-class DeleteVolumeRequest(_messages.Message):
-  r"""DeleteVolumeRequest deletes a volume."""
-
-
 class DenyMaintenancePeriod(_messages.Message):
   r"""DenyMaintenancePeriod definition. Maintenance is forbidden within the
   deny period. The start_date must be less than the end_date.
@@ -902,11 +898,15 @@ class FileProjectsLocationsVolumePoolsDeleteRequest(_messages.Message):
   r"""A FileProjectsLocationsVolumePoolsDeleteRequest object.
 
   Fields:
+    force: Optional. If set to `true`, the volume pool is deleted even if it
+      has volumes, and its volumes are deleted with it. Otherwise, the request
+      fails if the volume pool has any volumes.
     name: Required. The volume pool resource name, in the format
       `projects/{project}/locations/{location}/volumePools/{volume_pool}`.
   """
 
-  name = _messages.StringField(1, required=True)
+  force = _messages.BooleanField(1)
+  name = _messages.StringField(2, required=True)
 
 
 class FileProjectsLocationsVolumePoolsGetRequest(_messages.Message):
@@ -999,36 +999,6 @@ class FileProjectsLocationsVolumePoolsVolumesDeleteRequest(_messages.Message):
   """
 
   name = _messages.StringField(1, required=True)
-
-
-class FileProjectsLocationsVolumePoolsVolumesDirectCreateRequest(_messages.Message):
-  r"""A FileProjectsLocationsVolumePoolsVolumesDirectCreateRequest object.
-
-  Fields:
-    parent: Required. The parent volume pool path, in the format
-      `projects/{project}/locations/{location}/volumePools/{volume_pool}`.
-    volume: A Volume resource to be passed as the request body.
-    volumeId: Required. The ID to use for the volume. The ID must be unique
-      within the specified volume pool.
-  """
-
-  parent = _messages.StringField(1, required=True)
-  volume = _messages.MessageField('Volume', 2)
-  volumeId = _messages.StringField(3)
-
-
-class FileProjectsLocationsVolumePoolsVolumesDirectDeleteRequest(_messages.Message):
-  r"""A FileProjectsLocationsVolumePoolsVolumesDirectDeleteRequest object.
-
-  Fields:
-    deleteVolumeRequest: A DeleteVolumeRequest resource to be passed as the
-      request body.
-    name: Required. The volume resource name, in the format `projects/{project
-      }/locations/{location}/volumePools/{volume_pool}/volumes/{volume}`.
-  """
-
-  deleteVolumeRequest = _messages.MessageField('DeleteVolumeRequest', 1)
-  name = _messages.StringField(2, required=True)
 
 
 class FileProjectsLocationsVolumePoolsVolumesGetRequest(_messages.Message):
@@ -3526,6 +3496,9 @@ class VolumePool(_messages.Message):
     activeVolumeCount: Optional. The number of active volumes. Default: 100.
     activeVolumeIops: Optional. The number of IOPs provisioned per active
       volume.
+    autoFreezeDelay: Optional. How long a volume stays `WARM` after it is
+      deactivated before it is automatically frozen (moved to `COLD`). Must be
+      positive if set. Default: 7 days.
     createTime: Output only. The time when the volume pool was created.
     defaultVolumeQuotaMib: Optional. The default quota per volume in MiB. Must
       be between 100 MiB and 102400 MiB (100 GiB). Default: 1024 MiB.
@@ -3580,14 +3553,15 @@ class VolumePool(_messages.Message):
 
   activeVolumeCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   activeVolumeIops = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  createTime = _messages.StringField(3)
-  defaultVolumeQuotaMib = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  description = _messages.StringField(5)
-  labels = _messages.MessageField('LabelsValue', 6)
-  name = _messages.StringField(7)
-  network = _messages.StringField(8)
-  state = _messages.EnumField('StateValueValuesEnum', 9)
-  uid = _messages.StringField(10)
+  autoFreezeDelay = _messages.StringField(3)
+  createTime = _messages.StringField(4)
+  defaultVolumeQuotaMib = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  description = _messages.StringField(6)
+  labels = _messages.MessageField('LabelsValue', 7)
+  name = _messages.StringField(8)
+  network = _messages.StringField(9)
+  state = _messages.EnumField('StateValueValuesEnum', 10)
+  uid = _messages.StringField(11)
 
 
 class WeeklyCycle(_messages.Message):

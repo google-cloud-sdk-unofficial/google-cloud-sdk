@@ -279,6 +279,33 @@ class LookerV1alpha2(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetCostControl(self, request, global_params=None):
+      r"""Gets the cost control of a NextGen Pricing (NGP) instance.
+
+      Args:
+        request: (LookerProjectsLocationsInstancesGetCostControlRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CostControl) The response message.
+      """
+      config = self.GetMethodConfig('GetCostControl')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetCostControl.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha2/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/costControl',
+        http_method='GET',
+        method_id='looker.projects.locations.instances.getCostControl',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha2/{+name}',
+        request_field='',
+        request_type_name='LookerProjectsLocationsInstancesGetCostControlRequest',
+        response_type_name='CostControl',
+        supports_download=False,
+    )
+
     def Import(self, request, global_params=None):
       r"""Import instance.
 
@@ -465,6 +492,33 @@ class LookerV1alpha2(base_api.BaseApiClient):
         request_field='undeleteInstanceRequest',
         request_type_name='LookerProjectsLocationsInstancesUndeleteRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def UpdateCostControl(self, request, global_params=None):
+      r"""Updates the cost control of a NextGen Pricing (NGP) instance. Fails with ABORTED if `etag` is set and stale.
+
+      Args:
+        request: (LookerProjectsLocationsInstancesUpdateCostControlRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (CostControl) The response message.
+      """
+      config = self.GetMethodConfig('UpdateCostControl')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    UpdateCostControl.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha2/projects/{projectsId}/locations/{locationsId}/instances/{instancesId}/costControl',
+        http_method='PATCH',
+        method_id='looker.projects.locations.instances.updateCostControl',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['requestId', 'updateMask'],
+        relative_path='v1alpha2/{+name}',
+        request_field='costControl',
+        request_type_name='LookerProjectsLocationsInstancesUpdateCostControlRequest',
+        response_type_name='CostControl',
         supports_download=False,
     )
 

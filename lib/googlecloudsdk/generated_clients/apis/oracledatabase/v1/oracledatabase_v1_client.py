@@ -48,6 +48,7 @@ class OracledatabaseV1(base_api.BaseApiClient):
     self.projects_locations_databaseCharacterSets = self.ProjectsLocationsDatabaseCharacterSetsService(self)
     self.projects_locations_databaseConnections = self.ProjectsLocationsDatabaseConnectionsService(self)
     self.projects_locations_databases = self.ProjectsLocationsDatabasesService(self)
+    self.projects_locations_dbSystemComputePerformances = self.ProjectsLocationsDbSystemComputePerformancesService(self)
     self.projects_locations_dbSystemInitialStorageSizes = self.ProjectsLocationsDbSystemInitialStorageSizesService(self)
     self.projects_locations_dbSystemShapes = self.ProjectsLocationsDbSystemShapesService(self)
     self.projects_locations_dbSystems = self.ProjectsLocationsDbSystemsService(self)
@@ -56,6 +57,7 @@ class OracledatabaseV1(base_api.BaseApiClient):
     self.projects_locations_exadbVmClusters_dbNodes = self.ProjectsLocationsExadbVmClustersDbNodesService(self)
     self.projects_locations_exadbVmClusters = self.ProjectsLocationsExadbVmClustersService(self)
     self.projects_locations_exascaleDbStorageVaults = self.ProjectsLocationsExascaleDbStorageVaultsService(self)
+    self.projects_locations_flexComponents = self.ProjectsLocationsFlexComponentsService(self)
     self.projects_locations_giVersions_minorVersions = self.ProjectsLocationsGiVersionsMinorVersionsService(self)
     self.projects_locations_giVersions = self.ProjectsLocationsGiVersionsService(self)
     self.projects_locations_goldengateConnectionAssignments = self.ProjectsLocationsGoldengateConnectionAssignmentsService(self)
@@ -882,6 +884,60 @@ class OracledatabaseV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def DisableIdentityConnector(self, request, global_params=None):
+      r"""Disables the Workload Identity Connector for a Cloud VM Cluster.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsCloudVmClustersDisableIdentityConnectorRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('DisableIdentityConnector')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DisableIdentityConnector.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/cloudVmClusters/{cloudVmClustersId}:disableIdentityConnector',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.cloudVmClusters.disableIdentityConnector',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:disableIdentityConnector',
+        request_field='disableCloudVmClusterIdentityConnectorRequest',
+        request_type_name='OracledatabaseProjectsLocationsCloudVmClustersDisableIdentityConnectorRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def EnableIdentityConnector(self, request, global_params=None):
+      r"""Enables the Workload Identity Connector for a Cloud VM Cluster.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsCloudVmClustersEnableIdentityConnectorRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('EnableIdentityConnector')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    EnableIdentityConnector.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/cloudVmClusters/{cloudVmClustersId}:enableIdentityConnector',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.cloudVmClusters.enableIdentityConnector',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:enableIdentityConnector',
+        request_field='enableCloudVmClusterIdentityConnectorRequest',
+        request_type_name='OracledatabaseProjectsLocationsCloudVmClustersEnableIdentityConnectorRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details of a single VM Cluster.
 
@@ -1260,6 +1316,43 @@ class OracledatabaseV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='OracledatabaseProjectsLocationsDatabasesListRequest',
         response_type_name='ListDatabasesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsDbSystemComputePerformancesService(base_api.BaseApiService):
+    """Service class for the projects_locations_dbSystemComputePerformances resource."""
+
+    _NAME = 'projects_locations_dbSystemComputePerformances'
+
+    def __init__(self, client):
+      super(OracledatabaseV1.ProjectsLocationsDbSystemComputePerformancesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists all the DbSystemComputePerformances for the given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsDbSystemComputePerformancesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListDbSystemComputePerformancesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/dbSystemComputePerformances',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.dbSystemComputePerformances.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/dbSystemComputePerformances',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsDbSystemComputePerformancesListRequest',
+        response_type_name='ListDbSystemComputePerformancesResponse',
         supports_download=False,
     )
 
@@ -1657,6 +1750,60 @@ class OracledatabaseV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def DisableIdentityConnector(self, request, global_params=None):
+      r"""Disables the Workload Identity Connector for an Exadb VM Cluster.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsExadbVmClustersDisableIdentityConnectorRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('DisableIdentityConnector')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DisableIdentityConnector.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/exadbVmClusters/{exadbVmClustersId}:disableIdentityConnector',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.exadbVmClusters.disableIdentityConnector',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:disableIdentityConnector',
+        request_field='disableExadbVmClusterIdentityConnectorRequest',
+        request_type_name='OracledatabaseProjectsLocationsExadbVmClustersDisableIdentityConnectorRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def EnableIdentityConnector(self, request, global_params=None):
+      r"""Enables the Workload Identity Connector for an Exadb VM Cluster.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsExadbVmClustersEnableIdentityConnectorRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('EnableIdentityConnector')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    EnableIdentityConnector.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/exadbVmClusters/{exadbVmClustersId}:enableIdentityConnector',
+        http_method='POST',
+        method_id='oracledatabase.projects.locations.exadbVmClusters.enableIdentityConnector',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:enableIdentityConnector',
+        request_field='enableExadbVmClusterIdentityConnectorRequest',
+        request_type_name='OracledatabaseProjectsLocationsExadbVmClustersEnableIdentityConnectorRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details of a single Exadb (Exascale) VM Cluster.
 
@@ -1907,6 +2054,43 @@ class OracledatabaseV1(base_api.BaseApiClient):
         request_field='exascaleDbStorageVault',
         request_type_name='OracledatabaseProjectsLocationsExascaleDbStorageVaultsPatchRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsFlexComponentsService(base_api.BaseApiService):
+    """Service class for the projects_locations_flexComponents resource."""
+
+    _NAME = 'projects_locations_flexComponents'
+
+    def __init__(self, client):
+      super(OracledatabaseV1.ProjectsLocationsFlexComponentsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists Flex Components in a given project and location.
+
+      Args:
+        request: (OracledatabaseProjectsLocationsFlexComponentsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListFlexComponentsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/flexComponents',
+        http_method='GET',
+        method_id='oracledatabase.projects.locations.flexComponents.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['filter', 'pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/flexComponents',
+        request_field='',
+        request_type_name='OracledatabaseProjectsLocationsFlexComponentsListRequest',
+        response_type_name='ListFlexComponentsResponse',
         supports_download=False,
     )
 

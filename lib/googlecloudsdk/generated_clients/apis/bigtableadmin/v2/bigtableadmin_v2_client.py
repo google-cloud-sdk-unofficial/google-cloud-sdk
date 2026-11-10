@@ -2165,6 +2165,33 @@ class BigtableadminV2(base_api.BaseApiClient):
       self._upload_configs = {
           }
 
+    def ApplyDdl(self, request, global_params=None):
+      r"""Applies the given ddl statements to an instance.
+
+      Args:
+        request: (ApplyDdlRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('ApplyDdl')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ApplyDdl.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v2/projects/{projectsId}/instances/{instancesId}:applyDdl',
+        http_method='POST',
+        method_id='bigtableadmin.projects.instances.applyDdl',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v2/{+name}:applyDdl',
+        request_field='<request>',
+        request_type_name='ApplyDdlRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Create(self, request, global_params=None):
       r"""Create an instance within a project. Note that exactly one of Cluster.serve_nodes and Cluster.cluster_config.cluster_autoscaling_config can be set. If serve_nodes is set to non-zero, then the cluster is manually scaled. If cluster_config.cluster_autoscaling_config is non-empty, then autoscaling is enabled.
 

@@ -1451,9 +1451,9 @@ class Behavior(_messages.Message):
       missing an underlying file). The operation metadata and response will
       contain a list of skipped version errors that can be inspected for
       details on the failure(s).
-    maxVersionAgeDays: Optional. Prefer `version_filter.updated_within`
-      instead. If set, behaves exactly as `version_filter.updated_within` with
-      the equivalent duration.
+    maxVersionAgeDays: Optional. Deprecated: use
+      `version_filter.updated_within` instead. If set, behaves exactly as
+      `version_filter.updated_within` with the equivalent duration.
     versionFilter: Optional. Limits which versions are copied by age. Cannot
       be combined with max_version_age_days.
   """

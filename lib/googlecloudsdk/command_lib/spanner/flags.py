@@ -801,12 +801,31 @@ def EnableDropProtection(required=False):
   )
 
 
+class _StoreOnceAction(arg_parsers.StoreOnceAction):
+  """StoreOnceAction that tracks population on the per-command namespace.
+
+  arg_parsers.StoreOnceAction tracks `self.dest_is_populated` on the Action
+  instance, which Calliope reuses across commands in a single scenario test
+  session, causing subsequent commands that pass `--kms-keys` to fail.
+  TODO(b/571177942): Upstream this fix to
+  `calliope.arg_parsers.StoreOnceAction` and remove this subclass.
+  """
+
+  def __call__(self, parser, namespace, values, option_string=None):
+    populated_dest = f'_populated_{self.dest}'
+    if not getattr(parser, '_probe_error', False):
+      if getattr(namespace, populated_dest, False):
+        self.OnSecondArgumentRaiseError()
+      setattr(namespace, populated_dest, True)
+    setattr(namespace, self.dest, values)
+
+
 def EnableUpdateKmsKeys(required=False):
   return base.Argument(
       '--kms-keys',
       required=required,
       metavar='KMS_KEY',
-      action=arg_parsers.StoreOnceAction,
+      action=_StoreOnceAction,
       dest='kms_keys',
       type=arg_parsers.ArgList(min_length=1),
       help=(

@@ -19,7 +19,15 @@ class AuditReport(_messages.Message):
     ReportGenerationStateValueValuesEnum: Output only. State of audit report
       generation.
 
+  Messages:
+    CloudControlParameterStatesValue: Output only. Parameter values provided
+      by the user and values for tunable parameters, stored in the DB, keyed
+      by control name.
+
   Fields:
+    cloudControlParameterStates: Output only. Parameter values provided by the
+      user and values for tunable parameters, stored in the DB, keyed by
+      control name.
     complianceFramework: Output only. Compliance framework to use for the
       audit report. For example, `CIS_GCP_FOUNDATIONS_V1_2_0`.
     complianceStandard: Output only. Deprecated. Compliance standard to be
@@ -68,17 +76,46 @@ class AuditReport(_messages.Message):
     FAILED = 3
     SUMMARY_UNKNOWN = 4
 
-  complianceFramework = _messages.StringField(1)
-  complianceStandard = _messages.StringField(2)
-  controlDetails = _messages.MessageField('ControlDetails', 3, repeated=True)
-  createTime = _messages.StringField(4)
-  destinationDetails = _messages.MessageField('DestinationDetails', 5)
-  name = _messages.StringField(6)
-  operationId = _messages.StringField(7)
-  reportGenerationState = _messages.EnumField('ReportGenerationStateValueValuesEnum', 8)
-  reportSummary = _messages.MessageField('ReportSummary', 9)
-  scope = _messages.StringField(10)
-  scopeId = _messages.StringField(11)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class CloudControlParameterStatesValue(_messages.Message):
+    r"""Output only. Parameter values provided by the user and values for
+    tunable parameters, stored in the DB, keyed by control name.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        CloudControlParameterStatesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        CloudControlParameterStatesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a CloudControlParameterStatesValue
+      object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A CloudControlParameterStates attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('CloudControlParameterStates', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  cloudControlParameterStates = _messages.MessageField('CloudControlParameterStatesValue', 1)
+  complianceFramework = _messages.StringField(2)
+  complianceStandard = _messages.StringField(3)
+  controlDetails = _messages.MessageField('ControlDetails', 4, repeated=True)
+  createTime = _messages.StringField(5)
+  destinationDetails = _messages.MessageField('DestinationDetails', 6)
+  name = _messages.StringField(7)
+  operationId = _messages.StringField(8)
+  reportGenerationState = _messages.EnumField('ReportGenerationStateValueValuesEnum', 9)
+  reportSummary = _messages.MessageField('ReportSummary', 10)
+  scope = _messages.StringField(11)
+  scopeId = _messages.StringField(12)
 
 
 class AuditSchedule(_messages.Message):
@@ -91,6 +128,12 @@ class AuditSchedule(_messages.Message):
     StateValueValuesEnum: Optional. State of the audit schedule. While most
       states are managed by the system, you can use UpdateAuditSchedule to
       start, pause, or delete the schedule.
+
+  Messages:
+    ParameterOverridesValue: Optional. Maps dynamic parameter overrides by
+      Cloud Control resource name at execution time. For example,
+      `{"organizations/123/locations/global/cloudControls/control-1":
+      {parameters: [...]}}`
 
   Fields:
     complianceFramework: Required. Framework (set of controls) that the audit
@@ -109,6 +152,10 @@ class AuditSchedule(_messages.Message):
       ganizations/{organization}/locations/{location}/auditSchedules/{audit_sc
       hedule}
     nextRunTime: Output only. Calculated timestamp for the next scheduled run.
+    parameterOverrides: Optional. Maps dynamic parameter overrides by Cloud
+      Control resource name at execution time. For example,
+      `{"organizations/123/locations/global/cloudControls/control-1":
+      {parameters: [...]}}`
     reportFormat: Required. Format for the audit report.
     scheduleConfig: Required. Configuration that defines when and how often
       audit runs are automatically triggered for this schedule.
@@ -153,6 +200,35 @@ class AuditSchedule(_messages.Message):
     SCHEDULE_STATE_ERROR = 5
     SCHEDULE_STATE_DELETED = 6
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParameterOverridesValue(_messages.Message):
+    r"""Optional. Maps dynamic parameter overrides by Cloud Control resource
+    name at execution time. For example,
+    `{"organizations/123/locations/global/cloudControls/control-1":
+    {parameters: [...]}}`
+
+    Messages:
+      AdditionalProperty: An additional property for a ParameterOverridesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ParameterOverridesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParameterOverridesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ParameterOverrides attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ParameterOverrides', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   complianceFramework = _messages.StringField(1)
   createTime = _messages.StringField(2)
   displayName = _messages.StringField(3)
@@ -161,10 +237,11 @@ class AuditSchedule(_messages.Message):
   lastTriggerTime = _messages.StringField(6)
   name = _messages.StringField(7)
   nextRunTime = _messages.StringField(8)
-  reportFormat = _messages.EnumField('ReportFormatValueValuesEnum', 9)
-  scheduleConfig = _messages.MessageField('ScheduleConfig', 10)
-  state = _messages.EnumField('StateValueValuesEnum', 11)
-  updateTime = _messages.StringField(12)
+  parameterOverrides = _messages.MessageField('ParameterOverridesValue', 9)
+  reportFormat = _messages.EnumField('ReportFormatValueValuesEnum', 10)
+  scheduleConfig = _messages.MessageField('ScheduleConfig', 11)
+  state = _messages.EnumField('StateValueValuesEnum', 12)
+  updateTime = _messages.StringField(13)
 
 
 class AuditScopeReport(_messages.Message):
@@ -1097,6 +1174,16 @@ class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
 
+class CloudControlParameterStates(_messages.Message):
+  r"""Collection of parameter states for a cloud control.
+
+  Fields:
+    parameterStates: Output only. The parameter states for the cloud control.
+  """
+
+  parameterStates = _messages.MessageField('ParameterState', 1, repeated=True)
+
+
 class Control(_messages.Message):
   r"""A control.
 
@@ -1313,6 +1400,12 @@ class GenerateAuditReportRequest(_messages.Message):
   Enums:
     ReportFormatValueValuesEnum: Required. Format for the audit report.
 
+  Messages:
+    ParameterOverridesValue: Optional. Maps dynamic parameter overrides by
+      Cloud Control resource name at execution time. For example,
+      `{"organizations/123/locations/global/cloudControls/control-1":
+      {parameters: [...]}}`
+
   Fields:
     complianceFramework: Required. The framework that's used for the audit
       report. For example, `NIST_800_53`.
@@ -1321,6 +1414,10 @@ class GenerateAuditReportRequest(_messages.Message):
     gcsUri: URL for the Cloud Storage bucket where the report and evidence is
       uploaded. You must select a bucket that was provided during the
       enrollment process.
+    parameterOverrides: Optional. Maps dynamic parameter overrides by Cloud
+      Control resource name at execution time. For example,
+      `{"organizations/123/locations/global/cloudControls/control-1":
+      {parameters: [...]}}`
     reportFormat: Required. Format for the audit report.
     validateOnly: Optional. If `true`, only validates the request and does not
       generate the audit report. This executes standard request validation
@@ -1345,11 +1442,41 @@ class GenerateAuditReportRequest(_messages.Message):
     AUDIT_REPORT_FORMAT_UNSPECIFIED = 0
     AUDIT_REPORT_FORMAT_ODF = 1
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParameterOverridesValue(_messages.Message):
+    r"""Optional. Maps dynamic parameter overrides by Cloud Control resource
+    name at execution time. For example,
+    `{"organizations/123/locations/global/cloudControls/control-1":
+    {parameters: [...]}}`
+
+    Messages:
+      AdditionalProperty: An additional property for a ParameterOverridesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ParameterOverridesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParameterOverridesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ParameterOverrides attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ParameterOverrides', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   complianceFramework = _messages.StringField(1)
   complianceStandard = _messages.StringField(2)
   gcsUri = _messages.StringField(3)
-  reportFormat = _messages.EnumField('ReportFormatValueValuesEnum', 4)
-  validateOnly = _messages.BooleanField(5)
+  parameterOverrides = _messages.MessageField('ParameterOverridesValue', 4)
+  reportFormat = _messages.EnumField('ReportFormatValueValuesEnum', 5)
+  validateOnly = _messages.BooleanField(6)
 
 
 class GenerateAuditScopeReportRequest(_messages.Message):
@@ -1358,12 +1485,22 @@ class GenerateAuditScopeReportRequest(_messages.Message):
   Enums:
     ReportFormatValueValuesEnum: Required. Format for the audit scope report.
 
+  Messages:
+    ParameterOverridesValue: Optional. Maps dynamic parameter overrides by
+      Cloud Control resource name at execution time. For example,
+      `{"organizations/123/locations/global/cloudControls/control-1":
+      {parameters: [...]}}`
+
   Fields:
     complianceFramework: Required. Framework (set of controls) that the audit
       scope report is generated against. For example, `NIST_800_53`.
     complianceStandard: Optional. Deprecated. The standard (industry or
       regulatory requirements) that the audit scope report is run against. Use
       the `compliance_framework` field instead.
+    parameterOverrides: Optional. Maps dynamic parameter overrides by Cloud
+      Control resource name at execution time. For example,
+      `{"organizations/123/locations/global/cloudControls/control-1":
+      {parameters: [...]}}`
     reportFormat: Required. Format for the audit scope report.
     validateOnly: Optional. If `true`, only validates the request and does not
       generate the audit scope report. This executes standard request
@@ -1388,10 +1525,40 @@ class GenerateAuditScopeReportRequest(_messages.Message):
     AUDIT_SCOPE_REPORT_FORMAT_UNSPECIFIED = 0
     AUDIT_SCOPE_REPORT_FORMAT_ODF = 1
 
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ParameterOverridesValue(_messages.Message):
+    r"""Optional. Maps dynamic parameter overrides by Cloud Control resource
+    name at execution time. For example,
+    `{"organizations/123/locations/global/cloudControls/control-1":
+    {parameters: [...]}}`
+
+    Messages:
+      AdditionalProperty: An additional property for a ParameterOverridesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        ParameterOverridesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ParameterOverridesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ParameterOverrides attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ParameterOverrides', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
   complianceFramework = _messages.StringField(1)
   complianceStandard = _messages.StringField(2)
-  reportFormat = _messages.EnumField('ReportFormatValueValuesEnum', 3)
-  validateOnly = _messages.BooleanField(4)
+  parameterOverrides = _messages.MessageField('ParameterOverridesValue', 3)
+  reportFormat = _messages.EnumField('ReportFormatValueValuesEnum', 4)
+  validateOnly = _messages.BooleanField(5)
 
 
 class ListAuditReportsResponse(_messages.Message):
@@ -1699,6 +1866,62 @@ class OperationMetadata(_messages.Message):
   verb = _messages.StringField(7)
 
 
+class ParamValue(_messages.Message):
+  r"""The possible parameter value types.
+
+  Fields:
+    boolValue: Optional. A boolean value.
+    numberValue: Optional. A double value.
+    oneofValue: Optional. Sub-parameter values.
+    stringListValue: Optional. A repeated string.
+    stringValue: Optional. A string value.
+  """
+
+  boolValue = _messages.BooleanField(1)
+  numberValue = _messages.FloatField(2)
+  oneofValue = _messages.MessageField('Parameter', 3)
+  stringListValue = _messages.MessageField('StringList', 4)
+  stringValue = _messages.StringField(5)
+
+
+class Parameter(_messages.Message):
+  r"""Parameters are key-value pairs that let you provide your custom location
+  requirements, environment requirements, or other settings that are relevant
+  to the cloud control.
+
+  Fields:
+    name: Required. The name or key of the parameter.
+    parameterValue: Required. The value of the parameter.
+  """
+
+  name = _messages.StringField(1)
+  parameterValue = _messages.MessageField('ParamValue', 2)
+
+
+class ParameterOverrides(_messages.Message):
+  r"""Wrapper message to associate a list of CSC internal parameter overrides
+  with a control name.
+
+  Fields:
+    parameters: The list of parameter overrides.
+  """
+
+  parameters = _messages.MessageField('Parameter', 1, repeated=True)
+
+
+class ParameterState(_messages.Message):
+  r"""State of a parameter for a cloud control.
+
+  Fields:
+    isOverridden: Output only. Whether this parameter was overridden by the
+      user.
+    parameter: Output only. The parameter key and value.
+  """
+
+  isOverridden = _messages.BooleanField(1)
+  parameter = _messages.MessageField('Parameter', 2)
+
+
 class ReportGenerationProgress(_messages.Message):
   r"""Details about the current status of the report-generation process.
 
@@ -1985,6 +2208,16 @@ class Status(_messages.Message):
   code = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   details = _messages.MessageField('DetailsValueListEntry', 2, repeated=True)
   message = _messages.StringField(3)
+
+
+class StringList(_messages.Message):
+  r"""A list of strings for the parameter value.
+
+  Fields:
+    values: Required. The strings in the list.
+  """
+
+  values = _messages.StringField(1, repeated=True)
 
 
 encoding.AddCustomJsonFieldMapping(

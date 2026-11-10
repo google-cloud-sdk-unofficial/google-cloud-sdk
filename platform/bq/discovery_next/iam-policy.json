@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20261021",
+  "revision": "20261104",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -252,6 +252,17 @@
           "description": "The default encryption key for all tables in the dataset. After this property is set, the encryption key of all newly-created tables in the dataset is set to this value unless the table creation request or query explicitly overrides the key.",
           "$ref": "EncryptionConfiguration"
         },
+        "replicas": {
+          "description": "Optional. The list of replicas in a cross region replicated or disaster recovery dataset.",
+          "type": "array",
+          "items": {
+            "$ref": "Replica"
+          }
+        },
+        "failoverReservationId": {
+          "description": "Optional. The failover reservation associated with the dataset in the regionless format. Example: .. To learn about about failover reservations see: https:\/\/docs.cloud.google.com\/bigquery\/docs\/managed-disaster-recovery#overview",
+          "type": "string"
+        },
         "satisfiesPzs": {
           "description": "Output only. Reserved for future use.",
           "readOnly": true,
@@ -463,6 +474,86 @@
       "properties": {
         "kmsKeyName": {
           "description": "Optional. Describes the Cloud KMS encryption key that will be used to protect destination BigQuery table. The BigQuery Service Account associated with your project requires access to this encryption key.",
+          "type": "string"
+        }
+      }
+    },
+    "Replica": {
+      "id": "Replica",
+      "description": "The replica metadata of the dataset. If the dataset has two or more replicas, it's considered a cross region replicated (CRR) dataset.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Required. The user-visible string identifier for this dataset replica. This is generally named after the region.",
+          "type": "string"
+        },
+        "location": {
+          "description": "Required. The logical bigquery region where this replica is located. This is upper case if \"US\" or \"EU\", otherwise a lower case cloud region like \"asia-northeast1\".",
+          "type": "string"
+        },
+        "primaryAssignmentTime": {
+          "description": "Output only. The time at which the replica was assigned primary. Only one replica will have this field populated at any point.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "primaryAssignmentCompletionTime": {
+          "description": "Output only. After a new primary assignment is made, this is the time that the dataset's data has been fully replicated to the replica, and after which the system will use current reads in the new primary replica.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "replicaState": {
+          "description": "Output only. Gives an explicit indicator of the replica primary state.",
+          "readOnly": true,
+          "type": "string",
+          "enumDescriptions": [
+            "Should never be set.",
+            "Denotes that the replica is the primary. All routing by default goes to the primary and only the primary is writable.",
+            "Denotes that the replica is the secondary and is only readable.",
+            "This value for the replica where the new primary is going to be. At most one replica can have this value, and its only present when the dataset has a primary switch in progress.",
+            "This value for the replica where the last primary was, but is no longer assigned the primary. All routing still goes to this replica, but it is no longer writable. Only set on the old primary during a primary switch. At most one replica at any moment can have this value.",
+            "The replica is not queriable yet since it's still backfilling."
+          ],
+          "enum": [
+            "REPLICA_STATE_UNSPECIFIED",
+            "PRIMARY",
+            "SECONDARY",
+            "ASSIGNED_PRIMARY",
+            "PREVIOUSLY_ASSIGNED_PRIMARY",
+            "BACKFILLING"
+          ]
+        },
+        "creationTime": {
+          "description": "Output only. The timestamp when the replica was created. For any dataset's first replica, this should be set to the dataset's creation_time.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "backfillCompletionTime": {
+          "description": "Output only. The time when the backfill was completed and replica is ready to use.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "failoverReservationUri": {
+          "description": "Output only. Failover reservation ID for the replica's region if this replica is used for DR. Fully-qualified format, e.g. \"projects\/some-project\/locations\/US\/reservations\/some-reservation\" The location portion of the format is upper case if \"US\" or \"EU\", otherwise a lower case cloud region like \"asia-northeast1\".",
+          "readOnly": true,
+          "type": "string"
+        },
+        "replicaOptions": {
+          "description": "Optional. Contains modify options on the replica such as set a kms key on the replica.",
+          "$ref": "ReplicaOptions"
+        }
+      }
+    },
+    "ReplicaOptions": {
+      "id": "ReplicaOptions",
+      "description": "Options set by the user when creating the replica. These include region-specific dataset values, for example default KMS key name. When a resource is replicated, the destination region's replica contains values that should be overwritten in the destination region.",
+      "type": "object",
+      "properties": {
+        "defaultKmsKeyName": {
+          "description": "Optional. Default KMS encryption key name.",
           "type": "string"
         }
       }
@@ -5423,6 +5514,16 @@
           "readOnly": true,
           "$ref": "VectorSearchStatistics"
         },
+        "searchIndexingStats": {
+          "description": "Output only. Search indexing specific statistics.",
+          "readOnly": true,
+          "$ref": "SearchIndexingStats"
+        },
+        "vectorSearchIndexingStats": {
+          "description": "Output only. Vector Search indexing specific statistics.",
+          "readOnly": true,
+          "$ref": "VectorSearchIndexingStats"
+        },
         "performanceInsights": {
           "description": "Output only. Performance insights.",
           "readOnly": true,
@@ -6322,6 +6423,40 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "SearchIndexingStats": {
+      "id": "SearchIndexingStats",
+      "description": "Statistics for a search indexing job. Populated as part of JobStatistics2.",
+      "type": "object",
+      "properties": {
+        "baseTable": {
+          "description": "Output only. The base table for which the search index is being created or refreshed.",
+          "readOnly": true,
+          "$ref": "TableReference"
+        },
+        "indexName": {
+          "description": "Output only. The name of the search index.",
+          "readOnly": true,
+          "type": "string"
+        }
+      }
+    },
+    "VectorSearchIndexingStats": {
+      "id": "VectorSearchIndexingStats",
+      "description": "Statistics for a vector search indexing job. Populated as part of JobStatistics2.",
+      "type": "object",
+      "properties": {
+        "baseTable": {
+          "description": "Output only. The base table for which the vector index is being created or refreshed.",
+          "readOnly": true,
+          "$ref": "TableReference"
+        },
+        "indexName": {
+          "description": "Output only. The name of the vector index.",
+          "readOnly": true,
+          "type": "string"
         }
       }
     },
@@ -7537,12 +7672,12 @@
           "type": "boolean"
         },
         "queryResultsFormat": {
-          "description": "Optional. The query results format. If the value is anything other than `STRUCT_ENCODING` or unspecified: * The schema of the results will be provided in `QueryResponse.results_schema` field. * The results of the first page will be provided in `QueryResponse.results` field. * The `QueryResponse.rows` will not be populated. * The `QueryResponse.schema` for `QueryResponse.rows` will also not be populated since it is the schema of the `QueryResponse.rows`. This feature is not yet available.",
+          "description": "Optional. The query results format. If the value is anything other than `STRUCT_ENCODING` or unspecified: * The schema of the results is provided in the `QueryResponse.results_schema` field. * The results of the first page are provided in the `QueryResponse.results` field. * The `QueryResponse.rows` is not populated. * The `QueryResponse.schema` for `QueryResponse.rows` is not populated since it is the schema of the `QueryResponse.rows`. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
           "type": "string",
           "enumDescriptions": [
             "If unspecified it will default to struct `QueryResponse.rows` (`STRUCT_ENCODING`)",
             "Default encoding of results as struct in `QueryResponse.rows`",
-            "Arrow is a standard open source column-based message format. See https:\/\/arrow.apache.org\/ for more details."
+            "Arrow is a standard open source column-based message format. See the Apache Arrow documentation for more details."
           ],
           "enum": [
             "QUERY_RESULTS_FORMAT_UNSPECIFIED",
@@ -7589,7 +7724,7 @@
     },
     "ArrowSerializationOptions": {
       "id": "ArrowSerializationOptions",
-      "description": "Contains options specific to Arrow Serialization. This feature is not yet available.",
+      "description": "Contains options specific to Arrow Serialization. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
       "type": "object",
       "properties": {
         "bufferCompression": {
@@ -7597,7 +7732,7 @@
           "type": "string",
           "enumDescriptions": [
             "If unspecified no compression will be used.",
-            "LZ4 Frame (https:\/\/github.com\/lz4\/lz4\/blob\/dev\/doc\/lz4_Frame_format.md)",
+            "[LZ4 Frame](https:\/\/github.com\/lz4\/lz4\/blob\/dev\/doc\/lz4_Frame_format.md)",
             "Zstandard compression."
           ],
           "enum": [
@@ -7748,7 +7883,7 @@
           "$ref": "ArrowRecordBatch"
         },
         "pageRowCount": {
-          "description": "Output only. The number of rows out of `total_rows` returned in this response. This feature is not yet available.",
+          "description": "Output only. The number of rows out of `total_rows` returned in this response. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
           "readOnly": true,
           "type": "string",
           "format": "int64"
@@ -7762,7 +7897,7 @@
     },
     "ArrowSchema": {
       "id": "ArrowSchema",
-      "description": "Arrow schema as specified in https:\/\/arrow.apache.org\/docs\/python\/api\/datatypes.html and serialized to bytes using IPC: https:\/\/arrow.apache.org\/docs\/format\/Columnar.html#serialization-and-interprocess-communication-ipc See code samples on how this message can be deserialized. This feature is not yet available.",
+      "description": "Arrow schema as specified in https:\/\/arrow.apache.org\/docs\/python\/api\/datatypes.html and serialized to bytes using IPC: https:\/\/arrow.apache.org\/docs\/format\/Columnar.html#serialization-and-interprocess-communication-ipc See code samples on how this message can be deserialized. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
       "type": "object",
       "properties": {
         "serializedSchema": {
@@ -7774,7 +7909,7 @@
     },
     "ArrowRecordBatch": {
       "id": "ArrowRecordBatch",
-      "description": "Arrow RecordBatch. This feature is not yet available.",
+      "description": "Arrow RecordBatch. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
       "type": "object",
       "properties": {
         "serializedRecordBatch": {
@@ -8203,6 +8338,17 @@
           "items": {
             "type": "string"
           }
+        },
+        "extraPackageRepositories": {
+          "description": "Optional. The list of additional package repositories to search when resolving Python packages. These repositories are searched in addition to the default public PyPI. Only repositories hosted in Artifact Registry (.pkg.dev) are supported. Only pre-compiled Wheel (.whl) packages are supported from these repositories. E.g. ['https:\/\/my-region-python.pkg.dev\/my-project\/my-repo\/simple']",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "buildConnection": {
+          "description": "Optional. Fully qualified name of the connection whose service account will be used to authenticate to private package repositories during build-time. Format: \"projects\/{project_id}\/locations\/{location_id}\/connections\/{connection_id}\"",
+          "type": "string"
         }
       }
     },
@@ -8682,6 +8828,11 @@
         "externalCatalogTableOptions": {
           "description": "Optional. Options defining open source compatible table.",
           "$ref": "ExternalCatalogTableOptions"
+        },
+        "policyMember": {
+          "description": "Output only. Contains the resource identity token of the view that users can use to include in their policy bindings for authorization. This should be set only for views.",
+          "readOnly": true,
+          "$ref": "ResourcePolicyMember"
         }
       }
     },
@@ -8964,6 +9115,20 @@
             "TABLE_FORMAT_UNSPECIFIED",
             "ICEBERG"
           ]
+        },
+        "metadataExportMode": {
+          "description": "Optional. The type of Metadata Export for BigLake Managed Tables.",
+          "type": "string",
+          "enumDescriptions": [
+            "No export type specified. This will default to ASYNC.",
+            "Async export mode.",
+            "Manual metadata export."
+          ],
+          "enum": [
+            "METADATA_EXPORT_MODE_UNSPECIFIED",
+            "ASYNC",
+            "MANUAL"
+          ]
         }
       }
     },
@@ -9202,6 +9367,23 @@
           "additionalProperties": {
             "type": "string"
           }
+        }
+      }
+    },
+    "ResourcePolicyMember": {
+      "id": "ResourcePolicyMember",
+      "description": "Output-only policy member strings of a Google Cloud resource's built-in identity.",
+      "type": "object",
+      "properties": {
+        "iamPolicyNamePrincipal": {
+          "description": "Output only. IAM policy binding member referring to a Google Cloud resource by user-assigned name (https:\/\/google.aip.dev\/122). If a resource is deleted and recreated with the same name, the binding will be applicable to the new resource. Example: `principal:\/\/parametermanager.googleapis.com\/projects\/12345\/name\/locations\/us-central1-a\/parameters\/my-parameter`",
+          "readOnly": true,
+          "type": "string"
+        },
+        "iamPolicyUidPrincipal": {
+          "description": "Output only. IAM policy binding member referring to a Google Cloud resource by system-assigned unique identifier (https:\/\/google.aip.dev\/148#uid). If a resource is deleted and recreated with the same name, the binding will not be applicable to the new resource Example: `principal:\/\/parametermanager.googleapis.com\/projects\/12345\/uid\/locations\/us-central1-a\/parameters\/a918fed5`",
+          "readOnly": true,
+          "type": "string"
         }
       }
     },
@@ -9668,13 +9850,17 @@
                 "The default value. Default to the FULL view.",
                 "View metadata information for the dataset, such as friendlyName, description, labels, etc.",
                 "View ACL information for the dataset, which defines dataset access for one or more entities.",
-                "View both dataset metadata and ACL information."
+                "View both dataset metadata and ACL information.",
+                "View both dataset metadata and ACL information.",
+                "Includes everything from the BASIC view plus replication information. However, it will not include sync_status or other fields requiring cross-region requests."
               ],
               "enum": [
                 "DATASET_VIEW_UNSPECIFIED",
                 "METADATA",
                 "ACL",
-                "FULL"
+                "FULL",
+                "BASIC",
+                "BASIC_REPLICA_METADATA_VIEW"
               ]
             },
             "accessPolicyVersion": {

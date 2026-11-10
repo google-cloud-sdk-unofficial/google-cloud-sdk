@@ -911,8 +911,10 @@ class CommonLanguageSettings(_messages.Message):
     DestinationsValueListEntryValuesEnum:
 
   Fields:
-    destinations: The destination where API teams want this client library to
-      be published.
+    destinations: Deprecated: Client libraries are published for all supported
+      languages by default when a `library_settings` entry is present with a
+      `version` and `launch_stage`. The destination where API teams want this
+      client library to be published.
     referenceDocsUri: Link to automatically generated reference documentation.
       Example: https://cloud.google.com/nodejs/docs/reference/asset/latest
     selectiveGapicGeneration: Configuration for which RPCs should be generated

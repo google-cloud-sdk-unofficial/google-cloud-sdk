@@ -13536,9 +13536,11 @@ class TokenBudgetPolicyBudget(_messages.Message):
     Values:
       RESET_PERIOD_UNSPECIFIED: Default unspecified reset period.
       DAILY: Reset token count daily.
+      HOURLY: Reset token count hourly.
     """
     RESET_PERIOD_UNSPECIFIED = 0
     DAILY = 1
+    HOURLY = 2
 
   alertThreshold = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
   dryRun = _messages.BooleanField(2)

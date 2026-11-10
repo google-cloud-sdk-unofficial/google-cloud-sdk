@@ -1396,11 +1396,15 @@ class FunctionalType(_messages.Message):
       AGENT: Agent type.
       MCP_SERVER: MCP Server type.
       ENDPOINT: Endpoint type.
+      MODEL: Model type.
+      MODEL_ENDPOINT: Model Endpoint type.
     """
     TYPE_UNSPECIFIED = 0
     AGENT = 1
     MCP_SERVER = 2
     ENDPOINT = 3
+    MODEL = 4
+    MODEL_ENDPOINT = 5
 
   type = _messages.EnumField('TypeValueValuesEnum', 1)
 
@@ -1953,7 +1957,6 @@ class Scope(_messages.Message):
       GLOBAL: Global type.
       MULTI_REGIONAL: Multi-regional type.
     """
-
     TYPE_UNSPECIFIED = 0
     REGIONAL = 1
     GLOBAL = 2

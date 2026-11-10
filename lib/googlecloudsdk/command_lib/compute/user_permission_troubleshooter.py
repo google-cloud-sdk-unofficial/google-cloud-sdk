@@ -110,37 +110,63 @@ class UserPermissionTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
   def cleanup_resources(self):
     return
 
-  def troubleshoot(self):
-    log.status.Print('---- Checking user permissions ----')
+  def FindUserPermissionIssues(
+      self, oslogin_enabled: bool
+  ) -> list[ssh_troubleshooter.Finding]:
+    """Returns a list of Finding(cause, message), in check order.
 
-    if self.enable_oslogin:
+    Args:
+      oslogin_enabled: Whether OS Login is enabled for the instance; the caller
+        resolves it, for example with ssh.FeatureEnabledInMetadata.
+
+    Returns:
+      list[ssh_troubleshooter.Finding], detected user permission issues in
+      check order.
+    """
+    findings = []
+    instance_perms = list(instance_permissions)
+    project_perms = list(project_permissions)
+    if oslogin_enabled:
       # We don't check to see if public key is already in profile and
       # POSIX information here. We only check if OS Login is enabled.
       if self._CheckOsLoginPermissions():
-        self.issues['oslogin'] = OS_LOGIN_MESSAGE
+        findings.append(
+            ssh_troubleshooter.Finding('oslogin', OS_LOGIN_MESSAGE))
     else:
       # Require metadata access permission if not enable oslogin.
-      instance_permissions.append('compute.instances.setMetadata')
-      project_permissions.append('compute.projects.setCommonInstanceMetadata')
+      instance_perms.append('compute.instances.setMetadata')
+      project_perms.append('compute.projects.setCommonInstanceMetadata')
 
     # Check IAM on instance and project.
-    missing_instance_project = sorted(self._CheckInstancePermissions().union(
-        self._CheckProjectPermissions()))
+    missing_instance_project = sorted(
+        self._CheckInstancePermissions(instance_perms).union(
+            self._CheckProjectPermissions(project_perms)))
     if missing_instance_project:
-      self.issues['instance_project'] = INSTANCE_PROJECT_MESSAGE.format(
-          ' '.join(missing_instance_project))
+      findings.append(
+          ssh_troubleshooter.Finding(
+              'instance_project',
+              INSTANCE_PROJECT_MESSAGE.format(
+                  ' '.join(missing_instance_project))))
 
     # Check IAM on service account
-    if self.instance.serviceAccounts and self._CheckServiceAccountPermissions():
-      self.issues['serviceaccount'] = SERVICE_ACCOUNT_MESSAGE
+    if (self.instance.serviceAccounts and
+        self._CheckServiceAccountPermissions()):
+      findings.append(
+          ssh_troubleshooter.Finding(
+              'serviceaccount', SERVICE_ACCOUNT_MESSAGE))
 
     # Check IAM on IAP.
     if self.iap_tunnel_args and self._CheckIapPermissions():
-      self.issues['iap'] = IAP_MESSAGE
+      findings.append(ssh_troubleshooter.Finding('iap', IAP_MESSAGE))
 
+    return findings
+
+  def troubleshoot(self):
+    log.status.Print('---- Checking user permissions ----')
+    self.issues = dict(self.FindUserPermissionIssues(self.enable_oslogin))
     # Prompt appropriate messages to user.
     log.status.Print('User permissions: {0} issue(s) found.\n'.format(
-        len(self.issues.keys())))
+        len(self.issues)))
     for message in self.issues.values():
       log.status.Print(message)
 
@@ -186,14 +212,17 @@ class UserPermissionTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
     response = self._ComputeTestIamPermissions(oslogin_permissions)
     return set(oslogin_permissions) - set(response.permissions)
 
-  def _CheckInstancePermissions(self):
+  def _CheckInstancePermissions(self, permissions: list[str]) -> set[str]:
     """Check whether user has IAM permission on instance resource.
 
+    Args:
+      permissions: the IAM permissions to test.
+
     Returns:
-      set, missing IAM permissions.
+      the subset that is missing.
     """
-    response = self._ComputeTestIamPermissions(instance_permissions)
-    return set(instance_permissions) - set(response.permissions)
+    response = self._ComputeTestIamPermissions(permissions)
+    return set(permissions) - set(response.permissions)
 
   def _ComputeTestIamPermissions(self, permissions):
     """Call TestIamPermissions to check whether user has certain IAM permissions.
@@ -213,14 +242,17 @@ class UserPermissionTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
         zone=self.zone)
     return self.compute_client.instances.TestIamPermissions(request)
 
-  def _CheckProjectPermissions(self):
+  def _CheckProjectPermissions(self, permissions: list[str]) -> set[str]:
     """Check whether user has IAM permission on project resource.
 
+    Args:
+      permissions: the IAM permissions to test.
+
     Returns:
-      set, missing IAM permissions.
+      the subset that is missing.
     """
-    response = self._ResourceManagerTestIamPermissions(project_permissions)
-    return set(project_permissions) - set(response.permissions)
+    response = self._ResourceManagerTestIamPermissions(permissions)
+    return set(permissions) - set(response.permissions)
 
   def _ResourceManagerTestIamPermissions(self, permissions):
     """Check whether user has IAM permission on resource manager.

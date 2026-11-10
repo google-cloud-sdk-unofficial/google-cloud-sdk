@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.dataflow import config_store_util
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Dataflow ConfigStore settings."""
 
@@ -86,3 +86,29 @@ class List(base.ListCommand):
         field='configStoreSettings',
         batch_size_attribute='pageSize',
     )
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List Dataflow ConfigStore settings."""
+
+  detailed_help = {
+      'DESCRIPTION': 'List Dataflow ConfigStore settings.',
+      'EXAMPLES': (
+          """\
+          To list the settings on a project (use either project ID or
+          project number):
+
+            $ {command} --project=my-project --location=us-central1
+
+            $ {command} --project=123456789 --location=us-central1
+
+          To list the settings on a folder or an organization:
+
+            $ {command} --folder=123456 --location=us-central1
+
+            $ {command} --organization=789012 --location=us-central1
+          """
+      ),
+  }

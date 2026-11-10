@@ -20,6 +20,7 @@ import os
 import pkgutil
 import typing
 
+from googlecloudsdk.api_lib.bq import util as api_util
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
@@ -27,7 +28,10 @@ from googlecloudsdk.command_lib.bq import command_utils
 from googlecloudsdk.command_lib.storage import storage_parallel
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+
+_WORKFLOWS_COLLECTION = 'bigquerymigration.projects.locations.workflows'
 
 
 @functools.cache
@@ -344,6 +348,25 @@ def build_migration_workflow(messages, task_key: str, task):
       additionalProperties=[prop_cls(key=task_key, value=task)]
   )
   return workflow_cls(tasks=workflow_tasks_value)
+
+
+def get_workflow(workflow_id: str, location: str):
+  """Fetches a migration workflow by ID or full resource name."""
+  project = properties.VALUES.core.project.Get(required=True)
+  client = api_util.GetMigrationApiClient(location=location)
+  workflow_ref = resources.REGISTRY.Parse(
+      workflow_id,
+      params={
+          'projectsId': project,
+          'locationsId': location,
+      },
+      collection=_WORKFLOWS_COLLECTION,
+  )
+  messages = client.MESSAGES_MODULE
+  request = messages.BigquerymigrationProjectsLocationsWorkflowsGetRequest(
+      name=workflow_ref.RelativeName(),
+  )
+  return client.projects_locations_workflows.Get(request)
 
 
 def execute_workflow(

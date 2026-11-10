@@ -33,6 +33,36 @@ class BackupPlansClient(util.BackupDrClientBase):
     super(BackupPlansClient, self).__init__(api_version=api_version)
     self.service = self.client.projects_locations_backupPlans
 
+  def _ParseStorageTier(self, storage_tier):
+    if not isinstance(storage_tier, str) or storage_tier not in (
+        'STANDARD',
+        'ARCHIVE',
+    ):
+      raise exceptions.InvalidArgumentException(
+          'storage-tier',
+          f'Invalid storage-tier value: {storage_tier}. Must be one of:'
+          ' STANDARD, ARCHIVE.',
+      )
+    return self.messages.BackupRule.StorageTierValueValuesEnum(storage_tier)
+
+  def _PreserveStorageTier(
+      self, rebuilt_rules, backup_rule_args, current_backup_plan
+  ):
+    """Preserves existing storageTier on rules where storage-tier is unset."""
+    if current_backup_plan is None or not current_backup_plan.backupRules:
+      return
+    existing_tier_by_id = {
+        rule.ruleId: rule.storageTier
+        for rule in current_backup_plan.backupRules
+        if getattr(rule, 'storageTier', None) is not None
+    }
+    for rebuilt_rule, rule_args in zip(rebuilt_rules, backup_rule_args):
+      # Matches _ParseBackupRules, which also treats a null value as unset.
+      if rule_args.get('storage-tier') is None:
+        existing_tier = existing_tier_by_id.get(rebuilt_rule.ruleId)
+        if existing_tier is not None:
+          rebuilt_rule.storageTier = existing_tier
+
   def _ParseBackupRules(self, backup_rules):
     backup_rules_message = []
     if backup_rules is None:
@@ -84,8 +114,109 @@ class BackupPlansClient(util.BackupDrClientBase):
       )
       if 'backup-vault' in backup_rule:
         backup_rule_message.backupVault = backup_rule['backup-vault']
+      if 'backup-labels' in backup_rule:
+        backup_labels_message = self._ParseBackupLabels(
+            backup_rule['backup-labels']
+        )
+        if backup_labels_message is not None:
+          backup_rule_message.backupLabels = backup_labels_message
+      if (
+          'storage-tier' in backup_rule
+          and backup_rule['storage-tier'] is not None
+      ):
+        backup_rule_message.storageTier = self._ParseStorageTier(
+            backup_rule['storage-tier']
+        )
       backup_rules_message.append(backup_rule_message)
     return backup_rules_message
+
+  def _ParseBackupLabels(self, backup_labels):
+    """Parses the per-rule backup labels of a backup rule."""
+    if not backup_labels:
+      return None
+    additional_properties = []
+    if isinstance(backup_labels, str):
+      seen_keys = set()
+      for label_pair in backup_labels.split(';'):
+        if not label_pair.strip():
+          continue
+        key, sep, value = label_pair.partition('=')
+        key = key.strip()
+        if not sep or not key:
+          raise exceptions.InvalidArgumentException(
+              'backup-labels',
+              'Backup labels must be in the format key=value. Got:'
+              f' {label_pair.strip()}',
+          )
+        if key in seen_keys:
+          raise exceptions.InvalidArgumentException(
+              'backup-labels',
+              f'Backup label [{key}] is specified more than once.',
+          )
+        seen_keys.add(key)
+        additional_properties.append(
+            self.messages.BackupRule.BackupLabelsValue.AdditionalProperty(
+                key=key, value=value.strip()
+            )
+        )
+    elif isinstance(backup_labels, dict):
+      for key, value in backup_labels.items():
+        key = str(key).strip()
+        if value is None:
+          str_value = ''
+        elif isinstance(value, bool):
+          str_value = 'true' if value else 'false'
+        elif isinstance(value, (str, int, float)):
+          str_value = str(value).strip()
+        else:
+          raise exceptions.InvalidArgumentException(
+              'backup-labels',
+              f'Backup label [{key}] must have a string value. Got: {value}',
+          )
+        additional_properties.append(
+            self.messages.BackupRule.BackupLabelsValue.AdditionalProperty(
+                key=key, value=str_value
+            )
+        )
+    else:
+      raise exceptions.InvalidArgumentException(
+          'backup-labels',
+          'Backup labels must be a map or `key=value` pairs separated by `;`.'
+          f' Got: {backup_labels}',
+      )
+    if not additional_properties:
+      return None
+    return self.messages.BackupRule.BackupLabelsValue(
+        additionalProperties=additional_properties
+    )
+
+  def _PreserveBackupLabels(
+      self, rebuilt_rules, backup_rule_args, current_backup_plan
+  ):
+    """Carries over existing per-rule backup labels onto rebuilt rules.
+
+    `--backup-rule` and `--backup-rules-from-file` rebuild each rule from the
+    command line (or file) and the update is sent with `updateMask=backupRules`,
+    which replaces the whole rule list. Without this, labels set on a rule
+    through the API would be silently cleared whenever that rule is modified
+    with gcloud. Rules that explicitly specify `backup-labels` (including an
+    empty value, which clears the labels) are left as specified.
+
+    Args:
+      rebuilt_rules: The BackupRule messages built from user input.
+      backup_rule_args: The user-provided rule dicts that `rebuilt_rules` were
+        built from, in the same order.
+      current_backup_plan: The current Backup Plan.
+    """
+    current_rules_by_id = {
+        rule.ruleId: rule for rule in current_backup_plan.backupRules
+    }
+    for rule, rule_args in zip(rebuilt_rules, backup_rule_args):
+      if 'backup-labels' in rule_args:
+        continue
+      current_rule = current_rules_by_id.get(rule.ruleId)
+      if current_rule is not None and current_rule.backupLabels is not None:
+        rule.backupLabels = current_rule.backupLabels
 
   def Create(
       self,
@@ -290,9 +421,20 @@ class BackupPlansClient(util.BackupDrClientBase):
       )
     current_rule_ids = {rule.ruleId for rule in current_backup_plan.backupRules}
     if new_backup_rules_from_file is not None:
-      updated_backup_plan.backupRules = self._ParseBackupRules(
+      backup_rules_from_file = self._ParseBackupRules(
           new_backup_rules_from_file
       )
+      self._PreserveBackupLabels(
+          backup_rules_from_file,
+          new_backup_rules_from_file,
+          current_backup_plan,
+      )
+      self._PreserveStorageTier(
+          backup_rules_from_file,
+          new_backup_rules_from_file,
+          current_backup_plan,
+      )
+      updated_backup_plan.backupRules = backup_rules_from_file
     elif update_backup_rules is not None:
       rule_ids = collections.Counter(
           [rule['rule-id'] for rule in update_backup_rules]
@@ -318,15 +460,18 @@ class BackupPlansClient(util.BackupDrClientBase):
             ' The --backup-rule flag can only be used to modify existing'
             ' rules.',
         )
-      update_rule_ids = [rule['rule-id'] for rule in update_backup_rules]
-      updated_backup_plan.backupRules = [
-          rule
-          for rule in current_backup_plan.backupRules
-          if rule.ruleId not in update_rule_ids
-      ]
-      updated_backup_plan.backupRules.extend(
-          self._ParseBackupRules(update_backup_rules)
+      parsed_update_rules = self._ParseBackupRules(update_backup_rules)
+      self._PreserveBackupLabels(
+          parsed_update_rules, update_backup_rules, current_backup_plan
       )
+      self._PreserveStorageTier(
+          parsed_update_rules, update_backup_rules, current_backup_plan
+      )
+      updated_rules_by_id = {rule.ruleId: rule for rule in parsed_update_rules}
+      updated_backup_plan.backupRules = [
+          updated_rules_by_id.get(rule.ruleId, rule)
+          for rule in current_backup_plan.backupRules
+      ]
     else:
       updated_backup_plan.backupRules = current_backup_plan.backupRules
     if add_backup_rules is not None:

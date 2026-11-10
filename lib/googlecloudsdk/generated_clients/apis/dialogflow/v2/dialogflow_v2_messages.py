@@ -14958,13 +14958,13 @@ class GoogleCloudDialogflowV2HumanAgentAssistantConfigMessageAnalysisConfig(_mes
     enableEntityExtraction: Enable entity extraction in conversation messages
       on [agent assist
       stage](https://cloud.google.com/dialogflow/priv/docs/contact-
-      center/basics#stages). If unspecified, defaults to false. Currently,
+      center/basics#stages). If unspecified, defaults to `false`. Currently,
       this feature is not general available, please contact Google to get
       access.
     enableSentimentAnalysis: Enable sentiment analysis in conversation
       messages on [agent assist
       stage](https://cloud.google.com/dialogflow/priv/docs/contact-
-      center/basics#stages). If unspecified, defaults to false. Sentiment
+      center/basics#stages). If unspecified, defaults to `false`. Sentiment
       analysis inspects user input and identifies the prevailing subjective
       opinion, especially to determine a user's attitude as positive,
       negative, or neutral: https://cloud.google.com/natural-
@@ -14972,24 +14972,24 @@ class GoogleCloudDialogflowV2HumanAgentAssistantConfigMessageAnalysisConfig(_mes
       Participants.StreamingAnalyzeContent method, result will be in
       StreamingAnalyzeContentResponse.message.SentimentAnalysisResult. For
       Participants.AnalyzeContent method, result will be in
-      AnalyzeContentResponse.message.SentimentAnalysisResult For
+      AnalyzeContentResponse.message.SentimentAnalysisResult. For
       Conversations.ListMessages method, result will be in
-      ListMessagesResponse.messages.SentimentAnalysisResult If Pub/Sub
+      ListMessagesResponse.messages.SentimentAnalysisResult. If Pub/Sub
       notification is configured, result will be in
       ConversationEvent.new_message_payload.SentimentAnalysisResult.
     enableSentimentAnalysisV3: Optional. Enables sentiment analysis for audio
-      input and conversation messages. If unspecified, defaults to false. If
-      this flag is set to true, other 'enable_sentiment_analysis' fields will
-      be ignored. Sentiment analysis inspects user input and identifies the
-      prevailing subjective opinion, especially to determine a user's attitude
-      as positive, negative, or neutral. https://cloud.google.com/natural-
-      language/docs/basics#sentiment_analysis For
-      Participants.StreamingAnalyzeContent method, result will be in
+      input and conversation messages. If unspecified, defaults to `false`. If
+      this flag is set to `true`, other `enable_sentiment_analysis` fields
+      will be ignored. Sentiment analysis inspects user input and identifies
+      the prevailing subjective opinion, especially to determine a user's
+      attitude as positive, negative, or neutral.
+      https://cloud.google.com/natural-language/docs/basics#sentiment_analysis
+      For Participants.StreamingAnalyzeContent method, result will be in
       StreamingAnalyzeContentResponse.message.SentimentAnalysisResult. For
       Participants.AnalyzeContent method, result will be in
-      AnalyzeContentResponse.message.SentimentAnalysisResult For
+      AnalyzeContentResponse.message.SentimentAnalysisResult. For
       Conversations.ListMessages method, result will be in
-      ListMessagesResponse.messages.SentimentAnalysisResult If Pub/Sub
+      ListMessagesResponse.messages.SentimentAnalysisResult. If Pub/Sub
       notification is configured, result will be in
       ConversationEvent.new_message_payload.SentimentAnalysisResult.
   """
@@ -15837,6 +15837,9 @@ class GoogleCloudDialogflowV2InputAudioConfig(_messages.Message):
     useGeminiAsr: Optional. If true, Gemini ASR will be used for transcription
       instead of Cloud Speech-to-Text. If false, Cloud Speech-to-Text will be
       used. If unset, this setting is inherited from the ConversationProfile.
+      For StreamingAnalyzeContent, if the ConversationProfile enables Gemini
+      ASR (SpeechToTextConfig.use_gemini_asr is true), Gemini ASR is used even
+      if this field is false.
   """
 
   class AudioEncodingValueValuesEnum(_messages.Enum):
@@ -19733,7 +19736,10 @@ class GoogleCloudDialogflowV2SpeechToTextConfig(_messages.Message):
       specified and an enhanced version of the specified model for the
       language does not exist, then it would emit an error.
     useGeminiAsr: Optional. If true, Gemini ASR will be used for transcription
-      instead of Cloud Speech-to-Text.
+      instead of Cloud Speech-to-Text. For StreamingAnalyzeContent and
+      BidiStreamingAnalyzeContent, this setting takes precedence over the
+      request-level `use_gemini_asr`: if true, Gemini ASR is used even if the
+      request sets `use_gemini_asr` to false.
     useTimeoutBasedEndpointing: Use timeout based endpointing, interpreting
       endpointer sensitivity as seconds of timeout value.
   """

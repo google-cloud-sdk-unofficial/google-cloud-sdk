@@ -35,6 +35,7 @@ from googlecloudsdk.core import config
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.core.util import regional
 
 
 @base.UniverseCompatible
@@ -193,7 +194,7 @@ class Replace(base.Command):
       project = namespace
       namespace = new_worker_pool.metadata.namespace
       endpoint_mode = properties.VALUES.regional.endpoint_mode.Get()
-      if properties.VALUES.regional.endpoint_compatibility.Get() and (
+      if regional.IsRegionalEndpointCompatible() and (
           endpoint_mode == properties.constants.regional.REGIONAL
           or endpoint_mode == properties.constants.regional.REGIONAL_PREFERRED
       ):

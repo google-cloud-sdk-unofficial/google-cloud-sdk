@@ -45,7 +45,7 @@ def _ValidateConnectAgentCredentialFlags(args):
   """Validates that Connect agent credential flags are set when required.
 
   Connect agent credentials are not required when the Connect agent is not
-  installed, i.e. when `--membership-type=READ_ONLY` is specified or
+  installed, i.e. when `--read-only` is specified or
   `--install-connect-agent` is explicitly set to false.
 
   Args:
@@ -58,7 +58,7 @@ def _ValidateConnectAgentCredentialFlags(args):
   """
   enable_workload_identity = getattr(args, 'enable_workload_identity', False)
   skip_connect_agent = (
-      getattr(args, 'membership_type', None) == 'READ_ONLY'
+      getattr(args, 'read_only', False)
       or (
           args.IsSpecified('install_connect_agent')
           and not args.install_connect_agent
@@ -361,14 +361,12 @@ class Register(base.CreateCommand):
           """),
     )
     parser.add_argument(
-        '--membership-type',
-        type=str,
-        choices=['READ_ONLY'],
-        hidden=True,
+        '--read-only',
+        action='store_true',
         help=(
-            'The type of the membership. `READ_ONLY` means the membership '
-            'supports only READ_ONLY features i.e. can view cluster '
-            'information but no mutating operations.'
+            'Register the cluster with a `READ_ONLY` membership type. A '
+            '`READ_ONLY` membership supports only read-only features i.e. '
+            'can view cluster information but no mutating operations.'
         ),
     )
 
@@ -405,17 +403,17 @@ class Register(base.CreateCommand):
           ' together with "install-connect-agent".  '
       )
 
-    membership_type = getattr(args, 'membership_type', None)
+    read_only = getattr(args, 'read_only', False)
+    membership_type = 'READ_ONLY' if read_only else None
 
-    if membership_type == 'READ_ONLY':
+    if read_only:
       if gke_cluster_resource_link:
         raise exceptions.Error(
-            '--membership-type=READ_ONLY is not supported for GKE clusters.'
+            '--read-only is not supported for GKE clusters.'
         )
       if getattr(args, 'install_connect_agent', False):
         raise exceptions.Error(
-            '--membership-type=READ_ONLY cannot be used with '
-            '--install-connect-agent.'
+            '--read-only cannot be used with --install-connect-agent.'
         )
 
     # Register GKE cluster with simple Add-to-Hub API call. Connect agent will
@@ -432,7 +430,7 @@ class Register(base.CreateCommand):
     # Register non-GKE cluster, or GKE with --install-connect-agent.
     # It will require a kube client.
     _ValidateConnectAgentCredentialFlags(args)
-    skip_cluster_mutations = membership_type == 'READ_ONLY'
+    skip_cluster_mutations = read_only
     skip_connect_agent = skip_cluster_mutations or (
         args.IsSpecified('install_connect_agent')
         and not args.install_connect_agent

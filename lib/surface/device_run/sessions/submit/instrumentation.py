@@ -19,6 +19,7 @@ import collections
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib import device_run
 from googlecloudsdk.api_lib.storage import storage_api
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
@@ -228,11 +229,26 @@ class Instrumentation(base.Command):
             ' Storage prior to test execution.'
         ),
     )
-    parser.add_argument(
+    app_group = parser.add_group(
+        mutex=True,
+        help=(
+            'Application binary files to install on the device before running'
+            ' the test.'
+        ),
+    )
+    app_group.add_argument(
         '--apps',
         metavar='APP_PATH',
         type=arg_parsers.ArgList(element_type=_ValidateAppPath),
         default=[],
+        action=actions.DeprecationAction(
+            '--apps',
+            warn=(
+                'The {flag_name} flag is deprecated and will be removed in an'
+                ' upcoming release. Use --target-app, --pre-target-apps and'
+                ' --post-target-apps instead.'
+            ),
+        ),
         help=(
             'A list of application binary files (.apk, .aab, or .apks) to'
             ' install before running the test. The order of the applications in'
@@ -240,6 +256,60 @@ class Instrumentation(base.Command):
             ' Supports both Google Cloud Storage (`gs://...`) paths and local'
             ' filesystem paths. Any local file will be uploaded to Google Cloud'
             ' Storage prior to test execution.'
+        ),
+    )
+    target_app_group = app_group.add_group(
+        # Keep the flags in installation order (pre, target, post) in help.
+        sort_args=False,
+        help=(
+            'Application binary files to install on the device, ordered around'
+            ' the target application.'
+        ),
+    )
+    target_app_group.add_argument(
+        '--pre-target-apps',
+        metavar='APP_PATH',
+        type=arg_parsers.ArgList(element_type=_ValidateAppPath),
+        default=[],
+        help=(
+            'A list of application binary files (.apk, .aab, or .apks) to'
+            ' install before the application specified by `--target-app` (if'
+            ' any). The order of the applications in the list determines their'
+            ' installation order on the device. Supports both Google Cloud'
+            ' Storage (`gs://...`) paths and local filesystem paths. Any local'
+            ' file will be uploaded to Google Cloud Storage prior to test'
+            ' execution.'
+        ),
+    )
+    target_app_group.add_argument(
+        '--target-app',
+        metavar='APP_PATH',
+        type=_ValidateAppPath,
+        help=(
+            'The application binary file (.apk, .aab, or .apks) of the primary'
+            ' Android package to install, i.e., the application under test. It'
+            ' is installed after the applications specified by'
+            ' `--pre-target-apps` and before the applications specified by'
+            ' `--post-target-apps`. It serves as the target package in the test'
+            ' execution and as the installation ordering anchor. Supports both'
+            ' Google Cloud Storage (`gs://...`) paths and local filesystem'
+            ' paths. Any local file will be uploaded to Google Cloud Storage'
+            ' prior to test execution.'
+        ),
+    )
+    target_app_group.add_argument(
+        '--post-target-apps',
+        metavar='APP_PATH',
+        type=arg_parsers.ArgList(element_type=_ValidateAppPath),
+        default=[],
+        help=(
+            'A list of application binary files (.apk, .aab, or .apks) to'
+            ' install after the application specified by `--target-app` (if'
+            ' any). The order of the applications in the list determines their'
+            ' installation order on the device. Supports both Google Cloud'
+            ' Storage (`gs://...`) paths and local filesystem paths. Any local'
+            ' file will be uploaded to Google Cloud Storage prior to test'
+            ' execution.'
         ),
     )
     parser.add_argument(
@@ -529,21 +599,26 @@ empty, all targets in the module will be run.
         args.test, bucket_name, storage_client, run_id
     )
 
-    installables = []
-    if args.apps:
-      for app_apk in args.apps:
-        app_apk_gcs = session_submit_ops.UploadFileIfNeeded(
-            app_apk, bucket_name, storage_client, run_id
-        )
-        installables.append(
-            messages.AndroidInstallable(
-                files=[
-                    messages.InputFile(
-                        gcsInputFile=messages.GcsPath(path=app_apk_gcs)
-                    )
-                ],
-            )
-        )
+    def _ToInstallable(app_path):
+      app_gcs = session_submit_ops.UploadFileIfNeeded(
+          app_path, bucket_name, storage_client, run_id
+      )
+      return messages.AndroidInstallable(
+          files=[
+              messages.InputFile(gcsInputFile=messages.GcsPath(path=app_gcs))
+          ],
+      )
+
+    # `--apps` is deprecated and still populates the deprecated `installables`
+    # field to keep its existing behavior.
+    installables = [_ToInstallable(app) for app in args.apps or []]
+    pre_target_app_installables = [
+        _ToInstallable(app) for app in args.pre_target_apps or []
+    ]
+    target_app = _ToInstallable(args.target_app) if args.target_app else None
+    post_target_app_installables = [
+        _ToInstallable(app) for app in args.post_target_apps or []
+    ]
 
     device_actions = []
     # Always enable logcat and make it the first action.
@@ -552,10 +627,18 @@ empty, all targets in the module will be run.
     )
     device_actions.append(logcat_action)
 
-    if installables:
+    if (
+        installables
+        or pre_target_app_installables
+        or target_app
+        or post_target_app_installables
+    ):
       device_action = messages.DeviceAction(
           androidInstallPackages=messages.AndroidInstallPackagesDeviceAction(
-              installables=installables
+              installables=installables,
+              preTargetAppInstallables=pre_target_app_installables,
+              targetApp=target_app,
+              postTargetAppInstallables=post_target_app_installables,
           )
       )
       device_actions.append(device_action)
@@ -809,11 +892,16 @@ Instrumentation.detailed_help = {
 To submit an instrumentation session in location `us-central1` on a device
 with ID `my-device-id`, run:
 
-  $ {command} --location=us-central1 --device=my-device-id --apps=gs://my-bucket/app.apk --test=gs://my-bucket/test.apk --bucket-name=my-bucket
+  $ {command} --location=us-central1 --device=my-device-id --target-app=gs://my-bucket/app.apk --test=gs://my-bucket/test.apk --bucket-name=my-bucket
+
+To submit an instrumentation session that installs `helper.apk` before and
+`plugin.apk` after the target application `app.apk`, run:
+
+  $ {command} --location=us-central1 --device=my-device-id --pre-target-apps=gs://my-bucket/helper.apk --target-app=gs://my-bucket/app.apk --post-target-apps=gs://my-bucket/plugin.apk --test=gs://my-bucket/test.apk --bucket-name=my-bucket
 
 To submit an instrumentation session asynchronously without waiting for it to
 complete, run:
 
-  $ {command} --location=us-central1 --device=my-device-id --apps=gs://my-bucket/app.apk --test=gs://my-bucket/test.apk --bucket-name=my-bucket --async
+  $ {command} --location=us-central1 --device=my-device-id --target-app=gs://my-bucket/app.apk --test=gs://my-bucket/test.apk --bucket-name=my-bucket --async
 """,
 }
